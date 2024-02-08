@@ -3,6 +3,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from prices import Money, TaxedMoney
 
@@ -21,6 +22,7 @@ from ..tax.utils import (
     get_tax_calculation_strategy_for_checkout,
     normalize_tax_rate_for_db,
 )
+from .error_codes import CheckoutErrorCode
 from .models import Checkout
 from .payment_utils import update_checkout_payment_statuses
 
@@ -269,7 +271,10 @@ def _fetch_checkout_prices_if_expired(
             )
         except ValueError:
             if need_tax_calculation:
-                raise ValueError("temp")
+                raise ValidationError(
+                    "Configured Tax App didn't responded.",
+                    code=CheckoutErrorCode.TAX_ERROR.value,
+                )
             tax_app_responed = False
 
         if not should_charge_tax:
@@ -295,7 +300,10 @@ def _fetch_checkout_prices_if_expired(
                 )
             except ValueError:
                 if need_tax_calculation:
-                    raise ValueError("temp")
+                    raise ValidationError(
+                        "Configured Tax App didn't responded.",
+                        code=CheckoutErrorCode.TAX_ERROR.value,
+                    )
                 tax_app_responed = False
         else:
             # Calculate net prices without taxes.
