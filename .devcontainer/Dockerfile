@@ -1,7 +1,8 @@
 FROM mcr.microsoft.com/devcontainers/python:3.9
 
 ENV PYTHONUNBUFFERED 1
-
+RUN sed -i "s/http:\/\/deb.debian.org/https:\/\/mirrors.tuna.tsinghua.edu.cn/g" /etc/apt/sources.list.d/debian.sources
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 RUN apt-get update \
   && apt-get install -y \
   libcairo2 \
@@ -25,4 +26,5 @@ WORKDIR /app
 RUN pip install poetry==1.7.0
 RUN poetry config virtualenvs.create false
 COPY poetry.lock pyproject.toml /app/
+RUN poetry source add --priority=default mirrors https://pypi.tuna.tsinghua.edu.cn/simple/
 RUN poetry install --no-root
