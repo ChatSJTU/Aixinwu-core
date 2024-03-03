@@ -14,4 +14,6 @@ class OpenIDConnectConfig:
     audience: str
     use_scope_permissions: bool
     staff_user_domains: str
+    staff_user_accounts: list
     default_group_name: str
+    email_domain: str

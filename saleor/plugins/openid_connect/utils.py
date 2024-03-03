@@ -90,13 +90,6 @@ def fetch_jwks(jwks_url) -> Optional[dict]:
     return keys
 
 
-def get_jwks_keys_from_cache_or_fetch(jwks_url: str) -> dict:
-    jwks_keys = cache.get(JWKS_KEY)
-    if jwks_keys is None:
-        jwks_keys = fetch_jwks(jwks_url)
-    return jwks_keys
-
-
 def get_user_info_from_cache_or_fetch(
     user_info_url: str, access_token: str, exp_time: Optional[int]
 ) -> Optional[dict]:
@@ -149,148 +142,12 @@ def get_user_info(user_info_url, access_token) -> Optional[dict]:
         return None
 
 
-def decode_access_token(token, jwks_url):
+def decode_access_token(token, client_secret):
     try:
-        return get_decoded_token(token, jwks_url)
+        return get_decoded_token(token, client_secret)
     except (JoseError, ValueError) as e:
-        logger.info(
-            "Invalid OIDC access token format", extra={"error": e, "jwks_url": jwks_url}
-        )
+        logger.info("Invalid OIDC access token format", extra={"error": e})
         return None
-
-
-def get_user_from_oauth_access_token_in_jwt_format(
-    token_payload: JWTClaims,
-    user_info_url: str,
-    access_token: str,
-    use_scope_permissions: bool,
-    audience: str,
-    staff_user_domains: list[str],
-    staff_default_group_name: str,
-):
-    try:
-        token_payload.validate()
-    except (JoseError, ValueError) as e:
-        logger.info(
-            "OIDC access token validation failed",
-            extra={"error": e, "user_info_url": user_info_url},
-        )
-        return None
-
-    user_info = get_user_info_from_cache_or_fetch(
-        user_info_url,
-        access_token,
-        token_payload.get("exp"),
-    )
-    if not user_info:
-        logger.info(
-            "Failed to fetch user info for a valid OIDC access token",
-            extra={"token_exp": token_payload["exp"], "user_info_url": user_info_url},
-        )
-        return None
-
-    try:
-        user = get_or_create_user_from_payload(
-            user_info,
-            user_info_url,
-            last_login=token_payload.get("iat"),
-        )
-    except AuthenticationError as e:
-        logger.info("Unable to create a user object", extra={"error": e})
-        return None
-
-    scope = token_payload.get("scope")
-    token_permissions = token_payload.get("permissions", [])
-
-    # check if token contains expected aud
-    aud = token_payload.get("aud")
-    if not audience:
-        audience_in_token = False
-    elif isinstance(aud, list):
-        audience_in_token = audience in aud
-    else:
-        audience_in_token = audience == aud
-
-    is_staff = None
-    email_domain = get_domain_from_email(user.email)
-    is_staff_email = email_domain in staff_user_domains
-    is_staff_id = SALEOR_STAFF_PERMISSION
-    if (use_scope_permissions and audience_in_token) or is_staff_email:
-        permissions = get_saleor_permissions_qs_from_scope(scope)
-        if not permissions and token_permissions:
-            permissions = get_saleor_permissions_from_list(token_permissions)
-        user.effective_permissions = permissions
-
-        is_staff_in_scope = is_staff_id in scope
-        is_staff_in_token_permissions = is_staff_id in token_permissions
-        if (
-            is_staff_email
-            or is_staff_in_scope
-            or is_staff_in_token_permissions
-            or permissions
-        ):
-            assign_staff_to_default_group_and_update_permissions(
-                user, staff_default_group_name
-            )
-            if not user.is_staff:
-                is_staff = True
-        elif user.is_staff:
-            is_staff = False
-    else:
-        is_staff = False
-
-    if is_staff is not None:
-        user.is_staff = is_staff
-        user.save(update_fields=["is_staff"])
-
-    return user
-
-
-def get_user_from_oauth_access_token(
-    access_token: str,
-    jwks_url: str,
-    user_info_url: str,
-    use_scope_permissions: bool,
-    audience: str,
-    staff_user_domains: list[str],
-    staff_default_group_name: str,
-):
-    # we try to decode token to define if the structure is a jwt format.
-    access_token_jwt_payload = decode_access_token(access_token, jwks_url)
-    if access_token_jwt_payload:
-        return get_user_from_oauth_access_token_in_jwt_format(
-            access_token_jwt_payload,
-            user_info_url=user_info_url,
-            access_token=access_token,
-            use_scope_permissions=use_scope_permissions,
-            audience=audience,
-            staff_user_domains=staff_user_domains,
-            staff_default_group_name=staff_default_group_name,
-        )
-
-    user_info = get_user_info_from_cache_or_fetch(
-        user_info_url, access_token, exp_time=None
-    )
-    if not user_info:
-        logger.info(
-            "Failed to fetch OIDC user info", extra={"user_info_url": user_info_url}
-        )
-        return None
-    user = get_or_create_user_from_payload(
-        user_info,
-        oauth_url=user_info_url,
-    )
-
-    email_domain = get_domain_from_email(user.email)
-    is_staff_email = email_domain in staff_user_domains
-    if not use_scope_permissions and not is_staff_email:
-        user.is_staff = False
-    elif is_staff_email:
-        assign_staff_to_default_group_and_update_permissions(
-            user, staff_default_group_name
-        )
-
-    return user
 
 
 def assign_staff_to_default_group_and_update_permissions(
@@ -353,54 +210,45 @@ def create_jwt_refresh_token(user: User, refresh_token: str, csrf: str, owner: s
     return jwt_encode(jwt_payload)
 
 
-def get_decoded_token(token, jwks_url, claims_cls=None):
-    keys = get_jwks_keys_from_cache_or_fetch(jwks_url)
-    decoded_token = jwt.decode(token, keys, claims_cls=claims_cls)
+def get_decoded_token(token, token_secret, claims_cls=None):
+    decoded_token = jwt.decode(token, token_secret, claims_cls=claims_cls)
     return decoded_token
 
 
-def get_parsed_id_token(token_data, jwks_url) -> CodeIDToken:
-    id_token = token_data.get("id_token")
-    if not id_token:
-        raise AuthenticationError("Missing ID Token.")
-    try:
-        decoded_token = get_decoded_token(id_token, jwks_url, CodeIDToken)
-        decoded_token.validate()
-        return decoded_token
-    except DecodeError:
-        logger.warning("Unable to decode provided token", exc_info=True)
-        raise AuthenticationError("Unable to decode provided token")
-    except (JoseError, ValueError):
-        logger.warning("Token validation failed", exc_info=True)
-        raise AuthenticationError("Token validation failed")
+def get_parsed_id_token(token_data, token_secret) -> CodeIDToken:
+    decoded = jwt.decode(token_data, token_secret, claims_cls=CodeIDToken)
+    assert isinstance(decoded, CodeIDToken)
+    return decoded
 
 
 def get_or_create_user_from_payload(
     payload: dict,
+    email_domain: str,
     oauth_url: str,
     last_login: Optional[int] = None,
 ) -> User:
     oidc_metadata_key = f"oidc:{oauth_url}"
-    user_email = payload.get("email")
-    if not user_email:
-        raise AuthenticationError("Missing user's email.")
 
-    sub = payload.get("sub")
-    get_kwargs = {"private_metadata__contains": {oidc_metadata_key: sub}}
-    if not sub:
-        get_kwargs = {"email": user_email}
-        logger.warning("Missing sub section in OIDC payload")
+    account = payload.get("sub")
+    assert isinstance(account, str)
+
+    user_email = account + email_domain
+    get_kwargs = {"private_metadata__contains": {oidc_metadata_key: account}}
 
     defaults_create = {
         "is_active": True,
         "is_confirmed": True,
         "email": user_email,
+        "account": account,
+        "user_type": payload.get("user_type", "student"),
         "first_name": payload.get("given_name", ""),
         "last_name": payload.get("family_name", ""),
-        "private_metadata": {oidc_metadata_key: sub},
+        "private_metadata": {oidc_metadata_key: account},
         "password": make_password(None),
     }
-    cache_key = oidc_metadata_key + ":" + str(sub)
+
+    cache_key = oidc_metadata_key + ":" + str(account)
+
     user_id = cache.get(cache_key)
     if user_id:
         get_kwargs = {"id": user_id}
@@ -431,7 +279,7 @@ def get_or_create_user_from_payload(
         user_email=user_email,
         user_first_name=defaults_create["first_name"],
         user_last_name=defaults_create["last_name"],
-        sub=sub,  # type: ignore
+        sub=account,  # type: ignore
         last_login=last_login,
     )
 

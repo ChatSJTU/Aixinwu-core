@@ -1,1 +1,1 @@
-PLUGIN_ID = "mirumee.authentication.openidconnect"
+PLUGIN_ID = "aixinwu.authentication.openidconnect"

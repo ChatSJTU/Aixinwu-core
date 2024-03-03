@@ -38,7 +38,6 @@ from .utils import (
     get_saleor_permission_names,
     get_saleor_permissions_qs_from_scope,
     get_staff_user_domains,
-    get_user_from_oauth_access_token,
     get_user_from_token,
     is_owner_of_token_valid,
     validate_refresh_token,
@@ -61,10 +60,12 @@ class OpenIDConnectPlugin(BasePlugin):
         {"name": "audience", "value": None},
         {"name": "use_oauth_scope_permissions", "value": False},
         {"name": "staff_user_domains", "value": None},
-        {"name": "default_group_name_for_new_staff_users", "value": None},
+        {"name": "default_group_name_for_new_staff_users", "value": "staff"},
+        {"name": "email_domain", "value": None},
     ]
     PLUGIN_NAME = "OpenID Connect"
     CONFIGURATION_PER_CHANNEL = False
+    DEFAULT_ACTIVE = True
 
     CONFIG_STRUCTURE = {
         "client_id": {
@@ -164,6 +165,15 @@ class OpenIDConnectPlugin(BasePlugin):
             ),
             "label": "Default permission group name for new staff users",
         },
+        "email_domain": {
+            "type": ConfigurationTypeField.STRING,
+            "help_text": "The domain of the user email.",
+            "label": "Email Domain",
+        },
+        "staff_user_accounts": {
+            "type": ConfigurationTypeField.STRING,
+            "help_text": ("Provide the list of the user accounts, separated by commas"),
+        },
     }
 
     def __init__(self, *args, **kwargs):
@@ -183,20 +193,16 @@ class OpenIDConnectPlugin(BasePlugin):
             user_info_url=configuration["user_info_url"],
             staff_user_domains=configuration["staff_user_domains"],
             default_group_name=configuration["default_group_name_for_new_staff_users"],
-        )
-
-        # Determine, if we have defined all fields required to use OAuth access token
-        # as Saleor's authorization token.
-        self.use_oauth_access_token = bool(
-            self.config.user_info_url and self.config.json_web_key_set_url
+            email_domain=configuration["email_domain"],
+            staff_user_accounts=configuration["staff_user_accounts"].split(",")
+            if configuration["staff_user_accounts"]
+            else [],
         )
 
         # Determine, if we have defined all fields required to process the
         # authorization flow.
         self.use_authorization_flow = bool(
-            self.config.json_web_key_set_url
-            and self.config.authorization_url
-            and self.config.token_url
+            self.config.authorization_url and self.config.token_url
         )
         self.oauth = self._get_oauth_session()
 
@@ -218,7 +224,7 @@ class OpenIDConnectPlugin(BasePlugin):
             )
 
     def _get_oauth_session(self):
-        scope = "openid profile email"
+        scope = "basic"
         if self.config.use_scope_permissions:
             permissions = [f"saleor:{perm}" for perm in get_permissions_codename()]
             permissions.append(SALEOR_STAFF_PERMISSION)
@@ -291,30 +297,25 @@ class OpenIDConnectPlugin(BasePlugin):
                 }
             )
 
-        parsed_id_token = get_parsed_id_token(
-            token_data, self.config.json_web_key_set_url
-        )
+        parsed_id_token = get_parsed_id_token(token_data, self.config.client_secret)
 
         user = get_or_create_user_from_payload(
             parsed_id_token,
+            self.config.email_domain,
             self.config.authorization_url,
         )
 
         user_permissions = []
-        is_staff_user_email = self.is_staff_user_email(user)
-        if self.config.use_scope_permissions or is_staff_user_email:
-            scope = token_data.get("scope")
-            user_permissions = self._use_scope_permissions(user, scope)
 
-            is_staff_in_scope = SALEOR_STAFF_PERMISSION in scope
-            is_staff_user = is_staff_in_scope or user_permissions or is_staff_user_email
-            if is_staff_user:
-                assign_staff_to_default_group_and_update_permissions(
-                    user, self.config.default_group_name
-                )
-                if not user.is_staff:
-                    user.is_staff = True
-                    user.save(update_fields=["is_staff"])
+        is_staff_user = self.is_staff_user(user)
+
+        if is_staff_user:
+            assign_staff_to_default_group_and_update_permissions(
+                user, self.config.default_group_name
+            )
+            if not user.is_staff:
+                user.is_staff = True
+                user.save(update_fields=["is_staff"])
             elif user.is_staff and not is_staff_user:
                 user.is_staff = False
                 user.save(update_fields=["is_staff"])
@@ -329,6 +330,10 @@ class OpenIDConnectPlugin(BasePlugin):
         staff_user_domains = get_staff_user_domains(self.config)
         email_domain = get_domain_from_email(user.email)
         return email_domain in staff_user_domains
+
+    def is_staff_user(self, user: "User"):
+        """Return True if the user is a staff user."""
+        return user.email in self.config.staff_user_accounts
 
     def external_authentication_url(
         self, data: dict, request: WSGIRequest, previous_value
@@ -404,9 +409,7 @@ class OpenIDConnectPlugin(BasePlugin):
             )
             user = get_user_from_token(parsed_id_token)
 
-            user_permissions = self.get_and_update_user_permissions(
-                user, self.config.use_scope_permissions, token_data.get("scope")
-            )
+            user_permissions = self.get_and_update_user_permissions(user)
 
             tokens = create_tokens_from_oauth_payload(
                 token_data,
@@ -421,13 +424,9 @@ class OpenIDConnectPlugin(BasePlugin):
                 {"refreshToken": ValidationError(str(e), code=error_code)}
             )
 
-    def get_and_update_user_permissions(
-        self, user: User, use_scope_permissions: bool, scope: str
-    ):
+    def get_and_update_user_permissions(self, user: User):
         """Update user permissions based on scope and user groups' permissions."""
         permissions = get_user_groups_permissions(user)
-        if use_scope_permissions and scope:
-            permissions |= get_saleor_permissions_qs_from_scope(scope)
         user.effective_permissions = permissions
         user_permissions = (
             get_saleor_permission_names(permissions) if permissions else []
@@ -500,16 +499,4 @@ class OpenIDConnectPlugin(BasePlugin):
                 )
             return user
 
-        staff_user_domains = get_staff_user_domains(self.config)
-
-        if self.use_oauth_access_token:
-            user = get_user_from_oauth_access_token(
-                token,
-                self.config.json_web_key_set_url,
-                self.config.user_info_url,
-                self.config.use_scope_permissions,
-                self.config.audience,
-                staff_user_domains,
-                self.config.default_group_name,
-            )
         return user or previous_value
