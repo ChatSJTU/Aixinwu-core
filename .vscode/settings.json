@@ -13,5 +13,18 @@
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true,
         "editor.formatOnType": true
-    }
+    },
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "db",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "db",
+            "group": "db",
+            "database": "saleor",
+            "username": "saleor",
+            "password": "saleor"
+        }
+    ]
 }
