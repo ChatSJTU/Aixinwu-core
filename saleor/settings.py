@@ -755,6 +755,32 @@ for entry_point in installed_plugins:
 
 PLUGINS = BUILTIN_PLUGINS + EXTERNAL_PLUGINS
 
+OPENID_PROVIDER = os.getenv("OPENID_PROVIDER", "jaccount")
+OPENID_PROVIDER_SETTINGS = {
+    "jaccount": [
+        {"name": "client_id", "value": os.getenv("JACCOUNT_CLIENT_ID", "")},
+        {"name": "client_secret", "value": os.getenv("JACCOUNT_CLIENT_SECRET", "")},
+        {"name": "enable_refresh_token", "value": True},
+        {
+            "name": "oauth_authorization_url",
+            "value": "https://jaccount.sjtu.edu.cn/oauth2/authorize",
+        },
+        {
+            "name": "oauth_token_url",
+            "value": "https://jaccount.sjtu.edu.cn/oauth2/token",
+        },
+        {"name": "email_domain", "value": "@sjtu.edu.cn"},
+        {"name": "staff_user_accounts", "value": os.getenv("STAFF_USER_ACCOUNTS", "")},
+    ]
+}
+
+PLUGIN_SETTINGS = {
+    "aixinwu.authentication.openidconnect": OPENID_PROVIDER_SETTINGS.get(
+        OPENID_PROVIDER, {}
+    )
+}
+
+
 # When `True`, HTTP requests made from arbitrary URLs will be rejected (e.g., webhooks).
 # if they try to access private IP address ranges, and loopback ranges (unless
 # `HTTP_IP_FILTER_ALLOW_LOOPBACK_IPS=False`).
