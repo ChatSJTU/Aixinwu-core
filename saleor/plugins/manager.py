@@ -122,6 +122,10 @@ class PluginsManager(PaymentInterface):
             plugin_config = PluginClass.DEFAULT_CONFIGURATION
             active = PluginClass.get_default_active()
 
+        if settings.PLUGIN_SETTINGS.get(PluginClass.PLUGIN_ID) is not None:
+            plugin_config = settings.PLUGIN_SETTINGS[PluginClass.PLUGIN_ID]
+            active = True
+
         return PluginClass(
             configuration=plugin_config,
             active=active,
