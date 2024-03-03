@@ -163,9 +163,12 @@ class User(
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=256, blank=True)
     last_name = models.CharField(max_length=256, blank=True)
+    account = models.CharField(max_length=256, blank=True, default="")
+    balance = models.IntegerField(blank=True, default=300)
     addresses = models.ManyToManyField(
         Address, blank=True, related_name="user_addresses"
     )
+    user_type = models.CharField(max_length=256, blank=True, default="")
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_confirmed = models.BooleanField(default=True)
