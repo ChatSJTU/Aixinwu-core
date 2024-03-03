@@ -17,6 +17,7 @@ from django.core.wsgi import get_wsgi_application
 from django.utils.functional import SimpleLazyObject
 
 from saleor.wsgi.health_check import health_check
+from dotenv import load_dotenv
 
 
 def get_allowed_host_lazy():
@@ -24,6 +25,8 @@ def get_allowed_host_lazy():
 
     return settings.ALLOWED_HOSTS[0]
 
+
+load_dotenv()
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "saleor.settings")
 

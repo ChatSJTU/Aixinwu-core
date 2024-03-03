@@ -14,6 +14,9 @@ from .cors_handler import cors_handler
 from .gzip_compression import gzip_compression
 from .health_check import health_check
 
+from dotenv import load_dotenv
+
+load_dotenv()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "saleor.settings")
 
 application = get_asgi_application()
