@@ -230,8 +230,6 @@ class OpenIDConnectPlugin(BasePlugin):
             permissions.append(SALEOR_STAFF_PERMISSION)
             scope_permissions = " ".join(permissions)
             scope += f" {scope_permissions}"
-        if self.config.enable_refresh_token:
-            scope += " offline_access"
         return OAuth2Client(
             client_id=self.config.client_id,
             client_secret=self.config.client_secret,
@@ -297,7 +295,9 @@ class OpenIDConnectPlugin(BasePlugin):
                 }
             )
 
-        parsed_id_token = get_parsed_id_token(token_data, self.config.client_secret)
+        parsed_id_token = get_parsed_id_token(
+            token_data.get("id_token"), self.config.client_secret
+        )
 
         user = get_or_create_user_from_payload(
             parsed_id_token,
@@ -405,7 +405,7 @@ class OpenIDConnectPlugin(BasePlugin):
             )
         try:
             parsed_id_token = get_parsed_id_token(
-                token_data, self.config.json_web_key_set_url
+                token_data.get("id_token"), self.config.json_web_key_set_url
             )
             user = get_user_from_token(parsed_id_token)
 
