@@ -241,7 +241,7 @@ def get_or_create_user_from_payload(
         "email": user_email,
         "account": account,
         "user_type": payload.get("user_type", "student"),
-        "first_name": payload.get("given_name", ""),
+        "first_name": payload.get("name", ""),
         "last_name": payload.get("family_name", ""),
         "private_metadata": {oidc_metadata_key: account},
         "password": make_password(None),
@@ -250,6 +250,7 @@ def get_or_create_user_from_payload(
     cache_key = oidc_metadata_key + ":" + str(account)
 
     user_id = cache.get(cache_key)
+
     if user_id:
         get_kwargs = {"id": user_id}
     try:
@@ -322,8 +323,13 @@ def _update_user_details(
     if last_login:
         if not user.last_login or user.last_login.timestamp() < last_login:
             login_time = timezone.make_aware(datetime.fromtimestamp(last_login))
+            if login_time - user.last_login < timezone.timedelta(days=1):
+                user.continuous += 1
+            else:
+                user.continuous = 1
             user.last_login = login_time
-            fields_to_save.add("last_login")
+            fields_to_save.update({"days_consistent", "last_login"})
+
     else:
         if (
             not user.last_login
