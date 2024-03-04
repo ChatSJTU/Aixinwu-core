@@ -301,6 +301,13 @@ class UserPermission(Permission):
 class User(ModelObjectType[models.User]):
     id = graphene.GlobalID(required=True, description="The ID of the user.")
     email = graphene.String(required=True, description="The email address of the user.")
+    account = graphene.String(
+        required=True, description="The name of the user IODC account."
+    )
+    user_type = graphene.String(
+        required=True, description="The type of the user. Defined by the OIDC provider"
+    )
+    balance = graphene.Int(required=True, description="The balance of the user.")
     first_name = graphene.String(
         required=True, description="The given name of the address."
     )
