@@ -175,6 +175,7 @@ class User(
     last_confirm_email_request = models.DateTimeField(null=True, blank=True)
     note = models.TextField(null=True, blank=True)
     date_joined = models.DateTimeField(default=timezone.now, editable=False)
+    continuous = models.IntegerField(blank=True, default=1)
     updated_at = models.DateTimeField(auto_now=True, db_index=True)
     last_password_reset_request = models.DateTimeField(null=True, blank=True)
     default_shipping_address = models.ForeignKey(
