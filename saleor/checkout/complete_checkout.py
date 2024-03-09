@@ -872,11 +872,7 @@ def complete_checkout_pre_payment_part(
         gateway.payment_refund_or_void(payment, manager, channel_slug=channel_slug)
         raise exc
 
-    customer_id = None
-    if payment and user:
-        customer_id = fetch_customer_id(user=user, gateway=payment.gateway)
-
-    return payment, customer_id, order_data
+    return payment, user.id, order_data
 
 
 def complete_checkout_post_payment_part(
