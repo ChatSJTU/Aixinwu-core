@@ -1092,6 +1092,38 @@ type Query {
   ): PluginCountableConnection
 
   """
+  Donations made by the user or collected by users if requested by staff.
+
+  Requires one of the following permissions: MANAGE_DONATIONS.
+  """
+  donations(
+    """Sort orders."""
+    sortBy: DonationSortingInput
+
+    """Filtering options for orders."""
+    filter: DonationFilterInput
+
+    """Slug of a channel for which the data should be returned."""
+    channel: String
+
+    """Return the elements in the list that come before the specified cursor."""
+    before: String
+
+    """Return the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    """
+    first: Int
+
+    """
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    """
+    last: Int
+  ): DonationCountableConnection @doc(category: "Orders")
+
+  """
   Look up a sale by ID.
 
   Requires one of the following permissions: MANAGE_DISCOUNTS.
@@ -10320,20 +10352,20 @@ type User implements Node & ObjectWithMetadata @doc(category: "Users") {
   """
   metafields(keys: [String!]): Metadata
 
-  """OIDC Account of the user. """
-  account: String!
-
-  """Continous Login Days of the user. """
-  continuous: Int!
-
-  """OIDC User type provided by the OIDC provider. """
-  user_type: String!
-
-  """Account Balance"""
-  balance: Int!
-
   """The email address of the user."""
   email: String!
+
+  """The name of the user IODC account."""
+  account: String!
+
+  """The type of the user. Defined by the OIDC provider"""
+  userType: String!
+
+  """The balance of the user."""
+  balance: Int!
+
+  """The continous login days of the user."""
+  continuous: Int!
 
   """The given name of the address."""
   firstName: String!
@@ -13943,6 +13975,80 @@ enum PluginSortField {
   IS_ACTIVE
 }
 
+type DonationCountableConnection @doc(category: "Donations") {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+  edges: [DonationCountableEdge!]!
+
+  """A total count of items in the collection."""
+  totalCount: Int
+}
+
+type DonationCountableEdge @doc(category: "Donations") {
+  """The item at the end of the edge."""
+  node: Donation!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""Represents donation."""
+type Donation implements Node @doc(category: "Donations") {
+  """The ID of the donation."""
+  id: ID!
+
+  """The date and time when the donation was created."""
+  createdAt: DateTime!
+
+  """The date and time when the donation was last updated."""
+  updatedAt: DateTime!
+
+  """The title of the donation."""
+  title: String!
+
+  """
+  The user who made the donation. Requires one of permissions: MANAGE_USERS, MANAGE_DONATIONS, fOWNER
+  """
+  user: User
+
+  """The description of the donation."""
+  description: String!
+
+  """The price of the donation."""
+  price: Money!
+
+  """The quantity of the donation."""
+  quantity: Int!
+}
+
+input DonationSortingInput @doc(category: "Donations") {
+  """Specifies the direction in which to sort donations."""
+  direction: OrderDirection!
+
+  """Sort donations by the selected field."""
+  field: CheckoutSortField!
+}
+
+enum CheckoutSortField @doc(category: "Checkout") {
+  """Sort checkouts by creation date."""
+  CREATION_DATE
+
+  """Sort checkouts by customer."""
+  CUSTOMER
+
+  """Sort checkouts by payment."""
+  PAYMENT
+}
+
+input DonationFilterInput @doc(category: "Orders") {
+  donator: String
+  created: DateRangeInput
+  search: String
+  metadata: [MetadataFilter!]
+  updated: DateRangeInput
+  channels: [ID!]
+}
+
 type SaleCountableConnection @doc(category: "Discounts") {
   """Pagination data for this connection."""
   pageInfo: PageInfo!
@@ -14626,17 +14732,6 @@ input CheckoutSortingInput @doc(category: "Checkout") {
 
   """Sort checkouts by the selected field."""
   field: CheckoutSortField!
-}
-
-enum CheckoutSortField @doc(category: "Checkout") {
-  """Sort checkouts by creation date."""
-  CREATION_DATE
-
-  """Sort checkouts by customer."""
-  CUSTOMER
-
-  """Sort checkouts by payment."""
-  PAYMENT
 }
 
 input CheckoutFilterInput @doc(category: "Checkout") {
@@ -17862,6 +17957,47 @@ type Mutation {
     """The ID of notification plugin."""
     pluginId: String
   ): ExternalNotificationTrigger @deprecated(reason: "\\n\\nDEPRECATED: this mutation will be removed in Saleor 4.0.")
+
+  """
+  Create a new donation.
+
+  Triggers the following webhook events:
+  - DONATION_CREATED (sync): A donation has been created.
+  """
+  donationCreate(
+    """Fields required to create a donation."""
+    input: DonationCreateInput!
+  ): DonationCreate @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: [])
+
+  """
+  Update a new donation.
+
+  Triggers the following webhook events:
+  - DONATION_UPDATED (sync): A donation has been updated.
+  """
+  donationUpdate(
+    """Fields required to update a donation."""
+    input: DonationUpdateInput!
+  ): DonationUpdate @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: [])
+
+  """
+  Delete an old donation.
+
+  Triggers the following webhook events:
+  - DONATION_DELETED (sync): A donation has been deleted.
+  """
+  donationDelete(id: ID!): DonationDelete @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: [])
+
+  """
+  Complete a new donation.
+
+  Triggers the following webhook events:
+  - DONATION_COMPLETED (sync): A donation has been created.
+  """
+  donationComplete(
+    """ID of the donation to complete."""
+    id: ID!
+  ): DonationComplete @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: [])
 
   """
   Creates a new promotion.
@@ -27350,6 +27486,115 @@ input ExternalNotificationTriggerInput {
   External event type. This field is passed to a plugin as an event type.
   """
   externalEventType: String!
+}
+
+"""
+Create a new donation.
+
+Triggers the following webhook events:
+- DONATION_CREATED (sync): A donation has been created.
+"""
+type DonationCreate @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: []) {
+  """The donation created by this mutation."""
+  success: Donation
+  errors: [DonationError!]!
+  donation: Donation
+}
+
+type DonationError {
+  """
+  Name of a field that caused the error. A value of `null` indicates that the error isn't associated with a particular field.
+  """
+  field: String
+
+  """The error message."""
+  message: String
+
+  """The error code."""
+  code: DonationErrorCode!
+}
+
+"""An enumeration."""
+enum DonationErrorCode @doc(category: "Donations") {
+  GRAPHQL_ERROR
+  INVALID
+  NOT_FOUND
+  PERMISSION_DENIED
+  REQUIRED
+  CANNOT_ASSIGN_NODE
+}
+
+input DonationCreateInput @doc(category: "Donations") {
+  """ID of the donation."""
+  id: ID!
+
+  """The title of the donation."""
+  title: String
+
+  """The description of the donation."""
+  description: String
+
+  """The quantity of the donation."""
+  quantity: Int
+
+  """The price of the donation."""
+  price: PositiveDecimal
+}
+
+"""
+Update a new donation.
+
+Triggers the following webhook events:
+- DONATION_UPDATED (sync): A donation has been updated.
+"""
+type DonationUpdate @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: []) {
+  """The donation has been updated."""
+  success: Boolean
+  errors: [DonationError!]!
+  donation: Donation
+}
+
+input DonationUpdateInput @doc(category: "Donations") {
+  """ID of the donation."""
+  id: ID!
+
+  """The title of the donation."""
+  title: String
+
+  """The description of the donation."""
+  description: String
+
+  """The quantity of the donation."""
+  quantity: Int
+
+  """The price of the donation."""
+  price: PositiveDecimal
+}
+
+"""
+Delete an old donation.
+
+Triggers the following webhook events:
+- DONATION_DELETED (sync): A donation has been deleted.
+"""
+type DonationDelete @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: []) {
+  """The donation has been deleted."""
+  success: Boolean
+  errors: [DonationError!]!
+  donation: Donation
+}
+
+"""
+Complete a new donation.
+
+Triggers the following webhook events:
+- DONATION_COMPLETED (sync): A donation has been created.
+"""
+type DonationComplete @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: []) {
+  """The donation has been completed."""
+  success: Boolean
+  errors: [DonationError!]!
+  donation: Donation
 }
 
 """

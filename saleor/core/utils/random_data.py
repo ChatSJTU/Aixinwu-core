@@ -66,6 +66,7 @@ from ...payment.utils import create_payment
 from ...permission.enums import (
     AccountPermissions,
     CheckoutPermissions,
+    DonationPermissions,
     GiftcardPermissions,
     OrderPermissions,
     get_permissions,
@@ -881,7 +882,12 @@ def create_permission_groups(staff_password):
     staff_users = create_staff_users(staff_password)
     customer_support_codenames = [
         perm.codename
-        for enum in [CheckoutPermissions, OrderPermissions, GiftcardPermissions]
+        for enum in [
+            CheckoutPermissions,
+            OrderPermissions,
+            GiftcardPermissions,
+            DonationPermissions,
+        ]
         for perm in enum
     ]
     customer_support_codenames.append(AccountPermissions.MANAGE_USERS.codename)

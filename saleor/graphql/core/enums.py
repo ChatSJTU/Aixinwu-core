@@ -33,12 +33,14 @@ from ...translations import error_codes as translatable_error_codes
 from ...warehouse import error_codes as warehouse_error_codes
 from ...webhook import error_codes as webhook_error_codes
 from ..notifications import error_codes as external_notifications_error_codes
+from ...donation import error_codes as donation_error_codes
 from .doc_category import (
     DOC_CATEGORY_APPS,
     DOC_CATEGORY_ATTRIBUTES,
     DOC_CATEGORY_CHANNELS,
     DOC_CATEGORY_CHECKOUT,
     DOC_CATEGORY_DISCOUNTS,
+    DOC_CATEGORY_DONATIONS,
     DOC_CATEGORY_GIFT_CARDS,
     DOC_CATEGORY_ORDERS,
     DOC_CATEGORY_PAGES,
@@ -378,3 +380,7 @@ WebhookTriggerErrorCode = graphene.Enum.from_enum(
     webhook_error_codes.WebhookTriggerErrorCode
 )
 WebhookTriggerErrorCode.doc_category = DOC_CATEGORY_WEBHOOKS
+
+DonationErrorCode = graphene.Enum.from_enum(donation_error_codes.DonationErrorCode)
+
+DonationErrorCode.doc_category = DOC_CATEGORY_DONATIONS

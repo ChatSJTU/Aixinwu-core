@@ -192,6 +192,11 @@ class WebhookEventAsyncType:
     VOUCHER_METADATA_UPDATED = "voucher_metadata_updated"
     VOUCHER_CODE_EXPORT_COMPLETED = "voucher_code_export_completed"
 
+    DONATION_CREATED = "donation_created"
+    DONATION_UPDATED = "donation_updated"
+    DONATION_DELETED = "donation_deleted"
+    DONATION_COMPLETED = "donation_completed"
+
     OBSERVABILITY = "observability"
 
     THUMBNAIL_CREATED = "thumbnail_created"

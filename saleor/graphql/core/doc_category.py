@@ -16,9 +16,10 @@ DOC_CATEGORY_SHOP = "Shop"
 DOC_CATEGORY_TAXES = "Taxes"
 DOC_CATEGORY_USERS = "Users"
 DOC_CATEGORY_WEBHOOKS = "Webhooks"
+DOC_CATEGORY_DONATIONS = "Donations"
+DOC_CATEGORY_LOSTANDFOUNDS = "LostAndFound"
 
 
-# Map models to category names in doc directive.
 DOC_CATEGORY_MAP = {
     "account.Address": DOC_CATEGORY_USERS,
     "account.CustomerEvent": DOC_CATEGORY_USERS,
@@ -100,4 +101,6 @@ DOC_CATEGORY_MAP = {
     "webhook.WebhookEvent": DOC_CATEGORY_WEBHOOKS,
     "webhook.Webhook": DOC_CATEGORY_WEBHOOKS,
     "core.EventDeliveryAttempt": DOC_CATEGORY_WEBHOOKS,
+    "donation.Donation": DOC_CATEGORY_DONATIONS,
+    "lostandfound.LostAndFound": DOC_CATEGORY_LOSTANDFOUNDS,
 }

@@ -14,6 +14,7 @@ from .core.federation.schema import build_federated_schema
 from .core.schema import CoreMutations, CoreQueries
 from .csv.schema import CsvMutations, CsvQueries
 from .discount.schema import DiscountMutations, DiscountQueries
+from .donation.schema import DonationMutations, DonationQueries
 from .giftcard.schema import GiftCardMutations, GiftCardQueries
 from .invoice.schema import InvoiceMutations
 from .menu.schema import MenuMutations, MenuQueries
@@ -48,6 +49,7 @@ class Query(
     CoreQueries,
     CsvQueries,
     DiscountQueries,
+    DonationQueries,
     PluginsQueries,
     GiftCardQueries,
     MenuQueries,
@@ -75,6 +77,7 @@ class Mutation(
     CoreMutations,
     CsvMutations,
     DiscountMutations,
+    DonationMutations,
     ExternalNotificationMutations,
     PluginsMutations,
     GiftCardMutations,

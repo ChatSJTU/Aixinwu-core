@@ -4,6 +4,7 @@ from urllib.parse import unquote, urlparse
 import graphene
 from django.core.files.storage import default_storage
 
+
 from ....core.utils import build_absolute_uri
 from ...account.enums import AddressTypeEnum
 from ...core.doc_category import (
@@ -98,6 +99,7 @@ from ..enums import (
     WebhookErrorCode,
     WebhookTriggerErrorCode,
     WeightUnitsEnum,
+    DonationErrorCode,
 )
 from ..scalars import Date, PositiveDecimal
 from ..tracing import traced_resolver
@@ -836,6 +838,10 @@ class AttributeValueBulkTranslateError(BulkError):
     code = AttributeValueTranslateErrorCode(
         description="The error code.", required=True
     )
+
+
+class DonationError(Error):
+    code = DonationErrorCode(description="The error code.", required=True)
 
 
 class Weight(graphene.ObjectType):

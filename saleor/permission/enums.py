@@ -55,6 +55,10 @@ class OrderPermissions(BasePermissionEnum):
     MANAGE_ORDERS_IMPORT = "order.manage_orders_import"
 
 
+class DonationPermissions(BasePermissionEnum):
+    MANAGE_DONATIONS = "donation.manage_donations"
+
+
 class PaymentPermissions(BasePermissionEnum):
     HANDLE_PAYMENTS = "payment.handle_payments"
 
