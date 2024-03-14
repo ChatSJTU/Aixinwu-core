@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from decimal import Decimal
 from functools import partial
 from typing import Union
 from uuid import uuid4
@@ -164,7 +165,12 @@ class User(
     first_name = models.CharField(max_length=256, blank=True)
     last_name = models.CharField(max_length=256, blank=True)
     account = models.CharField(max_length=256, blank=True, default="")
-    balance = models.IntegerField(blank=True, default=300)
+    balance = models.DecimalField(
+        blank=True,
+        max_digits=settings.DEFAULT_MAX_DIGITS,
+        decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+        default=Decimal("300.0"),
+    )
     addresses = models.ManyToManyField(
         Address, blank=True, related_name="user_addresses"
     )

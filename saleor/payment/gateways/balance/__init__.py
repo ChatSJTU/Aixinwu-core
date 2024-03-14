@@ -30,7 +30,7 @@ def process_payment(
             raw_response={"error": "Insufficient funds"},
         )
     else:
-        user.balance -= int(amount)
+        user.balance -= amount
         user.save()
         return GatewayResponse(
             is_success=True,
