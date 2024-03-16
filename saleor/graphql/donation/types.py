@@ -25,7 +25,7 @@ class Donation(ModelObjectType[models.Donation]):
         description="The date and time when the donation was last updated.",
     )
     title = graphene.String(required=True, description="The title of the donation.")
-    user = graphene.Field(
+    donator = graphene.Field(
         "saleor.graphql.account.types.User",
         description=f"The user who made the donation. Requires one of permissions: {AccountPermissions.MANAGE_USERS.name}, {DonationPermissions.MANAGE_DONATIONS.name}, f{AuthorizationFilters.OWNER.name}",
     )

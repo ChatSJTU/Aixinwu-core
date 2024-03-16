@@ -2,13 +2,14 @@ from ...core import ResolveInfo
 from ...core.utils import WebhookEventInfo
 from ....webhook.event_types import WebhookEventAsyncType
 from ...core.types.common import DonationError
-
+from ...core.types.money import Money
 from ....donation import models
 from ..types import Donation
 from ...core.types.base import BaseInputObjectType
 from ...core.scalars import PositiveDecimal
 from ...core.doc_category import DOC_CATEGORY_DONATIONS
 from ...core.mutations import ModelMutation
+from ...payment.mutations.payment.payment_check_balance import MoneyInput
 
 from .utils import (
     validate_donation_price,
@@ -16,26 +17,26 @@ from .utils import (
 )
 
 import graphene
+import logging
+
+logger = logging.getLogger()
 
 
 class DonationCreateInput(BaseInputObjectType):
-    id = graphene.ID(required=True, description="ID of the donation.")
-    title = graphene.String(required=False, description="The title of the donation.")
+    title = graphene.String(required=True, description="The title of the donation.")
     description = graphene.String(
-        required=False, description="The description of the donation."
+        required=True, description="The description of the donation."
     )
-    quantity = graphene.Int(required=False, description="The quantity of the donation.")
-    price = PositiveDecimal(required=False, description="The price of the donation.")
+    quantity = graphene.Int(required=True, description="The quantity of the donation.")
+    price = graphene.Field(
+        MoneyInput, description="The price of the donation.", required=True
+    )
 
     class Meta:
         doc_category = DOC_CATEGORY_DONATIONS
 
 
 class DonationCreate(ModelMutation):
-    success = graphene.Field(
-        Donation, description="The donation created by this mutation."
-    )
-
     class Arguments:
         input = DonationCreateInput(
             required=True,
@@ -58,19 +59,19 @@ class DonationCreate(ModelMutation):
         ]
 
     @classmethod
-    def validate_donation_input(cls, info: ResolveInfo, instance: models.Donation):
-        validate_donation_price(instance)
-        validate_donation_quantity(instance)
+    def validate_donation_input(cls, info: ResolveInfo, input):
+        validate_donation_price(input)
+        validate_donation_quantity(input)
 
     @classmethod
     def clean_input(cls, info: ResolveInfo, instance: models.Donation, data):
-        cleaned_input = super().clean_input(info, instance, data)
-        cls.validate_donation_input(info, instance)
-        return cleaned_input
+        cls.validate_donation_input(info, data)
+        data["currency"] = data["price"].currency
+        data["price_amount"] = data["price"].amount
+        return data
 
     @classmethod
-    def perform_mutation(cls, _root, info: ResolveInfo, /, *, input):
-        input["user"] = info.context.user
-        input["currency"] = "AXB"
-        super().perform_mutation(_root, info, input=input)
-        return DonationCreate(success=True, errors=[])
+    def perform_mutation(cls, _root, info: ResolveInfo, /, **data):
+        data["input"]["donator"] = info.context.user
+        response = super().perform_mutation(_root, info, **data)
+        return response

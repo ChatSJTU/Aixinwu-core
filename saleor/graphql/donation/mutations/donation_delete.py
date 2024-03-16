@@ -22,7 +22,7 @@ class DonationDelete(ModelMutation):
         doc_category = DOC_CATEGORY_DONATIONS
         model = models.Donation
         object_type = Donation
-        return_field_name = "donation"
+        return_field_name = "success"
         error_type_class = DonationError
         error_type_fields = "donation_errors"
         webhook_events_info = [
@@ -35,9 +35,10 @@ class DonationDelete(ModelMutation):
     @classmethod
     def perform_mutation(cls, _root, info, id, /, *, input):
         donation = models.Donation.objects.get(pk=id)
+
         if (
-            donation.donator != info.context.user
-            or not info.context.permissions.can_manage_orders
+            donation.donator.id != info.context.user.id
+            or not info.context.user.has_perm(DonationPermissions.MANAGE_DONATIONS)
         ):
             return cls(errors=[DonationError(code="PERMISSION_DENIED")], success=False)
         donation.deleted_at = pytz.utc.localize(datetime.datetime.now())

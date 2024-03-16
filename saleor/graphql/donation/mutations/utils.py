@@ -3,8 +3,8 @@ from ...core.enums import DonationErrorCode
 from ....donation import models
 
 
-def validate_donation_price(donation: models.Donation):
-    if donation.price <= 0:
+def validate_donation_price(input):
+    if input["price"].amount <= 0:
         raise ValidationError(
             {
                 "price": ValidationError(
@@ -15,8 +15,8 @@ def validate_donation_price(donation: models.Donation):
         )
 
 
-def validate_donation_quantity(donation: models.Donation):
-    if donation.quantity <= 0:
+def validate_donation_quantity(input):
+    if input["quantity"] <= 0:
         raise ValidationError(
             {
                 "quantity": ValidationError(

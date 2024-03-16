@@ -1,7 +1,12 @@
+from ...donation.mutations.utils import (
+    validate_donation_price,
+    validate_donation_quantity,
+)
 from ...core.scalars import PositiveDecimal
 from ...core.types.base import BaseInputObjectType
 from ....permission.enums import DonationPermissions
 from ...core.types.common import DonationError
+from ...payment.mutations.payment.payment_check_balance import MoneyInput
 from ...core.utils import WebhookEventInfo
 from ....webhook.event_types import WebhookEventAsyncType
 from ...core.doc_category import DOC_CATEGORY_DONATIONS
@@ -20,14 +25,16 @@ class DonationUpdateInput(BaseInputObjectType):
         required=False, description="The description of the donation."
     )
     quantity = graphene.Int(required=False, description="The quantity of the donation.")
-    price = PositiveDecimal(required=False, description="The price of the donation.")
+    price = MoneyInput(required=False, description="The price of the donation.")
 
     class Meta:
         doc_category = DOC_CATEGORY_DONATIONS
 
 
 class DonationUpdate(ModelMutation):
-    success = graphene.Boolean(description="The donation has been updated.")
+    donation = graphene.Field(
+        Donation, description="The donation created by this mutation."
+    )
 
     class Arguments:
         input = DonationUpdateInput(
@@ -50,13 +57,20 @@ class DonationUpdate(ModelMutation):
         ]
 
     @classmethod
-    def perform_mutation(
-        cls,
-        _root,
-        info: ResolveInfo,
-        input,
-        /,
-    ):
+    def validate_donation_input(cls, info: ResolveInfo, input):
+        validate_donation_price(input)
+        validate_donation_quantity(input)
+
+    @classmethod
+    def clean_input(cls, info: ResolveInfo, instance: models.Donation, data):
+        cls.validate_donation_input(info, data)
+        data["currency"] = data["price"].currency
+        data["price_amount"] = data["price"].amount
+        return data
+
+    @classmethod
+    def perform_mutation(cls, _root, info: ResolveInfo, /, **data):
+        input = data.get("input")
         donation = DonationByIdDataLoader(info.context).load(input["id"])
         if not donation:
             return cls(errors=[DonationError(code="NOT_FOUND")], success=False)
@@ -64,4 +78,4 @@ class DonationUpdate(ModelMutation):
             DonationPermissions.MANAGE_DONATIONS
         ):
             return cls(errors=[DonationError(code="PERMISSION_DENIED")], success=False)
-        super().perform_mutation(_root, info, **input)
+        super().perform_mutation(_root, info, **data)

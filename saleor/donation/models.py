@@ -1,7 +1,7 @@
 from django.db import models
 from saleor import settings
 from django_prices.models import MoneyField
-
+from django.conf import settings
 from saleor.account.models import User
 from saleor.permission.enums import DonationPermissions
 
