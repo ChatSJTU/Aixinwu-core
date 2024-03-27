@@ -22,7 +22,7 @@ def process_payment(
         return GatewayResponse(
             is_success=False,
             action_required=False,
-            kind=TransactionKind.CONFIRM,
+            kind=TransactionKind.VOID,
             amount=amount,
             currency=payment_information.currency,
             transaction_id=get_client_token(),
@@ -35,7 +35,7 @@ def process_payment(
         return GatewayResponse(
             is_success=True,
             action_required=False,
-            kind=TransactionKind.CONFIRM,
+            kind=TransactionKind.CAPTURE,
             amount=amount,
             currency=payment_information.currency,
             transaction_id=get_client_token(),
