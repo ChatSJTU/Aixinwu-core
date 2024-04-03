@@ -24,6 +24,10 @@ class Donation(ModelObjectType[models.Donation]):
         required=True,
         description="The date and time when the donation was last updated.",
     )
+    completed = graphene.Boolean(
+        required=False,
+        description="Whether this donation is completed or not.",
+    )
     title = graphene.String(required=True, description="The title of the donation.")
     donator = graphene.Field(
         "saleor.graphql.account.types.User",
@@ -84,8 +88,8 @@ class Donation(ModelObjectType[models.Donation]):
         return root.user
 
     @staticmethod
-    def resolve_accepted(root: models.Donation, _info: ResolveInfo):
-        return root.accepted
+    def resolve_completed(root: models.Donation, _info: ResolveInfo):
+        return root.completed
 
 
 class DonationCountableConnection(CountableConnection):

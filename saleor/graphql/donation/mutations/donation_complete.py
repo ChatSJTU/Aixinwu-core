@@ -1,3 +1,5 @@
+from promise import Promise
+from saleor.graphql.donation.resolvers import resolve_donation_by_id
 from saleor.permission.enums import DonationPermissions
 from ...core.types.common import DonationError
 from ...core.utils import WebhookEventInfo
@@ -39,12 +41,12 @@ class DonationComplete(ModelMutation):
         return cleaned_input
 
     @classmethod
-    def perform_mutation(cls, _root, info: ResolveInfo, /, *, input):
-        donation = DonationByIdDataLoader(info.context).load(input["id"])
+    def perform_mutation(cls, _root, info: ResolveInfo, **data):
+        donation = resolve_donation_by_id(info, data["id"])
         if not donation:
-            return cls(errors=[DonationError(code="NOT_FOUND")], success=False)
+            return cls(errors=[DonationError(code="NOT_FOUND")], donation=None)
         if info.context.user.has_perm(DonationPermissions.MANAGE_DONATIONS):
-            return cls(errors=[DonationError(code="PERMISSION_DENIED")], success=False)
+            return cls(errors=[DonationError(code="PERMISSION_DENIED")], donation=None)
         donation.completed = True
         donation.save(update_fields=["completed"])
         return cls(errors=[], donation=donation)

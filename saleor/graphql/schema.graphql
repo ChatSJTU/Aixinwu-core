@@ -1093,8 +1093,6 @@ type Query {
 
   """
   Donations made by the user or collected by users if requested by staff.
-  
-  Requires one of the following permissions: MANAGE_DONATIONS.
   """
   donations(
     """Sort orders."""
@@ -14002,6 +14000,9 @@ type Donation implements Node @doc(category: "Donations") {
 
   """The date and time when the donation was last updated."""
   updatedAt: DateTime!
+
+  """Whether this donation is completed or not."""
+  completed: Boolean
 
   """The title of the donation."""
   title: String!
@@ -27571,8 +27572,8 @@ Triggers the following webhook events:
 - DONATION_DELETED (sync): A donation has been deleted.
 """
 type DonationDelete @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: []) {
-  success: Donation
   errors: [DonationError!]!
+  success: Boolean
 }
 
 """

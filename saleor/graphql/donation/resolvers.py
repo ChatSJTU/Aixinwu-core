@@ -1,23 +1,29 @@
 from uuid import UUID
-from saleor.graphql.core import ResolveInfo
-from saleor.graphql.core.context import get_database_connection_name
+
+import graphene
+
+from saleor.graphql.donation.dataloaders import DonationByIdDataLoader
+from ..core import ResolveInfo
+from ..core.context import get_database_connection_name
+from ..utils import get_user_or_app_from_context
 from ...donation.models import Donation
+from ...permission.enums import DonationPermissions
+from ..core.utils import from_global_id_or_error
 
 
-def resolve_donations(info: ResolveInfo) -> list[Donation]:
-    if info.context.user.is_staff:
-        return list(
-            Donation.objects.using(get_database_connection_name(info.context)).all()
-        )
-
-    return list(
-        Donation.objects.using(get_database_connection_name(info.context))
-        .filter(user=info.context.user)
-        .all()
+def resolve_donations(info: ResolveInfo):
+    user = get_user_or_app_from_context(info.context)
+    qs = Donation.objects.using(get_database_connection_name(info.context)).filter(
+        deleted_at__isnull=True
     )
 
+    if user.has_perm(DonationPermissions.MANAGE_DONATIONS):
+        return qs
 
-def resolve_donation_by_id(info: ResolveInfo, id: UUID) -> Donation:
-    return Donation.objects.using(get_database_connection_name(info.context)).get(
-        id=id, donator_id=info.context.user.id
-    )
+    return qs.filter(donator=user)
+
+
+def resolve_donation_by_id(info: ResolveInfo, id: str) -> Donation:
+    _, local_id = from_global_id_or_error(id, "Donation")
+
+    return DonationByIdDataLoader(info.context).load(local_id).get()

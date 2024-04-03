@@ -9,9 +9,10 @@ from ...graphql.core.types.filter_input import FilterInputObjectType
 from .filters import DonationFilterInput
 from .sorters import DonationSortingInput
 from ..core.fields import BaseField, FilterConnectionField
+from ..core.connection import filter_connection_queryset, create_connection_slice
 from .types import Donation, DonationCountableConnection
 from ..core import ResolveInfo
-from .resolvers import resolve_donation_by_id, resolve_donations
+from .resolvers import resolve_donations
 
 
 class DonationQueries(graphene.ObjectType):
@@ -23,12 +24,14 @@ class DonationQueries(graphene.ObjectType):
         channel=graphene.String(
             description="Slug of a channel for which the data should be returned."
         ),
-        permissions=[DonationPermissions.MANAGE_DONATIONS],
         doc_category=DOC_CATEGORY_ORDERS,
     )
 
-    def resolve_donations(_root, info: ResolveInfo, *, token=None, id=None):
-        return resolve_donations(info)
+    @staticmethod
+    def resolve_donations(_root, info: ResolveInfo, **kwargs):
+        qs = resolve_donations(info)
+        qs = filter_connection_queryset(qs, kwargs, info.context)
+        return create_connection_slice(qs, info, kwargs, DonationCountableConnection)
 
 
 class DonationMutations(graphene.ObjectType):

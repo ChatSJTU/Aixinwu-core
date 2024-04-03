@@ -4,9 +4,11 @@ from django_prices.models import MoneyField
 from django.conf import settings
 from saleor.account.models import User
 from saleor.permission.enums import DonationPermissions
+import uuid
 
 
 class Donation(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True)
     donator = models.ForeignKey(User, on_delete=models.CASCADE)
     completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
