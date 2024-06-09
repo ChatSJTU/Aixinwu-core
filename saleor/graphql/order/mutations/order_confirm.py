@@ -4,20 +4,19 @@ import graphene
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from saleor.graphql.core.enums import PaymentErrorCode
+from saleor.graphql.core.types.common import PaymentError
+from saleor.payment.utils import create_payment
+
 from ....account.models import User
-from ....core.tracing import traced_atomic_transaction
 from ....order import OrderStatus, models
-from ....order.actions import order_charged, order_confirmed
 from ....order.error_codes import OrderErrorCode
 from ....order.fetch import fetch_order_info
 from ....order.utils import update_order_display_gross_prices
-from ....payment import gateway
 from ....permission.enums import OrderPermissions
-from ...app.dataloaders import get_app_promise
 from ...core import ResolveInfo
 from ...core.mutations import ModelMutation
 from ...core.types import OrderError
-from ...plugins.dataloaders import get_plugin_manager_promise
 from ...site.dataloaders import get_site_promise
 from ..types import Order
 
@@ -64,38 +63,36 @@ class OrderConfirm(ModelMutation):
     def perform_mutation(cls, root, info: ResolveInfo, /, **data):
         user = info.context.user
         user = cast(User, user)
-        order = cls.get_instance(info, **data)
+        order: models.Order = cls.get_instance(info, **data)
         cls.check_channel_permissions(info, [order.channel_id])
         order.status = OrderStatus.UNFULFILLED
         update_order_display_gross_prices(order)
+
         order.save(update_fields=["status", "updated_at", "display_gross_prices"])
+
         order_info = fetch_order_info(order)
-        payment = order_info.payment
-        manager = get_plugin_manager_promise(info.context).get()
-        app = get_app_promise(info.context).get()
-        with traced_atomic_transaction():
-            if payment and payment.is_authorized and payment.can_capture():
-                authorized_payment = payment
-                gateway.capture(payment, manager, channel_slug=order.channel.slug)
-                site = get_site_promise(info.context).get()
-                transaction.on_commit(
-                    lambda: order_charged(
-                        order_info,
-                        info.context.user,
-                        app,
-                        authorized_payment.total,
-                        authorized_payment,
-                        manager,
-                        site.settings,
-                    )
-                )
-            transaction.on_commit(
-                lambda: order_confirmed(
-                    order,
-                    user,
-                    app,
-                    manager,
-                    send_confirmation_email=True,
-                )
+
+        if user.balance >= order.total_net_amount:
+            _ = create_payment(
+                gateway="Balance",
+                total=order.total_net_amount,
+                currency="AXB",
+                email=order_info.customer_email,
+                customer_ip_address="",
+                order=order,
             )
-        return OrderConfirm(order=order)
+
+            order.status = OrderStatus.FULFILLED
+            user.balance -= order.total_net_amount
+            order.save(update_fields=["status"])
+            user.save(update_fields=["balance"])
+            return OrderConfirm(order=order)
+        else:
+            raise ValidationError(
+                {
+                    "balance": ValidationError(
+                        "You need to have enough balance",
+                        code=PaymentErrorCode.BALANCE_CHECK_ERROR,
+                    )
+                }
+            )

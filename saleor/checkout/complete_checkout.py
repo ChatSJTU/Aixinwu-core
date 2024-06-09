@@ -1133,14 +1133,7 @@ def _create_order_from_checkout(
     )
 
     # status
-    status = (
-        OrderStatus.UNFULFILLED
-        if (
-            checkout_info.channel.automatically_confirm_all_new_orders
-            and checkout_info.checkout.payment_transactions.exists()
-        )
-        else OrderStatus.UNCONFIRMED
-    )
+    status = OrderStatus.UNCONFIRMED
     checkout_metadata = get_or_create_checkout_metadata(checkout_info.checkout)
 
     # update metadata
@@ -1355,48 +1348,24 @@ def complete_checkout(
     metadata_list: Optional[list] = None,
     private_metadata_list: Optional[list] = None,
 ) -> tuple[Optional[Order], bool, dict]:
-    transactions = checkout_info.checkout.payment_transactions.all()
     fetch_checkout_data(checkout_info, manager, lines)
 
     # When checkout is zero, we don't need any transaction to cover the checkout total.
     # We check if checkout is zero, and we also check what flow for marking an order as
     # paid is used. In case when we have TRANSACTION_FLOW we use transaction flow to
     # finalize the checkout.
-    checkout_is_zero = checkout_info.checkout.total.gross.amount == Decimal(0)
-    is_transaction_flow = (
-        checkout_info.channel.order_mark_as_paid_strategy
-        == MarkAsPaidStrategy.TRANSACTION_FLOW
-    )
-    if (
-        transactions
-        or checkout_info.channel.allow_unpaid_orders
-        or checkout_is_zero
-        and is_transaction_flow
-    ):
-        order = complete_checkout_with_transaction(
-            manager=manager,
-            checkout_info=checkout_info,
-            lines=lines,
-            user=user,
-            app=app,
-            redirect_url=redirect_url,
-            metadata_list=metadata_list,
-            private_metadata_list=private_metadata_list,
-        )
-        return order, False, {}
-
-    return complete_checkout_with_payment(
+    lines, _ = fetch_checkout_lines(checkout_info.checkout)
+    _reserve_stocks_without_availability_check(checkout_info=checkout_info, lines=lines)
+    order = create_order_from_checkout(
+        checkout_info=checkout_info,
         manager=manager,
-        checkout_pk=checkout_info.checkout.pk,
-        payment_data=payment_data,
-        store_source=store_source,
         user=user,
         app=app,
-        site_settings=site_settings,
-        redirect_url=redirect_url,
+        delete_checkout=True,
         metadata_list=metadata_list,
         private_metadata_list=private_metadata_list,
     )
+    return order, False, {}
 
 
 def complete_checkout_with_transaction(
