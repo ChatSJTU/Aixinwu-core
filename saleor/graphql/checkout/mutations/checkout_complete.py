@@ -3,6 +3,8 @@ from collections.abc import Iterable
 import graphene
 from django.core.exceptions import ValidationError
 
+from saleor.payment.utils import create_payment
+
 from ....checkout import AddressType
 from ....checkout.checkout_cleaner import (
     clean_checkout_shipping,
@@ -333,7 +335,13 @@ class CheckoutComplete(BaseMutation, I18nMixin):
             redirect_url=redirect_url,
             metadata_list=metadata,
         )
-
+        _ = create_payment(
+            gateway="Balance",
+            total=order.total_net_amount,
+            currency="AXB",
+            email=order.get_customer_email(),
+            order=order,
+        )
         # If gateway returns information that additional steps are required we need
         # to inform the frontend and pass all required data
         return CheckoutComplete(

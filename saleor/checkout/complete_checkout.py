@@ -49,7 +49,7 @@ from ..order.utils import (
 )
 from ..payment import PaymentError, TransactionKind, gateway
 from ..payment.models import Payment, Transaction
-from ..payment.utils import fetch_customer_id, store_customer_id
+from ..payment.utils import create_payment, fetch_customer_id, store_customer_id
 from ..product.models import ProductTranslation, ProductVariantTranslation
 from ..tax.utils import (
     get_shipping_tax_class_kwargs_for_order,
@@ -1347,7 +1347,7 @@ def complete_checkout(
     redirect_url: Optional[str] = None,
     metadata_list: Optional[list] = None,
     private_metadata_list: Optional[list] = None,
-) -> tuple[Optional[Order], bool, dict]:
+) -> tuple[Order, bool, dict]:
     fetch_checkout_data(checkout_info, manager, lines)
 
     # When checkout is zero, we don't need any transaction to cover the checkout total.
@@ -1365,6 +1365,7 @@ def complete_checkout(
         metadata_list=metadata_list,
         private_metadata_list=private_metadata_list,
     )
+
     return order, False, {}
 
 

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, cast
 
 import graphene
 from django.core.exceptions import ValidationError
@@ -18,7 +18,9 @@ from ...plugins.dataloaders import get_plugin_manager_promise
 from ..types import Order
 
 
-def clean_order_cancel(order: Optional[models.Order]) -> models.Order:
+def clean_order_cancel(
+    order: Optional[models.Order], user: models.User
+) -> models.Order:
     if not order or not order.can_cancel():
         raise ValidationError(
             {
@@ -40,7 +42,6 @@ class OrderCancel(BaseMutation):
     class Meta:
         description = "Cancel an order."
         doc_category = DOC_CATEGORY_ORDERS
-        permissions = (OrderPermissions.MANAGE_ORDERS,)
         error_type_class = OrderError
         error_type_field = "order_errors"
 
@@ -48,10 +49,12 @@ class OrderCancel(BaseMutation):
     def perform_mutation(  # type: ignore[override]
         cls, _root, info: ResolveInfo, /, *, id: str
     ):
-        order = cls.get_node_or_error(info, id, only_type=Order)
+        user: models.User = info.context.user
+        order = cls.get_instance(info, user=user, id=id)
+
         cls.check_channel_permissions(info, [order.channel_id])
-        order = clean_order_cancel(order)
-        user = info.context.user
+        order = clean_order_cancel(order, user)
+
         app = get_app_promise(info.context).get()
         manager = get_plugin_manager_promise(info.context).get()
         with traced_atomic_transaction():

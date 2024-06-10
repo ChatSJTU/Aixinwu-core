@@ -4,8 +4,10 @@ import graphene
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from saleor.core.tracing import traced_atomic_transaction
 from saleor.graphql.core.enums import PaymentErrorCode
 from saleor.graphql.core.types.common import PaymentError
+from saleor.payment import ChargeStatus
 from saleor.payment.utils import create_payment
 
 from ....account.models import User
@@ -31,7 +33,6 @@ class OrderConfirm(ModelMutation):
         description = "Confirms an unconfirmed order by changing status to unfulfilled."
         model = models.Order
         object_type = Order
-        permissions = (OrderPermissions.MANAGE_ORDERS,)
         error_type_class = OrderError
         error_type_field = "order_errors"
 
@@ -63,9 +64,18 @@ class OrderConfirm(ModelMutation):
     def perform_mutation(cls, root, info: ResolveInfo, /, **data):
         user = info.context.user
         user = cast(User, user)
-        order: models.Order = cls.get_instance(info, **data)
+        order: models.Order = cls.get_instance(info, user=user, **data)
+        if not order:
+            raise ValidationError(
+                {
+                    "order": ValidationError(
+                        "No order found for this id.",
+                        code=OrderErrorCode.INVALID.value,
+                    )
+                }
+            )
+
         cls.check_channel_permissions(info, [order.channel_id])
-        order.status = OrderStatus.UNFULFILLED
         update_order_display_gross_prices(order)
 
         order.save(update_fields=["status", "updated_at", "display_gross_prices"])
@@ -73,20 +83,15 @@ class OrderConfirm(ModelMutation):
         order_info = fetch_order_info(order)
 
         if user.balance >= order.total_net_amount:
-            _ = create_payment(
-                gateway="Balance",
-                total=order.total_net_amount,
-                currency="AXB",
-                email=order_info.customer_email,
-                customer_ip_address="",
-                order=order,
-            )
-
-            order.status = OrderStatus.FULFILLED
-            user.balance -= order.total_net_amount
-            order.save(update_fields=["status"])
-            user.save(update_fields=["balance"])
-            return OrderConfirm(order=order)
+            with traced_atomic_transaction():
+                payment: Payment = order.get_last_payment()
+                order.status = OrderStatus.UNFULFILLED
+                payment.charge_status = ChargeStatus.FULLY_CHARGED
+                user.balance -= order.total_net_amount
+                order.save(update_fields=["status"])
+                user.save(update_fields=["balance"])
+                payment.save(update_fields=["charge_status"])
+                return OrderConfirm(order=order)
         else:
             raise ValidationError(
                 {
