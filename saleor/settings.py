@@ -711,7 +711,7 @@ def SENTRY_INIT(dsn: str, sentry_opts: dict):
     ignore_logger("graphql.execution.executor")
 
 
-GRAPHQL_PAGINATION_LIMIT = 100
+GRAPHQL_PAGINATION_LIMIT = 10000
 GRAPHQL_MIDDLEWARE: list[str] = []
 
 # Set GRAPHQL_QUERY_MAX_COMPLEXITY=0 in env to disable (not recommended)
