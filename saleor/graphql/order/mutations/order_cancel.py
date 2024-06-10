@@ -33,6 +33,19 @@ def clean_order_cancel(
     return order
 
 
+def check_order_ownership(order: Optional[models.Order], user: models.User):
+    if order.user.id != user.id and not user.is_superuser() and not user.is_staff():
+        raise ValidationError(
+            {
+                "order": ValidationError(
+                    "This order can not be manipulated by the current user.",
+                    code=OrderErrorCode.CANNOT_CANCEL_ORDER.value,
+                )
+            }
+        )
+    return order
+
+
 class OrderCancel(BaseMutation):
     order = graphene.Field(Order, description="Canceled order.")
 
@@ -50,10 +63,10 @@ class OrderCancel(BaseMutation):
         cls, _root, info: ResolveInfo, /, *, id: str
     ):
         user: models.User = info.context.user
-        order = cls.get_instance(info, user=user, id=id)
-
+        order = cls.get_instance(info, id=id)
         cls.check_channel_permissions(info, [order.channel_id])
         order = clean_order_cancel(order, user)
+        order = check_order_ownership(order, user)
 
         app = get_app_promise(info.context).get()
         manager = get_plugin_manager_promise(info.context).get()
