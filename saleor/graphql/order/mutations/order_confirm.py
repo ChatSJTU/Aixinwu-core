@@ -63,6 +63,15 @@ class OrderConfirm(ModelMutation):
     @classmethod
     def perform_mutation(cls, root, info: ResolveInfo, /, **data):
         user = info.context.user
+        if not user:
+            raise ValidationError(
+                {
+                    "user": ValidationError(
+                        "User not found.",
+                        code=OrderErrorCode.INVALID.value,
+                    )
+                }
+            )
         user = cast(User, user)
         order: models.Order = cls.get_instance(info, user=user, **data)
         if not order:
@@ -75,7 +84,6 @@ class OrderConfirm(ModelMutation):
                 }
             )
 
-        cls.check_channel_permissions(info, [order.channel_id])
         update_order_display_gross_prices(order)
 
         order.save(update_fields=["status", "updated_at", "display_gross_prices"])
