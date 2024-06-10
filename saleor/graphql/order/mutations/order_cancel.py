@@ -18,9 +18,7 @@ from ...plugins.dataloaders import get_plugin_manager_promise
 from ..types import Order
 
 
-def clean_order_cancel(
-    order: Optional[models.Order], user: models.User
-) -> models.Order:
+def clean_order_cancel(order: Optional[models.Order]) -> models.Order:
     if not order or not order.can_cancel():
         raise ValidationError(
             {
@@ -33,7 +31,7 @@ def clean_order_cancel(
     return order
 
 
-def check_order_ownership(order: Optional[models.Order], user: models.User):
+def check_order_ownership(order: Optional[models.Order], user):
     if order.user.id != user.id and not user.is_superuser() and not user.is_staff():
         raise ValidationError(
             {
@@ -62,10 +60,10 @@ class OrderCancel(BaseMutation):
     def perform_mutation(  # type: ignore[override]
         cls, _root, info: ResolveInfo, /, *, id: str
     ):
-        user: models.User = info.context.user
+        user = info.context.user
         order = cls.get_instance(info, id=id)
         cls.check_channel_permissions(info, [order.channel_id])
-        order = clean_order_cancel(order, user)
+        order = clean_order_cancel(order)
         order = check_order_ownership(order, user)
 
         app = get_app_promise(info.context).get()
