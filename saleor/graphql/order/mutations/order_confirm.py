@@ -7,6 +7,7 @@ from django.db import transaction
 from saleor.core.tracing import traced_atomic_transaction
 from saleor.graphql.core.enums import PaymentErrorCode
 from saleor.graphql.core.types.common import PaymentError
+from saleor.order import events
 from saleor.payment import ChargeStatus
 from saleor.payment.utils import create_payment
 
@@ -99,6 +100,7 @@ class OrderConfirm(ModelMutation):
                 order.save(update_fields=["status"])
                 user.save(update_fields=["balance"])
                 payment.save(update_fields=["charge_status"])
+                events.order_confirmed_event(order=order, user=user, app=None)
                 return OrderConfirm(order=order)
         else:
             raise ValidationError(
