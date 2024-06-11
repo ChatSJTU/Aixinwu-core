@@ -150,7 +150,7 @@ class CountryAwareAddressForm(AddressForm):
         ("country_code", ["country"]),
     ]
 
-    NOT_REQUIRED_FIELDS = ("street_address_2",)
+    NOT_REQUIRED_FIELDS = ("street_address_2", "postal_code")
 
     class Meta:
         model = Address
