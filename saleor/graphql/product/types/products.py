@@ -364,10 +364,6 @@ class ProductVariant(ChannelContextTypeWithMetadata[models.ProductVariant]):
                 f"{DEPRECATED_IN_3X_INPUT} Use `address` argument instead."
             ),
         ),
-        permissions=[
-            ProductPermissions.MANAGE_PRODUCTS,
-            OrderPermissions.MANAGE_ORDERS,
-        ],
     )
     quantity_available = graphene.Int(
         required=False,

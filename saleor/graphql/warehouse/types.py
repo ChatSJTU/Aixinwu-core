@@ -185,28 +185,16 @@ class Stock(ModelObjectType[models.Stock]):
             "Quantity of a product in the warehouse's possession, including the "
             "allocated stock that is waiting for shipment."
         ),
-        permissions=[
-            ProductPermissions.MANAGE_PRODUCTS,
-            OrderPermissions.MANAGE_ORDERS,
-        ],
     )
     quantity_allocated = PermissionsField(
         graphene.Int,
         required=True,
         description="Quantity allocated for orders.",
-        permissions=[
-            ProductPermissions.MANAGE_PRODUCTS,
-            OrderPermissions.MANAGE_ORDERS,
-        ],
     )
     quantity_reserved = PermissionsField(
         graphene.Int,
         required=True,
         description="Quantity reserved for checkouts.",
-        permissions=[
-            ProductPermissions.MANAGE_PRODUCTS,
-            OrderPermissions.MANAGE_ORDERS,
-        ],
     )
 
     class Meta:
