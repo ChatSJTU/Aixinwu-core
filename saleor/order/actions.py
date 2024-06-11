@@ -8,6 +8,7 @@ from uuid import UUID
 
 from django.contrib.sites.models import Site
 from django.db import transaction
+from stripe import Charge
 
 from ..account.models import User
 from ..core.exceptions import AllocationError, InsufficientStock, InsufficientStockData
@@ -228,25 +229,13 @@ def order_refunded(
     if trigger_order_updated:
         call_event(manager.order_updated, order)
 
-    total_refunded = Decimal(0)
     last_payment = payment if payment else order.get_last_payment()
-    if last_payment and last_payment.charge_status in [
-        ChargeStatus.PARTIALLY_REFUNDED,
-        ChargeStatus.FULLY_REFUNDED,
-    ]:
-        total_refunded += sum(
-            last_payment.transactions.filter(
-                kind=TransactionKind.REFUND, is_success=True
-            ).values_list("amount", flat=True),
-            Decimal(0),
-        )
-
-    total_refunded += sum(
-        order.payment_transactions.all().values_list("refunded_value", flat=True),
-        Decimal(0),
-    )
-
-    if total_refunded >= order.total.gross.amount:
+    if last_payment and last_payment.charge_status == ChargeStatus.FULLY_CHARGED:
+        last_payment.charge_status = ChargeStatus.FULLY_REFUNDED
+        user = order.user
+        user.balance += order.total_net_amount
+        user.save(update_fields=["balance"])
+        last_payment.save(update_fields=["charge_status"])
         call_event(manager.order_fully_refunded, order)
 
 
