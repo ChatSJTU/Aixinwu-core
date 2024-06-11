@@ -15,7 +15,6 @@ from django.core.validators import URLValidator
 from django.db.models import QuerySet
 from django.utils import timezone
 from jwt import PyJWTError
-
 from ...account.models import Group, User
 from ...account.search import prepare_user_search_document_value
 from ...account.utils import get_user_groups_permissions
@@ -262,6 +261,11 @@ def get_or_create_user_from_payload(
             email=user_email,
             defaults=defaults_create,
         )
+        site = Site.objects.get_current()
+
+        site.stat.users += 1
+        site.stat.save(update_fields=["users"])
+
         match_orders_with_new_user(user)
     except User.MultipleObjectsReturned:
         logger.warning("Multiple users returned for single OIDC sub ID")

@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 
 from authlib.common.errors import AuthlibBaseError
+from django.conf import settings
 from django.core import signing
 from django.core.exceptions import ValidationError
 from django.core.handlers.wsgi import WSGIRequest
@@ -18,6 +19,7 @@ from ...core.jwt import (
     get_user_from_payload,
     jwt_decode,
 )
+from ...site.models import Site
 from ...permission.enums import get_permissions_codename, get_permissions_from_names
 from ..base_plugin import BasePlugin, ConfigurationTypeField, ExternalAccessTokens
 from ..error_codes import PluginErrorCode
@@ -323,6 +325,11 @@ class OpenIDConnectPlugin(BasePlugin):
         tokens = create_tokens_from_oauth_payload(
             token_data, user, parsed_id_token, user_permissions, owner=self.PLUGIN_ID
         )
+
+        site = Site.objects.get_current()
+        site.stat.views += 1
+        site.stat.save(update_fields=["views"])
+
         return ExternalAccessTokens(user=user, **tokens)
 
     def is_staff_user_email(self, user: "User"):

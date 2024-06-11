@@ -5,6 +5,8 @@ from django.conf import settings
 from django_countries import countries
 from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 
+from saleor.graphql.core.types.common import File
+
 from ... import __version__, schema_version
 from ...account import models as account_models
 from ...channel import models as channel_models
@@ -28,6 +30,7 @@ from ..core.doc_category import (
     DOC_CATEGORY_AUTH,
     DOC_CATEGORY_GIFT_CARDS,
     DOC_CATEGORY_ORDERS,
+    DOC_CATEGORY_SHOP,
 )
 from ..core.enums import LanguageCodeEnum, WeightUnitsEnum
 from ..core.fields import PermissionsField
@@ -127,6 +130,51 @@ class Limits(graphene.ObjectType):
     warehouses = graphene.Int(description="Defines the number of warehouses.")
 
 
+class Carousel(graphene.ObjectType):
+    urls = NonNullList(graphene.String, description="Carousel Images")
+
+    @staticmethod
+    def get_model():
+        return site_models.SiteCarousel
+
+    @staticmethod
+    def get_node(root, info: ResolveInfo):
+        site = get_site_promise(info.context).get()
+        return site.carousels.filter(deleted_at__is_null=True)
+
+    @staticmethod
+    def resolve_urls(root, info: ResolveInfo):
+        if not root:
+            return []
+        else:
+            return root.urls
+
+    class Meta:
+        description = "Shop Carousel."
+        doc_category = DOC_CATEGORY_SHOP
+
+
+class Statistics(graphene.ObjectType):
+    views = graphene.Int(description="Site views")
+    users = graphene.Int(description="Site Registered Users")
+    circulated_currency = graphene.Int(description="Site circulated currency")
+    circulated_items = graphene.Int(description="Site circulated items")
+
+    @staticmethod
+    def get_model():
+        return site_models.SiteStatistics
+
+    @staticmethod
+    def get_node(root, info: ResolveInfo):
+        site = get_site_promise(info.context).get()
+        return site.stat
+
+    class Meta:
+        description = "Shop Statistics."
+        doc_category = DOC_CATEGORY_SHOP
+        interfaces = [ObjectWithMetadata]
+
+
 class LimitInfo(graphene.ObjectType):
     current_usage = graphene.Field(
         Limits,
@@ -141,6 +189,7 @@ class LimitInfo(graphene.ObjectType):
 
     class Meta:
         description = "Store the current and allowed usage."
+        interfaces = [ObjectWithMetadata]
 
 
 class Shop(graphene.ObjectType):

@@ -977,6 +977,12 @@ def create_fulfillments(
                 notify_customer,
             )
         )
+        site = Site.objects.get_current()
+        site.stat.circulated_currency += order.total_net_amount
+        site.stat.circulated_items += sum(
+            [line.quantity for line in order.lines.iterator()]
+        )
+        site.stat.save(update_fields=["circulated_items", "circulated_currency"])
 
     return fulfillments
 

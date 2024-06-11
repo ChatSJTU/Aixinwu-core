@@ -19,15 +19,22 @@ from .mutations import (
     StaffNotificationRecipientCreate,
     StaffNotificationRecipientDelete,
     StaffNotificationRecipientUpdate,
+    ShopCarouselUpdate,
 )
-from .types import GiftCardSettings, Shop
+from .types import Carousel, GiftCardSettings, Shop, Statistics
 
 
 class ShopQueries(graphene.ObjectType):
     shop = graphene.Field(
         Shop,
         description="Return information about the shop.",
-        required=True,
+    )
+    carousel = graphene.Field(
+        Carousel,
+        description="Return the carousel of the current site.",
+    )
+    statistics = graphene.Field(
+        Statistics, description="Return the current statistics of the shop"
     )
     order_settings = PermissionsField(
         OrderSettings,
@@ -53,6 +60,12 @@ class ShopQueries(graphene.ObjectType):
 
     def resolve_shop(self, _info):
         return Shop()
+
+    def resolve_carousel(self, _info):
+        return Carousel()
+
+    def resolve_statistics(self, _info):
+        return Statistics()
 
     def resolve_order_settings(self, info):
         channel = (
@@ -101,3 +114,4 @@ class ShopMutations(graphene.ObjectType):
         )
     )
     gift_card_settings_update = GiftCardSettingsUpdate.Field()
+    carousel_settings_update = ShopCarouselUpdate.Field()

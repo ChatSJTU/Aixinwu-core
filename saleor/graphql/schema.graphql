@@ -76,12 +76,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): WarehouseCountableConnection @doc(category: "Products")
@@ -102,12 +102,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): TranslatableItemConnection
@@ -155,12 +155,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): TaxConfigurationCountableConnection @doc(category: "Taxes")
@@ -198,12 +198,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): TaxClassCountableConnection @doc(category: "Taxes")
@@ -246,18 +246,24 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): StockCountableConnection @doc(category: "Products")
 
   """Return information about the shop."""
-  shop: Shop!
+  shop: Shop
+
+  """Return the carousel of the current site."""
+  carousel: Carousel
+
+  """Return the current statistics of the shop"""
+  statistics: Statistics
 
   """
   Order related settings from site settings. Returns `orderSettings` for the first `channel` in alphabetical order.
@@ -305,12 +311,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ShippingZoneCountableConnection @doc(category: "Shipping")
@@ -338,12 +344,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): DigitalContentCountableConnection @doc(category: "Products")
@@ -375,12 +381,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): CategoryCountableConnection @doc(category: "Products")
@@ -437,12 +443,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): CollectionCountableConnection @doc(category: "Products")
@@ -504,12 +510,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductCountableConnection @doc(category: "Products")
@@ -535,12 +541,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductTypeCountableConnection @doc(category: "Products")
@@ -598,12 +604,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductVariantCountableConnection @doc(category: "Products")
@@ -627,12 +633,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductVariantCountableConnection @doc(category: "Products")
@@ -663,12 +669,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): PaymentCountableConnection @doc(category: "Payments")
@@ -718,12 +724,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): PageCountableConnection @doc(category: "Pages")
@@ -749,12 +755,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): PageTypeCountableConnection @doc(category: "Pages")
@@ -772,12 +778,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): OrderEventCountableConnection @doc(category: "Orders")
@@ -817,12 +823,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): OrderCountableConnection @doc(category: "Orders")
@@ -846,12 +852,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): OrderCountableConnection @doc(category: "Orders")
@@ -912,12 +918,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): MenuCountableConnection @doc(category: "Menu")
@@ -949,12 +955,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): MenuItemCountableConnection @doc(category: "Menu")
@@ -1005,12 +1011,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): GiftCardCountableConnection @doc(category: "Gift cards")
@@ -1042,12 +1048,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): GiftCardTagCountableConnection @doc(category: "Gift cards")
@@ -1081,12 +1087,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): PluginCountableConnection
@@ -1111,12 +1117,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): DonationCountableConnection @doc(category: "Orders")
@@ -1163,12 +1169,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): SaleCountableConnection @doc(category: "Discounts") @deprecated(reason: "This field will be removed in Saleor 4.0. Use the `promotions` query instead.")
@@ -1215,12 +1221,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): VoucherCountableConnection @doc(category: "Discounts")
@@ -1262,12 +1268,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): PromotionCountableConnection @doc(category: "Discounts")
@@ -1301,12 +1307,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ExportFileCountableConnection
@@ -1365,12 +1371,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): CheckoutCountableConnection @doc(category: "Checkout")
@@ -1388,12 +1394,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): CheckoutLineCountableConnection @doc(category: "Checkout")
@@ -1452,12 +1458,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): AttributeCountableConnection @doc(category: "Attributes")
@@ -1504,12 +1510,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): AppCountableConnection @doc(category: "Apps")
@@ -1542,12 +1548,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): AppExtensionCountableConnection @doc(category: "Apps")
@@ -1608,12 +1614,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): UserCountableConnection @doc(category: "Users")
@@ -1637,12 +1643,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): GroupCountableConnection @doc(category: "Users")
@@ -1679,12 +1685,12 @@ type Query {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): UserCountableConnection @doc(category: "Users")
@@ -1747,12 +1753,12 @@ type Webhook implements Node @doc(category: "Webhooks") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): EventDeliveryCountableConnection
@@ -3490,12 +3496,12 @@ type EventDelivery implements Node {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): EventDeliveryAttemptCountableConnection
@@ -3818,12 +3824,12 @@ type Warehouse implements Node & ObjectWithMetadata @doc(category: "Products") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ShippingZoneCountableConnection!
@@ -4168,12 +4174,12 @@ type ShippingMethodType implements Node & ObjectWithMetadata @doc(category: "Shi
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductCountableConnection
@@ -6050,12 +6056,12 @@ type ProductType implements Node & ObjectWithMetadata @doc(category: "Products")
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductCountableConnection @deprecated(reason: "This field will be removed in Saleor 4.0. Use the top-level `products` query with the `productTypes` filter.")
@@ -6105,12 +6111,12 @@ type ProductType implements Node & ObjectWithMetadata @doc(category: "Products")
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): AttributeCountableConnection
@@ -6279,12 +6285,12 @@ type Attribute implements Node & ObjectWithMetadata @doc(category: "Attributes")
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): AttributeValueCountableConnection
@@ -6339,12 +6345,12 @@ type Attribute implements Node & ObjectWithMetadata @doc(category: "Attributes")
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductTypeCountableConnection!
@@ -6360,12 +6366,12 @@ type Attribute implements Node & ObjectWithMetadata @doc(category: "Attributes")
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductTypeCountableConnection!
@@ -6848,12 +6854,12 @@ type Category implements Node & ObjectWithMetadata @doc(category: "Products") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): CategoryCountableConnection
@@ -6895,12 +6901,12 @@ type Category implements Node & ObjectWithMetadata @doc(category: "Products") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductCountableConnection
@@ -6914,12 +6920,12 @@ type Category implements Node & ObjectWithMetadata @doc(category: "Products") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): CategoryCountableConnection
@@ -7495,11 +7501,7 @@ type ProductVariant implements Node & ObjectWithMetadata @doc(category: "Product
   """
   digitalContent: DigitalContent
 
-  """
-  Stocks for the product variant.
-  
-  Requires one of the following permissions: MANAGE_PRODUCTS, MANAGE_ORDERS.
-  """
+  """Stocks for the product variant."""
   stocks(
     """
     Destination address used to find warehouses where stock availability for this product is checked. If address is empty, uses `Shop.companyAddress` or fallbacks to server's `settings.DEFAULT_COUNTRY` configuration.
@@ -7930,23 +7932,13 @@ type Stock implements Node @doc(category: "Products") {
 
   """
   Quantity of a product in the warehouse's possession, including the allocated stock that is waiting for shipment.
-  
-  Requires one of the following permissions: MANAGE_PRODUCTS, MANAGE_ORDERS.
   """
   quantity: Int!
 
-  """
-  Quantity allocated for orders.
-  
-  Requires one of the following permissions: MANAGE_PRODUCTS, MANAGE_ORDERS.
-  """
+  """Quantity allocated for orders."""
   quantityAllocated: Int!
 
-  """
-  Quantity reserved for checkouts.
-  
-  Requires one of the following permissions: MANAGE_PRODUCTS, MANAGE_ORDERS.
-  """
+  """Quantity reserved for checkouts."""
   quantityReserved: Int!
 }
 
@@ -8192,12 +8184,12 @@ type Collection implements Node & ObjectWithMetadata @doc(category: "Products") 
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductCountableConnection
@@ -8822,12 +8814,12 @@ type PageType implements Node & ObjectWithMetadata @doc(category: "Pages") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): AttributeCountableConnection
@@ -8968,12 +8960,12 @@ type Voucher implements Node & ObjectWithMetadata @doc(category: "Discounts") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): VoucherCodeCountableConnection
@@ -9027,12 +9019,12 @@ type Voucher implements Node & ObjectWithMetadata @doc(category: "Discounts") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): CategoryCountableConnection
@@ -9050,12 +9042,12 @@ type Voucher implements Node & ObjectWithMetadata @doc(category: "Discounts") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): CollectionCountableConnection
@@ -9073,12 +9065,12 @@ type Voucher implements Node & ObjectWithMetadata @doc(category: "Discounts") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductCountableConnection
@@ -9098,12 +9090,12 @@ type Voucher implements Node & ObjectWithMetadata @doc(category: "Discounts") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductVariantCountableConnection
@@ -9631,12 +9623,12 @@ type Sale implements Node & ObjectWithMetadata @doc(category: "Discounts") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): CategoryCountableConnection
@@ -9654,12 +9646,12 @@ type Sale implements Node & ObjectWithMetadata @doc(category: "Discounts") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): CollectionCountableConnection
@@ -9677,12 +9669,12 @@ type Sale implements Node & ObjectWithMetadata @doc(category: "Discounts") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductCountableConnection
@@ -9702,12 +9694,12 @@ type Sale implements Node & ObjectWithMetadata @doc(category: "Discounts") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): ProductVariantCountableConnection
@@ -10418,12 +10410,12 @@ type User implements Node & ObjectWithMetadata @doc(category: "Users") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): CheckoutCountableConnection
@@ -10437,12 +10429,12 @@ type User implements Node & ObjectWithMetadata @doc(category: "Users") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): GiftCardCountableConnection
@@ -10465,12 +10457,12 @@ type User implements Node & ObjectWithMetadata @doc(category: "Users") {
     after: String
 
     """
-    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     first: Int
 
     """
-    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 100 objects in a single query.
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
     """
     last: Int
   ): OrderCountableConnection
@@ -13220,7 +13212,37 @@ type PaymentSource @doc(category: "Payments") {
 }
 
 """Store the current and allowed usage."""
-type LimitInfo {
+type LimitInfo implements ObjectWithMetadata {
+  """List of private metadata items. Requires staff permissions to access."""
+  privateMetadata: [MetadataItem!]!
+
+  """
+  A single key from private metadata. Requires staff permissions to access.
+  
+  Tip: Use GraphQL aliases to fetch multiple keys.
+  """
+  privateMetafield(key: String!): String
+
+  """
+  Private metadata. Requires staff permissions to access. Use `keys` to control which fields you want to include. The default is to include everything.
+  """
+  privateMetafields(keys: [String!]): Metadata
+
+  """List of public metadata items. Can be accessed without permissions."""
+  metadata: [MetadataItem!]!
+
+  """
+  A single key from public metadata.
+  
+  Tip: Use GraphQL aliases to fetch multiple keys.
+  """
+  metafield(key: String!): String
+
+  """
+  Public metadata. Use `keys` to control which fields you want to include. The default is to include everything.
+  """
+  metafields(keys: [String!]): Metadata
+
   """Defines the current resource usage."""
   currentUsage: Limits!
 
@@ -13243,6 +13265,57 @@ type Limits {
 
   """Defines the number of warehouses."""
   warehouses: Int
+}
+
+"""Shop Carousel."""
+type Carousel {
+  """Carousel Images"""
+  urls: [String!]
+}
+
+"""Shop Statistics."""
+type Statistics implements ObjectWithMetadata {
+  """List of private metadata items. Requires staff permissions to access."""
+  privateMetadata: [MetadataItem!]!
+
+  """
+  A single key from private metadata. Requires staff permissions to access.
+  
+  Tip: Use GraphQL aliases to fetch multiple keys.
+  """
+  privateMetafield(key: String!): String
+
+  """
+  Private metadata. Requires staff permissions to access. Use `keys` to control which fields you want to include. The default is to include everything.
+  """
+  privateMetafields(keys: [String!]): Metadata
+
+  """List of public metadata items. Can be accessed without permissions."""
+  metadata: [MetadataItem!]!
+
+  """
+  A single key from public metadata.
+  
+  Tip: Use GraphQL aliases to fetch multiple keys.
+  """
+  metafield(key: String!): String
+
+  """
+  Public metadata. Use `keys` to control which fields you want to include. The default is to include everything.
+  """
+  metafields(keys: [String!]): Metadata
+
+  """Site views"""
+  views: Int
+
+  """Site Registered Users"""
+  users: Int
+
+  """Site circulated currency"""
+  circulatedCurrency: Int
+
+  """Site circulated items"""
+  circulatedItems: Int
 }
 
 """Gift card related settings from site settings."""
@@ -15477,6 +15550,18 @@ type Mutation {
   ): GiftCardSettingsUpdate @doc(category: "Gift cards")
 
   """
+  Updates site domain of the shop.
+  
+  DEPRECATED: this mutation will be removed in Saleor 4.0. Use `PUBLIC_URL` environment variable instead. 
+  
+  Requires one of the following permissions: MANAGE_SETTINGS.
+  """
+  carouselSettingsUpdate(
+    """Fields required to update or create the current carousel."""
+    input: CarouselInput!
+  ): ShopCarouselUpdate @doc(category: "Shop")
+
+  """
   Manage shipping method's availability in channels. 
   
   Requires one of the following permissions: MANAGE_SHIPPING.
@@ -17086,11 +17171,7 @@ type Mutation {
     input: OrderAddNoteInput!
   ): OrderAddNote @doc(category: "Orders") @deprecated(reason: "This field will be removed in Saleor 4.0. Use `orderNoteAdd` instead.")
 
-  """
-  Cancel an order. 
-  
-  Requires one of the following permissions: MANAGE_ORDERS.
-  """
+  """Cancel an order."""
   orderCancel(
     """ID of the order to cancel."""
     id: ID!
@@ -17109,11 +17190,7 @@ type Mutation {
     id: ID!
   ): OrderCapture @doc(category: "Orders")
 
-  """
-  Confirms an unconfirmed order by changing status to unfulfilled. 
-  
-  Requires one of the following permissions: MANAGE_ORDERS.
-  """
+  """Confirms an unconfirmed order by changing status to unfulfilled."""
   orderConfirm(
     """ID of an order to confirm."""
     id: ID!
@@ -21411,6 +21488,25 @@ input TimePeriodInputType {
 }
 
 """
+Updates site domain of the shop.
+
+DEPRECATED: this mutation will be removed in Saleor 4.0. Use `PUBLIC_URL` environment variable instead. 
+
+Requires one of the following permissions: MANAGE_SETTINGS.
+"""
+type ShopCarouselUpdate @doc(category: "Shop") {
+  """Updated carousel."""
+  carousel: Carousel
+  shopErrors: [ShopError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
+  errors: [ShopError!]!
+}
+
+input CarouselInput {
+  """Url list of new carousel."""
+  urls: [String!]!
+}
+
+"""
 Manage shipping method's availability in channels. 
 
 Requires one of the following permissions: MANAGE_SHIPPING.
@@ -25424,11 +25520,7 @@ input OrderAddNoteInput @doc(category: "Orders") {
   message: String!
 }
 
-"""
-Cancel an order. 
-
-Requires one of the following permissions: MANAGE_ORDERS.
-"""
+"""Cancel an order."""
 type OrderCancel @doc(category: "Orders") {
   """Canceled order."""
   order: Order
@@ -25448,11 +25540,7 @@ type OrderCapture @doc(category: "Orders") {
   errors: [OrderError!]!
 }
 
-"""
-Confirms an unconfirmed order by changing status to unfulfilled. 
-
-Requires one of the following permissions: MANAGE_ORDERS.
-"""
+"""Confirms an unconfirmed order by changing status to unfulfilled."""
 type OrderConfirm @doc(category: "Orders") {
   order: Order
   orderErrors: [OrderError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")

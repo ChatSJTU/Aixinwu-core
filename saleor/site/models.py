@@ -128,6 +128,14 @@ class SiteSettings(ModelWithMetadata):
         return value
 
 
+class SiteStatistics(ModelWithMetadata):
+    site = models.OneToOneField(Site, related_name="stat", on_delete=models.CASCADE)
+    views = models.PositiveIntegerField(default=0, null=False)
+    users = models.PositiveIntegerField(default=0, null=False)
+    circulated_currency = models.PositiveBigIntegerField(default=0, null=False)
+    circulated_items = models.PositiveIntegerField(default=0, null=False)
+
+
 class SiteSettingsTranslation(Translation):
     site_settings = models.ForeignKey(
         SiteSettings, related_name="translations", on_delete=models.CASCADE
@@ -150,3 +158,18 @@ class SiteSettingsTranslation(Translation):
             "header_text": self.header_text,
             "description": self.description,
         }
+
+
+class SiteCarousel(ModelWithMetadata):
+    site = models.OneToOneField(
+        SiteSettings, related_name="carousel", on_delete=models.CASCADE
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    deleted_at = models.DateTimeField()
+
+
+class SiteCarouselLine(ModelWithMetadata):
+    carousel = models.ForeignKey(
+        SiteCarousel, related_name="lines", on_delete=models.CASCADE
+    )
+    url = models.TextField()

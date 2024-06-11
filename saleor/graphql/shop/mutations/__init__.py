@@ -7,6 +7,7 @@ from .shop_settings_update import ShopSettingsUpdate
 from .staff_notification_recipient_create import StaffNotificationRecipientCreate
 from .staff_notification_recipient_delete import StaffNotificationRecipientDelete
 from .staff_notification_recipient_update import StaffNotificationRecipientUpdate
+from .shop_carousel_update import ShopCarouselUpdate
 
 __all__ = [
     "GiftCardSettingsUpdate",
