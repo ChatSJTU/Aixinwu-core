@@ -12,6 +12,9 @@ from django.core.exceptions import ValidationError
 from django.db.models import F, QuerySet, Sum
 from django.db.models.functions import Coalesce
 
+from saleor.account.models import User
+from saleor.graphql.order.dataloaders import OrderLinesByVariantIdAndChannelIdLoader
+
 from ..checkout.error_codes import CheckoutErrorCode
 from ..checkout.fetch import DeliveryMethodBase
 from ..core.exceptions import InsufficientStock, InsufficientStockData
@@ -135,6 +138,7 @@ def check_stock_and_preorder_quantity_bulk(
     quantities: Iterable[int],
     channel_slug: str,
     global_quantity_limit: Optional[int],
+    user: Optional[User],
     delivery_method_info: Optional["DeliveryMethodBase"] = None,
     additional_filter_lookup: Optional[dict[str, Any]] = None,
     existing_lines: Optional[Iterable["CheckoutLineInfo"]] = None,
@@ -202,11 +206,19 @@ def _split_lines_for_trackable_and_preorder(
 
 
 def _check_quantity_limits(
-    variant: "ProductVariant", quantity: int, global_quantity_limit: Optional[int]
+    user: Optional[User],
+    variant: "ProductVariant",
+    quantity: int,
+    global_quantity_limit: Optional[int],
 ) -> Optional[NoReturn]:
     quantity_limit = variant.quantity_limit_per_customer or global_quantity_limit
-
-    if quantity_limit is not None and quantity > quantity_limit:
+    lines = OrderLine.objects.filter(order_user_id=user.id).filter(
+        variant_id=variant.id
+    )
+    accumulated = 0
+    for line in lines.iterator():
+        accumulated += line.quantity
+    if quantity_limit is not None and quantity > quantity_limit - accumulated:
         raise ValidationError(
             {
                 "quantity": ValidationError(
@@ -227,6 +239,7 @@ def check_stock_quantity_bulk(
     quantities: Iterable[int],
     channel_slug: str,
     global_quantity_limit: Optional[int],
+    user: User,
     delivery_method_info: Optional["DeliveryMethodBase"] = None,
     additional_filter_lookup: Optional[dict[str, Any]] = None,
     existing_lines: Optional[Iterable["CheckoutLineInfo"]] = None,
@@ -289,7 +302,7 @@ def check_stock_quantity_bulk(
         )
 
         if quantity > 0:
-            _check_quantity_limits(variant, quantity, global_quantity_limit)
+            _check_quantity_limits(user, variant, quantity, global_quantity_limit)
 
             if not stocks:
                 insufficient_stocks.append(

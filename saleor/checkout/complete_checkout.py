@@ -350,6 +350,7 @@ def _create_lines_for_order(
     checkout_info: "CheckoutInfo",
     lines: Iterable["CheckoutLineInfo"],
     prices_entered_with_tax: bool,
+    user: Optional[User],
 ) -> Iterable[OrderLineInfo]:
     """Create a lines for the given order.
 
@@ -391,6 +392,7 @@ def _create_lines_for_order(
         quantities,
         checkout_info.channel.slug,
         global_quantity_limit=None,
+        user=user,
         delivery_method_info=checkout_info.delivery_method_info,
         additional_filter_lookup=additional_warehouse_lookup,
         existing_lines=lines,
@@ -982,12 +984,14 @@ def _create_order_lines_from_checkout_lines(
     manager: "PluginsManager",
     order_pk: Union[str, UUID],
     prices_entered_with_tax: bool,
+    user: Optional[User],
 ) -> list[OrderLineInfo]:
     order_lines_info = _create_lines_for_order(
         manager,
         checkout_info,
         lines,
         prices_entered_with_tax,
+        user,
     )
     order_lines = []
     order_line_discounts: list["OrderLineDiscount"] = []
@@ -1181,6 +1185,7 @@ def _create_order_from_checkout(
         manager=manager,
         order_pk=order.pk,
         prices_entered_with_tax=prices_entered_with_tax,
+        user=user,
     )
 
     # update undiscounted order total
