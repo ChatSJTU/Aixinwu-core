@@ -1,5 +1,5 @@
 from functools import partial, reduce
-from typing import Callable, TypeVar
+from typing import Callable, Iterable, TypeVar
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -9,6 +9,7 @@ from django.http.request import split_domain_port
 from promise import Promise
 
 from ..core.dataloaders import DataLoader
+from ...site.models import SiteCarousel, SiteStatistics
 
 
 class SiteByIdLoader(DataLoader[int, Site]):
@@ -17,6 +18,19 @@ class SiteByIdLoader(DataLoader[int, Site]):
     def batch_load(self, keys):
         sites_mapped = Site.objects.using(self.database_connection_name).in_bulk(keys)
         return [sites_mapped.get(site_id) for site_id in keys]
+
+
+class SiteCarouselBySiteIdLoader(DataLoader):
+    context_key = "site_carousel_by_site_id"
+
+    def batch_load(self, keys):
+        carousels = SiteCarousel.objects.using(self.database_connection_name).filter(
+            deleted_at__isnull=False
+        )
+        try:
+            return [carousels.get(site_id=site_id) for site_id in keys]
+        except:
+            return []
 
 
 class SiteByHostLoader(DataLoader):
@@ -37,11 +51,25 @@ def get_site_promise(request) -> Promise[Site]:
         return SiteByIdLoader(request).load(site_id)
 
     host = request.get_host()
-    return (
+    site = (
         SiteByHostLoader(request)
         .load(host)
         .then(partial(ensure_that_site_is_not_none, request, host))
     )
+
+    try:
+        _ = site.stat
+    except:
+        _ = SiteStatistics.objects.get_or_create(site=site)
+    return site
+
+
+def get_site_carousel_promise(request) -> Promise[Site]:
+    site_id = settings.SITE_ID
+    try:
+        return SiteCarouselBySiteIdLoader(request).load(site_id)
+    except:
+        raise
 
 
 def execute_callback_if_site_not_none(site):

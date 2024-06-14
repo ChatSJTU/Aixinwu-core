@@ -5,8 +5,6 @@ from django.conf import settings
 from django_countries import countries
 from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 
-from saleor.graphql.core.types.common import File
-
 from ... import __version__, schema_version
 from ...account import models as account_models
 from ...channel import models as channel_models
@@ -49,7 +47,11 @@ from ..meta.types import ObjectWithMetadata
 from ..payment.types import PaymentGateway
 from ..plugins.dataloaders import plugin_manager_promise_callback
 from ..shipping.types import ShippingMethod
-from ..site.dataloaders import get_site_promise, load_site_callback
+from ..site.dataloaders import (
+    get_site_carousel_promise,
+    get_site_promise,
+    load_site_callback,
+)
 from ..translations.fields import TranslationField
 from ..translations.resolvers import resolve_translation
 from ..translations.types import ShopTranslation
@@ -139,15 +141,15 @@ class Carousel(graphene.ObjectType):
 
     @staticmethod
     def get_node(root, info: ResolveInfo):
-        site = get_site_promise(info.context).get()
-        return site.carousels.filter(deleted_at__is_null=True)
+        return get_site_carousel_promise(info.context).get()
 
     @staticmethod
     def resolve_urls(root, info: ResolveInfo):
-        if not root:
+        try:
+            carousel = get_site_carousel_promise(info.context).get()
+            return carousel.urls
+        except:
             return []
-        else:
-            return root.urls
 
     class Meta:
         description = "Shop Carousel."
@@ -168,6 +170,26 @@ class Statistics(graphene.ObjectType):
     def get_node(root, info: ResolveInfo):
         site = get_site_promise(info.context).get()
         return site.stat
+
+    @staticmethod
+    @load_site_callback
+    def resolve_views(root, info: ResolveInfo, site):
+        return site.stat.views
+
+    @staticmethod
+    @load_site_callback
+    def resolve_users(_, info: ResolveInfo, site):
+        return site.stat.users
+
+    @staticmethod
+    @load_site_callback
+    def resolve_circulated_currency(_, info: ResolveInfo, site):
+        return site.stat.circulated_currency
+
+    @staticmethod
+    @load_site_callback
+    def resolve_circulated_items(_, info: ResolveInfo, site):
+        return site.stat.circulated_items
 
     class Meta:
         description = "Shop Statistics."
