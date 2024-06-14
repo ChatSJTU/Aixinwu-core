@@ -35,7 +35,7 @@ from ...graphql.account.mutations.authentication.utils import (
 from ...order.utils import match_orders_with_new_user
 from ...permission.enums import get_permission_names, get_permissions_from_codenames
 from ...permission.models import Permission
-from ...site.models import Site
+from ...site.models import Site, SiteStatistics
 from ..error_codes import PluginErrorCode
 from ..models import PluginConfiguration
 from . import PLUGIN_ID
@@ -263,9 +263,13 @@ def get_or_create_user_from_payload(
         )
         site = Site.objects.get_current()
 
-        site.stat.users += 1
-        site.stat.save(update_fields=["users"])
+        try:
+            stat = site.stat
+        except:
+            stat = SiteStatistics.objects.get_or_create(site=site)
 
+        stat.users += 1
+        stat.save(update_fields=["users"])
         match_orders_with_new_user(user)
     except User.MultipleObjectsReturned:
         logger.warning("Multiple users returned for single OIDC sub ID")
