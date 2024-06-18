@@ -59,6 +59,8 @@ def get_url_from_env(name, *, schemes=None) -> Optional[str]:
 DEBUG = get_bool_from_env("DEBUG", True)
 
 SITE_ID = 1
+SITE_DOMAIN = "aixinwu.sjtu"
+SITE_NAME = "aixinwu"
 
 PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -751,8 +753,17 @@ PLUGINS = BUILTIN_PLUGINS + EXTERNAL_PLUGINS
 OPENID_PROVIDER = os.getenv("OPENID_PROVIDER", "jaccount")
 OPENID_PROVIDER_SETTINGS = {
     "jaccount": [
-        {"name": "client_id", "value": os.getenv("JACCOUNT_CLIENT_ID", "")},
-        {"name": "client_secret", "value": os.getenv("JACCOUNT_CLIENT_SECRET", "")},
+        {
+            "name": "client_id",
+            "value": os.getenv("JACCOUNT_CLIENT_ID", ""),
+        },
+        {
+            "name": "client_secret",
+            "value": os.getenv(
+                "JACCOUNT_CLIENT_SECRET",
+                "",
+            ),
+        },
         {"name": "enable_refresh_token", "value": True},
         {
             "name": "oauth_authorization_url",

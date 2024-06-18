@@ -261,7 +261,13 @@ def get_or_create_user_from_payload(
             email=user_email,
             defaults=defaults_create,
         )
-        site = Site.objects.get_current()
+
+        site = Site.objects.get_or_create(id=settings.SITE_ID)
+
+        if not site.domain or not site.name:
+            site.name = settings.SITE_NAME
+            site.domain = settings.SITE_DOMAIN
+            site.save(update_fields=["name", "domain"])
 
         try:
             stat = site.stat
