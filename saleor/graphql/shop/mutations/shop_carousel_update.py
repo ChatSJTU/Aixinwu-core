@@ -55,7 +55,7 @@ class ShopCarouselUpdate(BaseMutation):
             carousel.deleted_at = timezone.now()
             carousel.save(update_fields=["site", "deleted_at"])
         except:
-            raise  # no carousel present passing
+            pass  # no carousel present passing
 
         carousel = SiteCarousel.objects.create(site=site_settings)
 
