@@ -162,10 +162,10 @@ class SiteSettingsTranslation(Translation):
 
 class SiteCarousel(ModelWithMetadata):
     site = models.OneToOneField(
-        SiteSettings, related_name="carousel", on_delete=models.CASCADE
+        SiteSettings, related_name="carousel", null=True, on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    deleted_at = models.DateTimeField()
+    deleted_at = models.DateTimeField(null=True)
 
 
 class SiteCarouselLine(ModelWithMetadata):

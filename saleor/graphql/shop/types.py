@@ -147,7 +147,7 @@ class Carousel(graphene.ObjectType):
     def resolve_urls(root, info: ResolveInfo):
         try:
             carousel = get_site_carousel_promise(info.context).get()
-            return carousel.urls
+            return [line.url for line in carousel.lines.all()]
         except:
             return []
 

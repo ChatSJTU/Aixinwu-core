@@ -24,11 +24,9 @@ class SiteCarouselBySiteIdLoader(DataLoader):
     context_key = "site_carousel_by_site_id"
 
     def batch_load(self, keys):
-        carousels = SiteCarousel.objects.using(self.database_connection_name).filter(
-            deleted_at__isnull=False
-        )
+        carousels = SiteCarousel.objects.using(self.database_connection_name)
         try:
-            return [carousels.get(site_id=site_id) for site_id in keys]
+            return [carousels.get(site__pk=site_id) for site_id in keys]
         except:
             return []
 

@@ -47,16 +47,19 @@ class ShopCarouselUpdate(BaseMutation):
     def perform_mutation(  # type: ignore[override]
         cls, _root, info: ResolveInfo, /, *, input
     ):
-        site = get_site_promise(info.context).get()
+        site_settings = get_site_promise(info.context).get().settings
         urls = input.get("urls")
-        if site.carousel:
-            carousel = site.carousel
+        try:
+            carousel = site_settings.carousel
             carousel.site = None
             carousel.deleted_at = timezone.now()
             carousel.save(update_fields=["site", "deleted_at"])
+        except:
+            raise  # no carousel present passing
 
-        carousel = SiteCarousel.objects.create(site=site)
+        carousel = SiteCarousel.objects.create(site=site_settings)
+
         SiteCarouselLine.objects.bulk_create(
             [SiteCarouselLine(url=url, carousel=carousel) for url in urls]
         )
-        return ShopCarouselUpdate(shop=Carousel())
+        return ShopCarouselUpdate(carousel=Carousel())
