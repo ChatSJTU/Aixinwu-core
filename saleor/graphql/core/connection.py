@@ -155,8 +155,8 @@ def _validate_connection_args(args):
         raise GraphQLError("Argument `first` must be a non-negative integer.")
     if last and not (isinstance(last, int) and last > 0):
         raise GraphQLError("Argument `last` must be a non-negative integer.")
-    if first and last:
-        raise GraphQLError("Argument `last` cannot be combined with `first`.")
+    # if first and last:
+    #     raise GraphQLError("Argument `last` cannot be combined with `first`.")
     if first and args.get("before"):
         raise GraphQLError("Argument `first` cannot be combined with `before`.")
     if last and args.get("after"):
@@ -217,16 +217,20 @@ def _get_edges_for_connection(edge_type, qs, args, sorting_fields):
     if not first and not last:
         return [], {"has_previous_page": False, "has_next_page": False}
 
-    if last:
+    matching_records = list(qs)
+
+    if first and last:
+        start_slice, end_slice = requested_count - last, requested_count
+    elif last:
         start_slice, end_slice = 1, None
     else:
         start_slice, end_slice = 0, requested_count
 
-    matching_records = list(qs)
-    if last:
+    if last and not first:
         matching_records = list(reversed(matching_records))
         if len(matching_records) <= requested_count:
             start_slice = 0
+
     page_info = _get_page_info(matching_records, cursor, first, last)
     matching_records = matching_records[start_slice:end_slice]
 
@@ -275,7 +279,9 @@ def connection_from_queryset_slice(
 
     sort_by = args.get("sort_by", {})
     sorting_fields = _get_sorting_fields(sort_by, qs)
-    sorting_direction = _get_sorting_direction(sort_by, last)
+    sorting_direction = _get_sorting_direction(
+        sort_by, None if first and last else last
+    )
     if cursor and len(cursor) != len(sorting_fields):
         raise GraphQLError("Received cursor is invalid.")
     filter_kwargs = (

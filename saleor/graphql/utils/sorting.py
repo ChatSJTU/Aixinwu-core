@@ -26,7 +26,7 @@ def _sort_queryset_by_attribute(queryset, sorting_attribute, sorting_direction):
 
 def sort_queryset_for_connection(iterable, args):
     sort_by = args.get("sort_by")
-    reversed = True if "last" in args else False
+    reversed = True if "last" in args and "first" not in args else False
     if sort_by:
         iterable = sort_queryset(
             queryset=iterable,
