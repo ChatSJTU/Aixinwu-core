@@ -13,7 +13,11 @@ import django_filters
 
 
 def filter_user(qs, _, value):
-    return qs.filter(user__name=value)
+    return qs.filter(user__first_name=value)
+
+
+def filter_account(qs, _, value):
+    return qs.filter(user__account=value)
 
 
 def filter_date_range(qs, _, value):
@@ -25,13 +29,14 @@ def filter_type(qs, _, value):
 
 
 class BalanceEventFilter(MetadataFilterBase):
-    user = django_filters.CharFilter(method=filter_user)
+    name = django_filters.CharFilter(method=filter_user)
+    account = django_filters.CharFilter(method=filter_account)
     type = EnumFilter(input_class=BalanceEventsEnum, method=filter_type)
     date = ObjectTypeFilter(input_class=DateRangeInput, method=filter_date_range)
 
     class Meta:
         model = BalanceEvent
-        fields = ["user", "date", "type"]
+        fields = ["name", "account", "date", "type"]
 
 
 class BalanceEventFilterInput(FilterInputObjectType):
