@@ -15,6 +15,8 @@ from django.core.validators import URLValidator
 from django.db.models import QuerySet
 from django.utils import timezone
 from jwt import PyJWTError
+
+from saleor.account.events import first_login_balance_event
 from ...account.models import Group, User
 from ...account.search import prepare_user_search_document_value
 from ...account.utils import get_user_groups_permissions
@@ -261,8 +263,8 @@ def get_or_create_user_from_payload(
             email=user_email,
             defaults=defaults_create,
         )
-
-        site = Site.objects.get_or_create(id=settings.SITE_ID)
+        first_login_balance_event(user=user)
+        site, _ = Site.objects.get_or_create(id=settings.SITE_ID)
 
         if not site.domain or not site.name:
             site.name = settings.SITE_NAME

@@ -1097,6 +1097,31 @@ type Query {
     last: Int
   ): PluginCountableConnection
 
+  """User Balance Events"""
+  balanceEvents(
+    """Filter the balance events"""
+    filter: BalanceEventFilterInput
+
+    """Sorting the balance events"""
+    sortBy: BalanceEventSortingInput
+
+    """Return the elements in the list that come before the specified cursor."""
+    before: String
+
+    """Return the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
+    """
+    first: Int
+
+    """
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
+    """
+    last: Int
+  ): BalanceEventCountableConnection @doc(category: "Events")
+
   """
   Donations made by the user or collected by users if requested by staff.
   """
@@ -14046,6 +14071,68 @@ enum PluginSortField {
   IS_ACTIVE
 }
 
+type BalanceEventCountableConnection @doc(category: "Events") {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+  edges: [BalanceEventCountableEdge!]!
+
+  """A total count of items in the collection."""
+  totalCount: Int
+}
+
+type BalanceEventCountableEdge @doc(category: "Events") {
+  """The item at the end of the edge."""
+  node: BalanceEvent!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""Represents balance events."""
+type BalanceEvent implements Node {
+  """The ID of the balance event."""
+  id: ID!
+
+  """User account of a balance event."""
+  account: String
+
+  """Balance of a balance event."""
+  balance: Float
+
+  """Type of a balance event."""
+  type: String
+
+  """User name of a balance event."""
+  name: String
+}
+
+input BalanceEventFilterInput @doc(category: "Events") {
+  user: String
+  date: DateRangeInput
+  type: BalanceEventsEnum
+  metadata: [MetadataFilter!]
+}
+
+"""An enumeration."""
+enum BalanceEventsEnum @doc(category: "Events") {
+  DONATION_GRANTED
+  FIRST_LOGIN
+  CONSUMED
+}
+
+input BalanceEventSortingInput @doc(category: "Events") {
+  """Specifies the direction in which to sort balances."""
+  direction: OrderDirection!
+
+  """Sort balances by the selected field."""
+  field: EventSortField!
+}
+
+enum EventSortField @doc(category: "Events") {
+  """Sort checkouts by creation date."""
+  CREATION_DATE
+}
+
 type DonationCountableConnection @doc(category: "Donations") {
   """Pagination data for this connection."""
   pageInfo: PageInfo!
@@ -14100,18 +14187,12 @@ input DonationSortingInput @doc(category: "Donations") {
   direction: OrderDirection!
 
   """Sort donations by the selected field."""
-  field: CheckoutSortField!
+  field: DonationSortField!
 }
 
-enum CheckoutSortField @doc(category: "Checkout") {
+enum DonationSortField @doc(category: "Donations") {
   """Sort checkouts by creation date."""
   CREATION_DATE
-
-  """Sort checkouts by customer."""
-  CUSTOMER
-
-  """Sort checkouts by payment."""
-  PAYMENT
 }
 
 input DonationFilterInput @doc(category: "Orders") {
@@ -14806,6 +14887,17 @@ input CheckoutSortingInput @doc(category: "Checkout") {
 
   """Sort checkouts by the selected field."""
   field: CheckoutSortField!
+}
+
+enum CheckoutSortField @doc(category: "Checkout") {
+  """Sort checkouts by creation date."""
+  CREATION_DATE
+
+  """Sort checkouts by customer."""
+  CUSTOMER
+
+  """Sort checkouts by payment."""
+  PAYMENT
 }
 
 input CheckoutFilterInput @doc(category: "Checkout") {

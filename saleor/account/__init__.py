@@ -45,3 +45,21 @@ class CustomerEvents:
         (EMAIL_ASSIGNED, "A customer's email address was edited"),
         (NOTE_ADDED, "A note was added to the customer"),
     ]
+
+
+class BalanceEvents:
+    DONATION_GRANTED = "donation_granted"
+    FIRST_LOGIN = "first_login"
+    CONSUMED = "consumed"
+
+    CHOICES = [
+        (
+            DONATION_GRANTED,
+            "The user received credits for fulfilling a donation proposal.",
+        ),
+        (
+            FIRST_LOGIN,
+            "The user received credits for the first login.",
+        ),
+        (CONSUMED, "The user consumed the credits."),
+    ]

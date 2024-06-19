@@ -15,6 +15,7 @@ from .core.schema import CoreMutations, CoreQueries
 from .csv.schema import CsvMutations, CsvQueries
 from .discount.schema import DiscountMutations, DiscountQueries
 from .donation.schema import DonationMutations, DonationQueries
+from .events.schema import EventQueries
 from .giftcard.schema import GiftCardMutations, GiftCardQueries
 from .invoice.schema import InvoiceMutations
 from .menu.schema import MenuMutations, MenuQueries
@@ -50,6 +51,7 @@ class Query(
     CsvQueries,
     DiscountQueries,
     DonationQueries,
+    EventQueries,
     PluginsQueries,
     GiftCardQueries,
     MenuQueries,

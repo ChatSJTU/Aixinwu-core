@@ -1,9 +1,13 @@
+from decimal import Decimal
 from typing import Optional
+
+from stripe import Balance
 
 from ..app.models import App
 from ..order.models import Order, OrderLine
-from . import CustomerEvents
-from .models import CustomerEvent, User
+from . import BalanceEvents, CustomerEvents
+from .models import BalanceEvent, CustomerEvent, User
+from ..donation.models import Donation
 
 
 def customer_account_created_event(*, user: User) -> Optional[CustomerEvent]:
@@ -123,4 +127,22 @@ def assigned_name_to_a_customer_event(
         order=None,
         type=CustomerEvents.NAME_ASSIGNED,
         parameters={"message": new_name},
+    )
+
+
+def first_login_balance_event(*, user: User) -> BalanceEvent:
+    return BalanceEvent.objects.create(
+        user=user, type=BalanceEvents.FIRST_LOGIN, balance=Decimal(300.0)
+    )
+
+
+def donation_granted_balance_event(*, user: User, donation: Donation) -> BalanceEvent:
+    return BalanceEvent.objects.create(
+        user=user, type=BalanceEvents.DONATION_GRANTED, balance=donation.price_amount
+    )
+
+
+def consumption_balance_event(*, user: User, order: Order) -> BalanceEvent:
+    return BalanceEvent.objects.create(
+        user=user, type=BalanceEvents.CONSUMED, balance=order.total_net_amount
     )

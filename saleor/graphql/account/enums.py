@@ -1,10 +1,10 @@
 import graphene
 from django_countries import countries
 
-from ...account import CustomerEvents
+from ...account import BalanceEvents, CustomerEvents
 from ...checkout import AddressType
 from ...graphql.core.enums import to_enum
-from ..core.doc_category import DOC_CATEGORY_USERS
+from ..core.doc_category import DOC_CATEGORY_EVENTS, DOC_CATEGORY_USERS
 from ..core.types import BaseEnum
 from ..core.utils import str_to_enum
 
@@ -12,7 +12,8 @@ AddressTypeEnum = to_enum(AddressType, type_name="AddressTypeEnum")
 
 CustomerEventsEnum = to_enum(CustomerEvents)
 CustomerEventsEnum.doc_category = DOC_CATEGORY_USERS
-
+BalanceEventsEnum = to_enum(BalanceEvents)
+BalanceEventsEnum.doc_category = DOC_CATEGORY_EVENTS
 
 CountryCodeEnum = graphene.Enum(
     "CountryCode", [(str_to_enum(country[0]), country[0]) for country in countries]

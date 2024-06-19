@@ -23,7 +23,7 @@ from ..order.models import Order
 from ..permission.enums import AccountPermissions, BasePermissionEnum, get_permissions
 from ..permission.models import Permission, PermissionsMixin, _user_has_perm
 from ..site.models import SiteSettings
-from . import CustomerEvents
+from . import BalanceEvents, CustomerEvents
 from .validators import validate_possible_number
 
 
@@ -354,9 +354,42 @@ class CustomerEvent(models.Model):
     order = models.ForeignKey("order.Order", on_delete=models.SET_NULL, null=True)
     parameters = JSONField(blank=True, default=dict, encoder=CustomJsonEncoder)
     user = models.ForeignKey(
-        User, related_name="events", on_delete=models.CASCADE, null=True
+        User, related_name="customer_events", on_delete=models.CASCADE, null=True
     )
     app = models.ForeignKey(App, related_name="+", on_delete=models.SET_NULL, null=True)
+    balance = models.DecimalField(
+        blank=True,
+        null=True,
+        max_digits=settings.DEFAULT_MAX_DIGITS,
+        decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+    )
+
+    class Meta:
+        ordering = ("date",)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(type={self.type!r}, user={self.user!r})"
+
+
+class BalanceEvent(models.Model):
+    """Model used to store events that happened during the balance lifecycle."""
+
+    date = models.DateTimeField(default=timezone.now, editable=False)
+    type = models.CharField(
+        max_length=255,
+        choices=[
+            (type_name.upper(), type_name) for type_name, _ in BalanceEvents.CHOICES
+        ],
+    )
+    user = models.ForeignKey(
+        User, related_name="balance_events", on_delete=models.CASCADE, null=True
+    )
+    balance = models.DecimalField(
+        blank=True,
+        null=True,
+        max_digits=settings.DEFAULT_MAX_DIGITS,
+        decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+    )
 
     class Meta:
         ordering = ("date",)
