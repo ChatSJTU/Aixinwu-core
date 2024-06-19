@@ -206,9 +206,5 @@ def get_search_vectors_for_values(
 
 def search_products(qs, value):
     if value:
-        query = SearchQuery(value, search_type="websearch", config="simple")
-        lookup = Q(search_vector=query)
-        qs = qs.filter(lookup).annotate(
-            search_rank=SearchRank(F("search_vector"), query)
-        )
+        qs = qs.filter(name__contains=value)
     return qs

@@ -172,5 +172,5 @@ def check_for_sorting_by_rank(info, kwargs: dict):
         # and no explicit sorting is requested
         product_type = info.schema.get_type("ProductOrder")
         kwargs["sort_by"] = product_type.create_container(
-            {"direction": "-", "field": ["search_rank", "id"]}
+            {"direction": "-", "field": ["id"]}
         )
