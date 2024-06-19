@@ -577,6 +577,14 @@ class User(ModelObjectType[models.User]):
         return root.note
 
     @staticmethod
+    def resolve_last_login(root: models.User, _info: ResolveInfo):
+        return root.last_login
+
+    @staticmethod
+    def resolve_continous(root: models.User, _info: ResolveInfo):
+        return root.continuous
+
+    @staticmethod
     def resolve_events(root: models.User, info: ResolveInfo):
         return CustomerEventsByUserLoader(info.context).load(root.id)
 

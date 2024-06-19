@@ -778,6 +778,7 @@ OPENID_PROVIDER_SETTINGS = {
     ]
 }
 
+CONTINUOUS_BALANCE_ADD = 30.0
 PLUGIN_SETTINGS = {
     "aixinwu.authentication.openidconnect": OPENID_PROVIDER_SETTINGS.get(
         OPENID_PROVIDER, {}

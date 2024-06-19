@@ -183,6 +183,7 @@ class User(
     date_joined = models.DateTimeField(default=timezone.now, editable=False)
     continuous = models.IntegerField(blank=True, default=1)
     updated_at = models.DateTimeField(auto_now=True, db_index=True)
+    last_login = models.DateTimeField(default=timezone.now)
     last_password_reset_request = models.DateTimeField(null=True, blank=True)
     default_shipping_address = models.ForeignKey(
         Address, related_name="+", null=True, blank=True, on_delete=models.SET_NULL

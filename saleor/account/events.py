@@ -1,6 +1,7 @@
 from decimal import Decimal
 from typing import Optional
 
+from django.conf import settings
 from stripe import Balance
 
 from ..app.models import App
@@ -133,6 +134,20 @@ def assigned_name_to_a_customer_event(
 def first_login_balance_event(*, user: User) -> BalanceEvent:
     return BalanceEvent.objects.create(
         user=user, type=BalanceEvents.FIRST_LOGIN, balance=Decimal(300.0)
+    )
+
+
+def consecutive_login_balance_event(*, user: User) -> BalanceEvent:
+    return BalanceEvent.objects.create(
+        user=user,
+        type=BalanceEvents.CONSECUTIVE_LOGIN,
+        balance=settings.CONTINUOUS_BALANCE_ADD,
+    )
+
+
+def change_balance_event(*, user: User, balance: Decimal) -> BalanceEvent:
+    return BalanceEvent.objects.create(
+        user=user, type=BalanceEvents.MANUALLY_UPDATED, balance=balance
     )
 
 

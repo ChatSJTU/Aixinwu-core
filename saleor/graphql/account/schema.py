@@ -29,6 +29,7 @@ from .mutations.account import (
     AccountRequestDeletion,
     AccountSetDefaultAddress,
     AccountUpdate,
+    BalanceUpdate,
     ConfirmAccount,
     ConfirmEmailChange,
     RequestEmailChange,
@@ -292,6 +293,7 @@ class AccountMutations(graphene.ObjectType):
     address_delete = AddressDelete.Field()
     address_set_default = AddressSetDefault.Field()
 
+    balance_update = BalanceUpdate.Field()
     customer_create = CustomerCreate.Field()
     customer_update = CustomerUpdate.Field()
     customer_delete = CustomerDelete.Field()

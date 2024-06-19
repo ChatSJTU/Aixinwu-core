@@ -14107,7 +14107,8 @@ type BalanceEvent implements Node {
 }
 
 input BalanceEventFilterInput @doc(category: "Events") {
-  user: String
+  name: String
+  account: String
   date: DateRangeInput
   type: BalanceEventsEnum
   metadata: [MetadataFilter!]
@@ -14117,6 +14118,8 @@ input BalanceEventFilterInput @doc(category: "Events") {
 enum BalanceEventsEnum @doc(category: "Events") {
   DONATION_GRANTED
   FIRST_LOGIN
+  MANUALLY_UPDATED
+  CONSECUTIVE_LOGIN
   CONSUMED
 }
 
@@ -20163,6 +20166,22 @@ type Mutation {
     """ID of the user to change the address for."""
     userId: ID!
   ): AddressSetDefault @doc(category: "Users") @webhookEventsInfo(asyncEvents: [CUSTOMER_UPDATED], syncEvents: [])
+
+  """
+  Update user's balance. 
+  
+  Requires one of the following permissions: MANAGE_USERS.
+  
+  Triggers the following webhook events:
+  - ADDRESS_CREATED (async): A new address was created.
+  """
+  balanceUpdate(
+    """Fields required to create address."""
+    balance: Float!
+
+    """ID of a user to create address for."""
+    userId: ID!
+  ): BalanceUpdate @doc(category: "Users") @webhookEventsInfo(asyncEvents: [ADDRESS_CREATED], syncEvents: [])
 
   """
   Creates a new customer. 
@@ -31429,6 +31448,20 @@ Triggers the following webhook events:
 """
 type AddressSetDefault @doc(category: "Users") @webhookEventsInfo(asyncEvents: [CUSTOMER_UPDATED], syncEvents: []) {
   """An updated user instance."""
+  user: User
+  accountErrors: [AccountError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
+  errors: [AccountError!]!
+}
+
+"""
+Update user's balance. 
+
+Requires one of the following permissions: MANAGE_USERS.
+
+Triggers the following webhook events:
+- ADDRESS_CREATED (async): A new address was created.
+"""
+type BalanceUpdate @doc(category: "Users") @webhookEventsInfo(asyncEvents: [ADDRESS_CREATED], syncEvents: []) {
   user: User
   accountErrors: [AccountError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
   errors: [AccountError!]!

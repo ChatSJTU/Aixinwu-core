@@ -49,7 +49,9 @@ class CustomerEvents:
 
 class BalanceEvents:
     DONATION_GRANTED = "donation_granted"
+    MANUALLY_UPDATED = "manually_updated"
     FIRST_LOGIN = "first_login"
+    CONSECUTIVE_LOGIN = "consecutive_login"
     CONSUMED = "consumed"
 
     CHOICES = [
@@ -60,6 +62,14 @@ class BalanceEvents:
         (
             FIRST_LOGIN,
             "The user received credits for the first login.",
+        ),
+        (
+            MANUALLY_UPDATED,
+            "The user's balance has been manually updated.",
+        ),
+        (
+            CONSECUTIVE_LOGIN,
+            "The user received credits for the continuous login.",
         ),
         (CONSUMED, "The user consumed the credits."),
     ]

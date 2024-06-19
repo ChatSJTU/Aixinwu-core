@@ -16,7 +16,10 @@ from django.db.models import QuerySet
 from django.utils import timezone
 from jwt import PyJWTError
 
-from saleor.account.events import first_login_balance_event
+from saleor.account.events import (
+    consecutive_login_balance_event,
+    first_login_balance_event,
+)
 from ...account.models import Group, User
 from ...account.search import prepare_user_search_document_value
 from ...account.utils import get_user_groups_permissions
@@ -226,7 +229,6 @@ def get_or_create_user_from_payload(
     payload: dict,
     email_domain: str,
     oauth_url: str,
-    last_login: Optional[int] = None,
 ) -> User:
     oidc_metadata_key = f"oidc:{oauth_url}"
 
@@ -297,7 +299,7 @@ def get_or_create_user_from_payload(
         user_first_name=defaults_create["first_name"],
         user_last_name=defaults_create["last_name"],
         sub=account,  # type: ignore
-        last_login=last_login,
+        login_time=timezone.now(),
     )
 
     cache.set(cache_key, user.id, min(JWKS_CACHE_TIME, OIDC_DEFAULT_CACHE_TIME))
@@ -317,7 +319,7 @@ def _update_user_details(
     user_first_name: str,
     user_last_name: str,
     sub: str,
-    last_login: Optional[int],
+    login_time: datetime,
 ):
     user_sub = user.get_value_from_private_metadata(oidc_key)
     fields_to_save = set()
@@ -336,24 +338,18 @@ def _update_user_details(
         match_orders_with_new_user(user)
         fields_to_save.update({"email", "search_document"})
 
-    if last_login:
-        if not user.last_login or user.last_login.timestamp() < last_login:
-            login_time = timezone.make_aware(datetime.fromtimestamp(last_login))
-            if login_time - user.last_login < timezone.timedelta(days=1):
-                user.continuous += 1
-            else:
-                user.continuous = 1
-            user.last_login = login_time
-            fields_to_save.update({"days_consistent", "last_login"})
+    delta = login_time - user.last_login
 
-    else:
-        if (
-            not user.last_login
-            or (timezone.now() - user.last_login).seconds
-            > settings.OAUTH_UPDATE_LAST_LOGIN_THRESHOLD
-        ):
-            user.last_login = timezone.now()
-            fields_to_save.add("last_login")
+    if delta.days == 1:
+        user.continuous += 1
+        user.balance += settings.CONTINUOUS_BALANCE_ADD
+        consecutive_login_balance_event(user=user)
+        fields_to_save.add({"balance"})
+    elif delta.days > 1:
+        user.continuous = 1
+    user.last_login = login_time
+
+    fields_to_save.update({"continuous", "last_login"})
 
     if user.first_name != user_first_name:
         user.first_name = user_first_name

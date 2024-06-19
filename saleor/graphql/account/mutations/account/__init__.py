@@ -10,9 +10,11 @@ from .confirm_account import ConfirmAccount
 from .confirm_email_change import ConfirmEmailChange
 from .request_email_change import RequestEmailChange
 from .send_confirmation_email import SendConfirmationEmail
+from .account_balance_update import BalanceUpdate
 
 __all__ = [
     "AccountAddressCreate",
+    "BalanceUpdate",
     "AccountAddressDelete",
     "AccountAddressUpdate",
     "AccountDelete",
