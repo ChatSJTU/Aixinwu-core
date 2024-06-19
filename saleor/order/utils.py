@@ -196,14 +196,17 @@ def update_order_status(order: Order):
         status = order.status
     elif quantity_fulfilled <= 0:
         status = OrderStatus.UNFULFILLED
-    elif 0 < quantity_returned < total_quantity:
-        status = OrderStatus.PARTIALLY_RETURNED
-    elif quantity_returned == total_quantity:
-        status = OrderStatus.RETURNED
+    # elif 0 < quantity_returned < total_quantity:
+    #     status = OrderStatus.PARTIALLY_RETURNED
+    # elif quantity_returned == total_quantity:
+    #     status = OrderStatus.RETURNED
     elif quantity_fulfilled < total_quantity or awaiting_approval:
         status = OrderStatus.PARTIALLY_FULFILLED
     else:
-        status = OrderStatus.FULFILLED
+        if order.channel.name.find("shared"):
+            status = OrderStatus.LEASED
+        else:
+            status = OrderStatus.FULFILLED
 
     if status != order.status:
         order.status = status

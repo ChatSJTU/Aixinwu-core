@@ -835,6 +835,7 @@ class Product(ChannelContextTypeWithMetadata[models.Product]):
         lambda: ProductType, required=True, description="Type of the product."
     )
     slug = graphene.String(required=True, description="Slug of the product.")
+    lending = graphene.Boolean(description="Product Lending")
     category = graphene.Field("saleor.graphql.product.types.categories.Category")
     created = graphene.DateTime(
         required=True, description="The date and time when the product was created."

@@ -5835,6 +5835,9 @@ type Product implements Node & ObjectWithMetadata @doc(category: "Products") {
 
   """Slug of the product."""
   slug: String!
+
+  """Product Lending"""
+  lending: Boolean
   category: Category
 
   """The date and time when the product was created."""
@@ -11831,6 +11834,7 @@ enum OrderStatus @doc(category: "Orders") {
   FULFILLED
   CANCELED
   EXPIRED
+  LEASED
 }
 
 """Represents order fulfillment."""
@@ -22497,6 +22501,9 @@ input ProductCreateInput @doc(category: "Products") {
   """Product slug."""
   slug: String
 
+  """Product Lending."""
+  lending: Boolean
+
   """
   ID of a tax class to assign to this product. If not provided, product will use the tax class which is assigned to the product type.
   """
@@ -22748,6 +22755,9 @@ input ProductBulkCreateInput @doc(category: "Products") {
 
   """Product slug."""
   slug: String
+
+  """Product Lending."""
+  lending: Boolean
 
   """
   ID of a tax class to assign to this product. If not provided, product will use the tax class which is assigned to the product type.
@@ -23074,6 +23084,9 @@ input ProductInput @doc(category: "Products") {
 
   """Product slug."""
   slug: String
+
+  """Product Lending."""
+  lending: Boolean
 
   """
   ID of a tax class to assign to this product. If not provided, product will use the tax class which is assigned to the product type.

@@ -232,6 +232,11 @@ def order_refunded(
     last_payment = payment if payment else order.get_last_payment()
     if last_payment and last_payment.charge_status == ChargeStatus.FULLY_CHARGED:
         last_payment.charge_status = ChargeStatus.FULLY_REFUNDED
+
+        if order.channel.name.find("shared"):
+            order.status = OrderStatus.RETURNED
+            order.save(update_fields=["status"])
+
         user = order.user
         user.balance += order.total_net_amount
         user.save(update_fields=["balance"])

@@ -48,6 +48,7 @@ class ProductInput(BaseInputObjectType):
     description = JSONString(description="Product description." + RICH_CONTENT)
     name = graphene.String(description="Product name.")
     slug = graphene.String(description="Product slug.")
+    lending = graphene.Boolean(description="Product Lending.")
     tax_class = graphene.ID(
         description=(
             "ID of a tax class to assign to this product. If not provided, product "

@@ -207,7 +207,7 @@ class Product(SeoModel, ModelWithMetadata, ModelWithExternalReference):
         null=True,
         on_delete=models.SET_NULL,
     )
-
+    lending = models.BooleanField(default=False)
     objects = managers.ProductManager()
 
     class Meta:

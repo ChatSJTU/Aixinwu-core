@@ -23,6 +23,8 @@ class OrderStatus:
     CANCELED = "canceled"  # permanently canceled order
     EXPIRED = "expired"  # order marked as expired
 
+    LEASED = "leased"
+
     CHOICES = [
         (DRAFT, "Draft"),
         (UNCONFIRMED, "Unconfirmed"),
@@ -33,6 +35,7 @@ class OrderStatus:
         (FULFILLED, "Fulfilled"),
         (CANCELED, "Canceled"),
         (EXPIRED, "Expired"),
+        (LEASED, "Leased"),
     ]
 
 

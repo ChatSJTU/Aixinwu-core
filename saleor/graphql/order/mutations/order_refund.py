@@ -88,31 +88,25 @@ class OrderRefund(BaseMutation):
         payment = order.get_last_payment()
         payment = clean_payment(payment)
         payment = clean_refund_payment(payment)
-        transaction = try_payment_action(
+        # Confirm that we changed the status to refund. Some payment can receive
+        # asynchronous webhook with update status
+        payment.refresh_from_db()
+        order_refunded(
             order,
             info.context.user,
             app,
-            payment,
-            gateway.refund,
+            amount,
             payment,
             manager,
-            amount=amount,
-            channel_slug=order.channel.slug,
         )
-        # Confirm that we changed the status to refund. Some payment can receive
-        # asynchronous webhook with update status
-        if transaction.kind == TransactionKind.REFUND:
-            payment.refresh_from_db()
-            order_refunded(
-                order,
-                info.context.user,
-                app,
-                amount,
-                payment,
-                manager,
-            )
 
-        order.fulfillments.create(
-            status=FulfillmentStatus.REFUNDED, total_refund_amount=amount
-        )
+        if order.channel.name.find("shared"):
+            order.fulfillments.create(
+                status=FulfillmentStatus.REFUNDED_AND_RETURNED,
+                total_refund_amount=amount,
+            )
+        else:
+            order.fulfillments.create(
+                status=FulfillmentStatus.REFUNDED, total_refund_amount=amount
+            )
         return OrderRefund(order=order)
