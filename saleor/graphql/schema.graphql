@@ -14104,11 +14104,13 @@ type BalanceEvent implements Node {
 
   """User name of a balance event."""
   name: String
+
+  """Code of the customer."""
+  code: String
 }
 
 input BalanceEventFilterInput @doc(category: "Events") {
-  name: String
-  account: String
+  user: String
   date: DateRangeInput
   type: BalanceEventsEnum
   metadata: [MetadataFilter!]
@@ -14201,10 +14203,8 @@ enum DonationSortField @doc(category: "Donations") {
 input DonationFilterInput @doc(category: "Orders") {
   donator: String
   created: DateRangeInput
-  search: String
-  metadata: [MetadataFilter!]
   updated: DateRangeInput
-  channels: [ID!]
+  metadata: [MetadataFilter!]
 }
 
 type SaleCountableConnection @doc(category: "Discounts") {

@@ -174,6 +174,7 @@ class User(
     addresses = models.ManyToManyField(
         Address, blank=True, related_name="user_addresses"
     )
+    code = models.CharField(max_length=256, blank=True, default="")
     user_type = models.CharField(max_length=256, blank=True, default="")
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
