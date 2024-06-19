@@ -2,6 +2,7 @@ from uuid import UUID
 
 import graphene
 
+from saleor.core.exceptions import PermissionDenied
 from saleor.graphql.donation.dataloaders import DonationByIdDataLoader
 from ..core import ResolveInfo
 from ..core.context import get_database_connection_name
@@ -16,6 +17,8 @@ def resolve_donations(info: ResolveInfo):
     qs = Donation.objects.using(get_database_connection_name(info.context)).filter(
         deleted_at__isnull=True
     )
+    if not user:
+        raise PermissionDenied(message=f"You do not have access to Donations.")
 
     if user.has_perm(DonationPermissions.MANAGE_DONATIONS):
         return qs
