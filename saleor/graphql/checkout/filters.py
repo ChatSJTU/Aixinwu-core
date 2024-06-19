@@ -74,7 +74,11 @@ def filter_updated_at_range(qs, _, value):
 
 def filter_customer(qs, _, value):
     users = User.objects.filter(
-        Q(email__ilike=value) | Q(first_name__ilike=value) | Q(last_name__ilike=value)
+        Q(email__ilike=value)
+        | Q(first_name__ilike=value)
+        | Q(last_name__ilike=value)
+        | Q(code__ilike=value)
+        | Q(account__ilike=value)
     ).values("pk")
 
     return qs.filter(Q(Exists(users.filter(id=OuterRef("user_id")))))

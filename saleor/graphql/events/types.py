@@ -12,6 +12,7 @@ class BalanceEvent(ModelObjectType[models.BalanceEvent]):
     balance = graphene.Float(description="Balance of a balance event.")
     type = graphene.String(description="Type of a balance event.")
     name = graphene.String(description="User name of a balance event.")
+    code = graphene.String(description="Code of the customer.")
 
     class Meta:
         description = "Represents balance events."
@@ -37,6 +38,10 @@ class BalanceEvent(ModelObjectType[models.BalanceEvent]):
     @staticmethod
     def resolve_name(root, info: ResolveInfo):
         return root.user.first_name
+
+    @staticmethod
+    def resolve_code(root, info: ResolveInfo):
+        return root.user.code
 
 
 class BalanceEventCountableConnection(CountableConnection):

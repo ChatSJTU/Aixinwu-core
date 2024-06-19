@@ -9,11 +9,20 @@ from ..core.filters import (
     ObjectTypeFilter,
 )
 from ..core.types.common import DateRangeInput
+from django.db.models import Q
 import django_filters
 
 
 def filter_user(qs, _, value):
-    return qs.filter(user__first_name=value)
+    qs = qs.filter(
+        Q(user__email__ilike=value)
+        | Q(user__email__trigram_similar=value)
+        | Q(user__first_name__trigram_similar=value)
+        | Q(user__last_name__trigram_similar=value)
+        | Q(user__code__trigram_similar=value)
+        | Q(user__account__trigram_similar=value)
+    )
+    return qs
 
 
 def filter_account(qs, _, value):
@@ -29,14 +38,13 @@ def filter_type(qs, _, value):
 
 
 class BalanceEventFilter(MetadataFilterBase):
-    name = django_filters.CharFilter(method=filter_user)
-    account = django_filters.CharFilter(method=filter_account)
+    user = django_filters.CharFilter(method=filter_user)
     type = EnumFilter(input_class=BalanceEventsEnum, method=filter_type)
     date = ObjectTypeFilter(input_class=DateRangeInput, method=filter_date_range)
 
     class Meta:
         model = BalanceEvent
-        fields = ["name", "account", "date", "type"]
+        fields = ["user", "date", "type"]
 
 
 class BalanceEventFilterInput(FilterInputObjectType):

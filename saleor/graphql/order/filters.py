@@ -81,6 +81,8 @@ def filter_customer(qs, _, value):
         | Q(user__email__trigram_similar=value)
         | Q(user__first_name__trigram_similar=value)
         | Q(user__last_name__trigram_similar=value)
+        | Q(user__code__trigram_similar=value)
+        | Q(user__account__trigram_similar=value)
     )
     return qs
 
