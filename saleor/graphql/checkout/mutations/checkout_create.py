@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, Optional
 import graphene
 from django.conf import settings
 
+from saleor.graphql.utils import get_user_or_app_from_context
+
 from ....checkout import AddressType, models
 from ....checkout.error_codes import CheckoutErrorCode
 from ....checkout.utils import add_variants_to_checkout
@@ -228,6 +230,7 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         )
 
         check_lines_quantity(
+            get_user_or_app_from_context(info.context),
             variants,
             quantities,
             country,

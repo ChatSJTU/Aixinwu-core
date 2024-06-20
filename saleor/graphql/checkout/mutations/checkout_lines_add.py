@@ -1,5 +1,7 @@
 import graphene
 
+from saleor.graphql.utils import get_user_or_app_from_context
+
 from ....checkout.error_codes import CheckoutErrorCode
 from ....checkout.fetch import (
     fetch_checkout_info,
@@ -93,6 +95,7 @@ class CheckoutLinesAdd(BaseMutation):
         )
         site = get_site_promise(info.context).get()
         check_lines_quantity(
+            get_user_or_app_from_context(info.context),
             variants,
             quantities,
             country,

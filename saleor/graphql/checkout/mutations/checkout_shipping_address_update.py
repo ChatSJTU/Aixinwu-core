@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 import graphene
 from django.core.exceptions import ValidationError
 
+from saleor.graphql.utils import get_user_or_app_from_context
+
 from ....checkout import AddressType, models
 from ....checkout.error_codes import CheckoutErrorCode
 from ....checkout.fetch import (
@@ -101,6 +103,7 @@ class CheckoutShippingAddressUpdate(AddressMetadataMixin, BaseMutation, I18nMixi
             quantities.append(line_info.line.quantity)
         site = get_site_promise(info.context).get()
         check_lines_quantity(
+            get_user_or_app_from_context(info.context),
             variants,
             quantities,
             country,

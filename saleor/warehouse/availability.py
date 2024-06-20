@@ -22,11 +22,10 @@ from ..product.models import ProductVariantChannelListing
 from .models import Reservation, Stock, StockQuerySet
 from .reservations import get_listings_reservations
 
-if TYPE_CHECKING:
-    from ..checkout.fetch import CheckoutLineInfo
-    from ..checkout.models import CheckoutLine
-    from ..order.models import OrderLine
-    from ..product.models import Product, ProductVariant
+from ..checkout.fetch import CheckoutLineInfo
+from ..checkout.models import CheckoutLine
+from ..order.models import OrderLine
+from ..product.models import Product, ProductVariant
 
 
 class ChannelListingPreorderAvailbilityInfo(NamedTuple):
@@ -133,12 +132,12 @@ def check_stock_quantity(
 
 
 def check_stock_and_preorder_quantity_bulk(
+    user: User,
     variants: Iterable["ProductVariant"],
     country_code: str,
     quantities: Iterable[int],
     channel_slug: str,
     global_quantity_limit: Optional[int],
-    user: Optional[User],
     delivery_method_info: Optional["DeliveryMethodBase"] = None,
     additional_filter_lookup: Optional[dict[str, Any]] = None,
     existing_lines: Optional[Iterable["CheckoutLineInfo"]] = None,
@@ -158,6 +157,7 @@ def check_stock_and_preorder_quantity_bulk(
     ) = _split_lines_for_trackable_and_preorder(variants, quantities)
     if stock_variants:
         check_stock_quantity_bulk(
+            user,
             stock_variants,
             country_code,
             stock_quantities,
@@ -212,9 +212,7 @@ def _check_quantity_limits(
     global_quantity_limit: Optional[int],
 ) -> Optional[NoReturn]:
     quantity_limit = variant.quantity_limit_per_customer or global_quantity_limit
-    lines = OrderLine.objects.filter(order_user_id=user.id).filter(
-        variant_id=variant.id
-    )
+    lines = OrderLine.objects.filter(order__user=user).filter(variant__pk=variant.id)
     accumulated = 0
     for line in lines.iterator():
         accumulated += line.quantity
@@ -234,12 +232,12 @@ def _check_quantity_limits(
 
 
 def check_stock_quantity_bulk(
+    user: User,
     variants: Iterable["ProductVariant"],
     country_code: str,
     quantities: Iterable[int],
     channel_slug: str,
     global_quantity_limit: Optional[int],
-    user: User,
     delivery_method_info: Optional["DeliveryMethodBase"] = None,
     additional_filter_lookup: Optional[dict[str, Any]] = None,
     existing_lines: Optional[Iterable["CheckoutLineInfo"]] = None,

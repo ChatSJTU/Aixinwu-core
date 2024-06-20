@@ -129,6 +129,7 @@ def get_variants_and_total_quantities(
 
 
 def check_lines_quantity(
+    user,
     variants,
     quantities,
     country,
@@ -170,6 +171,7 @@ def check_lines_quantity(
             )
     try:
         check_stock_and_preorder_quantity_bulk(
+            user,
             variants,
             country,
             quantities,

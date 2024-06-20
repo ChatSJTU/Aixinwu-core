@@ -387,12 +387,12 @@ def _create_lines_for_order(
         checkout_info.delivery_method_info.get_warehouse_filter_lookup()
     )
     check_stock_and_preorder_quantity_bulk(
+        user,
         variants,
         country_code,
         quantities,
         checkout_info.channel.slug,
         global_quantity_limit=None,
-        user=user,
         delivery_method_info=checkout_info.delivery_method_info,
         additional_filter_lookup=additional_warehouse_lookup,
         existing_lines=lines,

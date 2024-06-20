@@ -1,5 +1,8 @@
+from typing import cast
 import graphene
 from django.forms import ValidationError
+
+from saleor.graphql.utils import get_user_or_app_from_context
 
 from ....checkout.error_codes import CheckoutErrorCode
 from ....warehouse.reservations import is_reservation_enabled
@@ -116,6 +119,7 @@ class CheckoutLinesUpdate(CheckoutLinesAdd):
         )
         site = get_site_promise(info.context).get()
         check_lines_quantity(
+            get_user_or_app_from_context(info.context),
             variants,
             quantities,
             country,
