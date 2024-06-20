@@ -592,7 +592,7 @@ def get_order_lines_with_track_inventory(
 @traced_atomic_transaction()
 def remove_reservations_for_order(order: "Order"):
     lines = OrderLine.objects.filter(order_id=order.id).all()
-    Reservation.objects.filter(order_lines__in=lines).delete()
+    Reservation.objects.filter(order_line__in=lines).delete()
 
 
 @traced_atomic_transaction()

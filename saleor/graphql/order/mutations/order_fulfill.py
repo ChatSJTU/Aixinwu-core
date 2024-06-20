@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.template.defaultfilters import pluralize
 
 from ....core.exceptions import InsufficientStock
-from ....order import models as order_models
+from ....order import OrderStatus, models as order_models
 from ....order.actions import OrderFulfillmentLineInfo, create_fulfillments
 from ....order.error_codes import OrderErrorCode
 from ....permission.enums import OrderPermissions
@@ -212,7 +212,7 @@ class OrderFulfill(BaseMutation):
 
     @classmethod
     def clean_input(cls, info: ResolveInfo, order, data, site):
-        if not order.is_fully_paid() and (
+        if not order.status == OrderStatus.UNFULFILLED and (
             site.settings.fulfillment_auto_approve
             and not site.settings.fulfillment_allow_unpaid
         ):
