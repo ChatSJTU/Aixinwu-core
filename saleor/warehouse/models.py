@@ -515,7 +515,7 @@ class Reservation(models.Model):
         CheckoutLine,
         null=False,
         blank=False,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="reservations",
     )
     stock = models.ForeignKey(

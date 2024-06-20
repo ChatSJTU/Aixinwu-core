@@ -562,7 +562,6 @@ def get_reserved_stock_quantity_bulk(
         Reservation.objects.filter(
             stock__in=stocks,
         )
-        .not_expired()
         .exclude_checkout_lines(checkout_lines)
         .values("stock_id")
         .annotate(
