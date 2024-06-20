@@ -513,8 +513,8 @@ class PreorderReservation(models.Model):
 class Reservation(models.Model):
     checkout_line = models.ForeignKey(
         CheckoutLine,
-        null=False,
-        blank=False,
+        null=True,
+        blank=True,
         on_delete=models.SET_NULL,
         related_name="reservations",
     )
