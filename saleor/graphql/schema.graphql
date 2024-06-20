@@ -10380,7 +10380,7 @@ type User implements Node & ObjectWithMetadata @doc(category: "Users") {
   userType: String!
 
   """The balance of the user."""
-  balance: Int!
+  balance: Float!
 
   """The code of a user."""
   code: String!
@@ -14130,6 +14130,7 @@ enum BalanceEventsEnum @doc(category: "Events") {
   MANUALLY_UPDATED
   CONSECUTIVE_LOGIN
   CONSUMED
+  REFUNDED
 }
 
 input BalanceEventSortingInput @doc(category: "Events") {
