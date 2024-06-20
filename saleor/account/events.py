@@ -161,3 +161,9 @@ def consumption_balance_event(*, user: User, order: Order) -> BalanceEvent:
     return BalanceEvent.objects.create(
         user=user, type=BalanceEvents.CONSUMED, balance=order.total_net_amount
     )
+
+
+def refunded_balance_event(*, user: User, order: Order) -> BalanceEvent:
+    return BalanceEvent.objects.create(
+        user=user, type=BalanceEvents.REFUNDED, balance=order.total_net_amount
+    )

@@ -43,6 +43,7 @@ from . import (
     events,
     utils,
 )
+from ..account.events import refunded_balance_event
 from .events import (
     draft_order_created_from_replace_event,
     fulfillment_refunded_event,
@@ -240,6 +241,7 @@ def order_refunded(
         user = order.user
         user.balance += order.total_net_amount
         user.save(update_fields=["balance"])
+        refunded_balance_event(user=user, order=order)
         last_payment.save(update_fields=["charge_status"])
         call_event(manager.order_fully_refunded, order)
 

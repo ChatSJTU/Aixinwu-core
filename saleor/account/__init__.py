@@ -53,7 +53,7 @@ class BalanceEvents:
     FIRST_LOGIN = "first_login"
     CONSECUTIVE_LOGIN = "consecutive_login"
     CONSUMED = "consumed"
-
+    REFUNDED = "refunded"
     CHOICES = [
         (
             DONATION_GRANTED,
@@ -72,4 +72,5 @@ class BalanceEvents:
             "The user received credits for the continuous login.",
         ),
         (CONSUMED, "The user consumed the credits."),
+        (REFUNDED, "The user received credits for refunds."),
     ]
