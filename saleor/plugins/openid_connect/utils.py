@@ -1,3 +1,4 @@
+from decimal import Decimal
 import json
 import logging
 from datetime import datetime
@@ -344,9 +345,9 @@ def _update_user_details(
 
     if delta.days == 1:
         user.continuous += 1
-        user.balance += settings.CONTINUOUS_BALANCE_ADD
+        user.balance += Decimal(settings.CONTINUOUS_BALANCE_ADD)
         consecutive_login_balance_event(user=user)
-        fields_to_save.add({"balance"})
+        fields_to_save.add("balance")
     elif delta.days > 1:
         user.continuous = 1
     user.last_login = login_time
