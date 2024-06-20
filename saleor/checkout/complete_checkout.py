@@ -38,7 +38,7 @@ from ..graphql.checkout.utils import (
 )
 from ..order import OrderOrigin, OrderStatus
 from ..order.actions import mark_order_as_paid_with_payment, order_created
-from ..order.fetch import OrderInfo, OrderLineInfo
+from ..order.fetch import OrderInfo, OrderLineInfo, fetch_order_lines
 from ..order.models import Order, OrderLine
 from ..order.notifications import send_order_confirmation
 from ..order.search import prepare_order_search_vector_value
@@ -1360,7 +1360,6 @@ def complete_checkout(
     # paid is used. In case when we have TRANSACTION_FLOW we use transaction flow to
     # finalize the checkout.
     lines, _ = fetch_checkout_lines(checkout_info.checkout)
-    _reserve_stocks_without_availability_check(checkout_info=checkout_info, lines=lines)
     order = create_order_from_checkout(
         checkout_info=checkout_info,
         manager=manager,
@@ -1369,6 +1368,10 @@ def complete_checkout(
         delete_checkout=True,
         metadata_list=metadata_list,
         private_metadata_list=private_metadata_list,
+    )
+    order_lines = fetch_order_lines(order=order)
+    _reserve_stocks_without_availability_check(
+        checkout_info=checkout_info, lines=order_lines
     )
 
     return order, False, {}
@@ -1417,123 +1420,123 @@ def complete_checkout_with_transaction(
         raise ValidationError({"gift_cards": e})
 
 
-def complete_checkout_with_payment(
-    manager: "PluginsManager",
-    checkout_pk: UUID,
-    payment_data,
-    store_source,
-    user,
-    app,
-    site_settings=None,
-    redirect_url=None,
-    metadata_list: Optional[list] = None,
-    private_metadata_list: Optional[list] = None,
-) -> tuple[Optional[Order], bool, dict]:
-    """Logic required to finalize the checkout and convert it to order.
+# def complete_checkout_with_payment(
+#     manager: "PluginsManager",
+#     checkout_pk: UUID,
+#     payment_data,
+#     store_source,
+#     user,
+#     app,
+#     site_settings=None,
+#     redirect_url=None,
+#     metadata_list: Optional[list] = None,
+#     private_metadata_list: Optional[list] = None,
+# ) -> tuple[Optional[Order], bool, dict]:
+#     """Logic required to finalize the checkout and convert it to order.
 
-    Should be used with transaction_with_commit_on_errors, as there is a possibility
-    for thread race.
-    :raises ValidationError
-    """
-    with transaction_with_commit_on_errors():
-        checkout = Checkout.objects.select_for_update().filter(pk=checkout_pk).first()
-        if not checkout:
-            order = Order.objects.get_by_checkout_token(checkout_pk)
-            return order, False, {}
+#     Should be used with transaction_with_commit_on_errors, as there is a possibility
+#     for thread race.
+#     :raises ValidationError
+#     """
+#     with transaction_with_commit_on_errors():
+#         checkout = Checkout.objects.select_for_update().filter(pk=checkout_pk).first()
+#         if not checkout:
+#             order = Order.objects.get_by_checkout_token(checkout_pk)
+#             return order, False, {}
 
-        # Fetching checkout info inside the transaction block with select_for_update
-        # enure that we are processing checkout on the current data.
-        lines, _ = fetch_checkout_lines(checkout)
-        checkout_info = fetch_checkout_info(checkout, lines, manager)
-        assign_checkout_user(user, checkout_info)
+#         # Fetching checkout info inside the transaction block with select_for_update
+#         # enure that we are processing checkout on the current data.
+#         lines, _ = fetch_checkout_lines(checkout)
+#         checkout_info = fetch_checkout_info(checkout, lines, manager)
+#         assign_checkout_user(user, checkout_info)
 
-        payment, customer_id, order_data = complete_checkout_pre_payment_part(
-            manager=manager,
-            checkout_info=checkout_info,
-            lines=lines,
-            user=user,
-            site_settings=site_settings,
-            redirect_url=redirect_url,
-        )
+#         payment, customer_id, order_data = complete_checkout_pre_payment_part(
+#             manager=manager,
+#             checkout_info=checkout_info,
+#             lines=lines,
+#             user=user,
+#             site_settings=site_settings,
+#             redirect_url=redirect_url,
+#         )
 
-        _reserve_stocks_without_availability_check(checkout_info, lines)
+#         _reserve_stocks_without_availability_check(checkout_info, lines)
 
-    # Process payments out of transaction to unlock stock rows for another user,
-    # who potentially can order the same product variants.
-    txn = None
-    channel_slug = checkout_info.channel.slug
-    voucher = checkout_info.voucher
-    voucher_code = checkout_info.voucher_code
-    if payment:
-        with transaction_with_commit_on_errors():
-            Checkout.objects.select_for_update().filter(pk=checkout_pk).first()
-            payment = Payment.objects.select_for_update().get(id=payment.id)
-            txn = _process_payment(
-                payment=payment,
-                customer_id=customer_id,
-                store_source=store_source,
-                payment_data=payment_data,
-                order_data=order_data,
-                manager=manager,
-                channel_slug=channel_slug,
-                voucher_code=checkout_info.voucher_code,
-                voucher=checkout_info.voucher,
-            )
+#     # Process payments out of transaction to unlock stock rows for another user,
+#     # who potentially can order the same product variants.
+#     txn = None
+#     channel_slug = checkout_info.channel.slug
+#     voucher = checkout_info.voucher
+#     voucher_code = checkout_info.voucher_code
+#     if payment:
+#         with transaction_with_commit_on_errors():
+#             Checkout.objects.select_for_update().filter(pk=checkout_pk).first()
+#             payment = Payment.objects.select_for_update().get(id=payment.id)
+#             txn = _process_payment(
+#                 payment=payment,
+#                 customer_id=customer_id,
+#                 store_source=store_source,
+#                 payment_data=payment_data,
+#                 order_data=order_data,
+#                 manager=manager,
+#                 channel_slug=channel_slug,
+#                 voucher_code=checkout_info.voucher_code,
+#                 voucher=checkout_info.voucher,
+#             )
 
-            # As payment processing might take a while, we need to check if the payment
-            # doesn't become inactive in the meantime. If it's inactive we need to
-            # refund the payment.
-            payment.refresh_from_db()
-            if not payment.is_active:
-                gateway.payment_refund_or_void(
-                    payment, manager, channel_slug=channel_slug
-                )
-                raise ValidationError(
-                    f"The payment with pspReference: {payment.psp_reference} is "
-                    "inactive.",
-                    code=CheckoutErrorCode.INACTIVE_PAYMENT.value,
-                )
+#             # As payment processing might take a while, we need to check if the payment
+#             # doesn't become inactive in the meantime. If it's inactive we need to
+#             # refund the payment.
+#             payment.refresh_from_db()
+#             if not payment.is_active:
+#                 gateway.payment_refund_or_void(
+#                     payment, manager, channel_slug=channel_slug
+#                 )
+#                 raise ValidationError(
+#                     f"The payment with pspReference: {payment.psp_reference} is "
+#                     "inactive.",
+#                     code=CheckoutErrorCode.INACTIVE_PAYMENT.value,
+#                 )
 
-    with transaction_with_commit_on_errors():
-        checkout = (
-            Checkout.objects.select_for_update()
-            .filter(pk=checkout_info.checkout.pk)
-            .first()
-        )
-        if not checkout:
-            order = Order.objects.get_by_checkout_token(checkout_info.checkout.token)
-            return order, False, {}
+#     with transaction_with_commit_on_errors():
+#         checkout = (
+#             Checkout.objects.select_for_update()
+#             .filter(pk=checkout_info.checkout.pk)
+#             .first()
+#         )
+#         if not checkout:
+#             order = Order.objects.get_by_checkout_token(checkout_info.checkout.token)
+#             return order, False, {}
 
-        # We need to refetch the checkout info to ensure that we process checkout
-        # for correct data.
-        lines, _ = fetch_checkout_lines(checkout, skip_recalculation=True)
+#         # We need to refetch the checkout info to ensure that we process checkout
+#         # for correct data.
+#         lines, _ = fetch_checkout_lines(checkout, skip_recalculation=True)
 
-        # reassign voucher data that was used during payment process to allow voucher
-        # usage releasing in case of checkout complete failure
-        checkout_info = fetch_checkout_info(
-            checkout, lines, manager, voucher=voucher, voucher_code=voucher_code
-        )
+#         # reassign voucher data that was used during payment process to allow voucher
+#         # usage releasing in case of checkout complete failure
+#         checkout_info = fetch_checkout_info(
+#             checkout, lines, manager, voucher=voucher, voucher_code=voucher_code
+#         )
 
-        order, action_required, action_data = complete_checkout_post_payment_part(
-            manager=manager,
-            checkout_info=checkout_info,
-            lines=lines,
-            payment=payment,
-            txn=txn,
-            order_data=order_data,
-            user=user,
-            app=app,
-            site_settings=site_settings,
-            metadata_list=metadata_list,
-            private_metadata_list=private_metadata_list,
-        )
+#         order, action_required, action_data = complete_checkout_post_payment_part(
+#             manager=manager,
+#             checkout_info=checkout_info,
+#             lines=lines,
+#             payment=payment,
+#             txn=txn,
+#             order_data=order_data,
+#             user=user,
+#             app=app,
+#             site_settings=site_settings,
+#             metadata_list=metadata_list,
+#             private_metadata_list=private_metadata_list,
+#         )
 
-    return order, action_required, action_data
+#     return order, action_required, action_data
 
 
 def _reserve_stocks_without_availability_check(
     checkout_info: CheckoutInfo,
-    lines: Iterable[CheckoutLineInfo],
+    lines: Iterable[OrderLineInfo],
 ):
     """Add additional temporary reservation for stock.
 
@@ -1557,7 +1560,7 @@ def _reserve_stocks_without_availability_check(
                     reserved_until=timezone.now()
                     + timedelta(seconds=settings.RESERVE_DURATION),
                     stock=variants_stocks_map[line.variant.id],
-                    checkout_line=line.line,
+                    order_line=line.line,
                 )
             )
     Reservation.objects.bulk_create(reservations)

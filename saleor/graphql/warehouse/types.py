@@ -217,16 +217,12 @@ class Stock(ModelObjectType[models.Stock]):
     @staticmethod
     @load_site_callback
     def resolve_quantity_reserved(root, info: ResolveInfo, site):
-        if not is_reservation_enabled(site.settings):
-            return 0
-
         return root.reservations.using(
             get_database_connection_name(info.context)
         ).aggregate(
             quantity_reserved=Coalesce(
                 Sum(
                     "quantity_reserved",
-                    filter=Q(reserved_until__gt=timezone.now()),
                 ),
                 0,
             )

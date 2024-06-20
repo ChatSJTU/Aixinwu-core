@@ -242,7 +242,7 @@ def check_stock_quantity_bulk(
     additional_filter_lookup: Optional[dict[str, Any]] = None,
     existing_lines: Optional[Iterable["CheckoutLineInfo"]] = None,
     replace=False,
-    check_reservations: bool = False,
+    check_reservations: bool = True,
 ):
     """Validate if there is stock available for given variants in given country.
 
@@ -278,10 +278,7 @@ def check_stock_quantity_bulk(
         variant_stocks[stock.product_variant_id].append(stock)
 
     if check_reservations:
-        variant_reservations = get_reserved_stock_quantity_bulk(
-            all_variants_stocks,
-            [line.line for line in existing_lines] if existing_lines else [],
-        )
+        variant_reservations = get_reserved_stock_quantity_bulk(all_variants_stocks, [])
     else:
         variant_reservations = defaultdict(int)
 
@@ -534,17 +531,12 @@ def is_product_in_stock(
 
 
 def get_reserved_stock_quantity(
-    stocks: StockQuerySet, lines: Optional[list["CheckoutLine"]] = None
+    stocks: StockQuerySet, lines: Optional[list["OrderLine"]] = None
 ) -> int:
-    result = (
-        Reservation.objects.filter(
-            stock__in=stocks,
-        )
-        .not_expired()
-        .exclude_checkout_lines(lines)
-        .aggregate(
-            quantity_reserved=Coalesce(Sum("quantity_reserved"), 0),
-        )
+    result = Reservation.objects.filter(
+        stock__in=stocks,
+    ).aggregate(
+        quantity_reserved=Coalesce(Sum("quantity_reserved"), 0),
     )
 
     return result["quantity_reserved"]
@@ -552,21 +544,18 @@ def get_reserved_stock_quantity(
 
 def get_reserved_stock_quantity_bulk(
     stocks: Iterable[Stock],
-    checkout_lines: Iterable["CheckoutLine"],
+    lines: Iterable["OrderLine"],
 ) -> dict[int, int]:
     reservations: dict[int, int] = defaultdict(int)
     if not stocks:
         return reservations
 
-    result = (
-        Reservation.objects.filter(
-            stock__in=stocks,
-        )
-        .exclude_checkout_lines(checkout_lines)
-        .values("stock_id")
-        .annotate(
-            quantity_reserved=Coalesce(Sum("quantity_reserved"), 0),
-        )
+    qs = Reservation.objects.filter(
+        stock__in=stocks,
+    )
+
+    result = qs.values("stock_id").annotate(
+        quantity_reserved=Coalesce(Sum("quantity_reserved"), 0),
     )
 
     stocks_variants = {stock.id: stock.product_variant_id for stock in stocks}

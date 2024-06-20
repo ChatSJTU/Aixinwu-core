@@ -234,20 +234,18 @@ class AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(
     def prepare_stocks_reservations_map(self, variant_ids):
         """Prepare stock id to quantity reserved map for provided variant ids."""
         stocks_reservations = defaultdict(int)
-        site = get_site_promise(self.context).get()
-        if is_reservation_enabled(site.settings):
-            # Can't do second annotation on same queryset because it made
-            # available_quantity annotated value incorrect thanks to how
-            # Django's ORM builds SQLs with annotations
-            reservations_qs = (
-                Stock.objects.using(self.database_connection_name)
-                .filter(product_variant_id__in=variant_ids)
-                .annotate_reserved_quantity()
-                .order_by("pk")
-                .values_list("id", "reserved_quantity")
-            )
-            for stock_id, quantity_reserved in reservations_qs:
-                stocks_reservations[stock_id] = quantity_reserved
+        # Can't do second annotation on same queryset because it made
+        # available_quantity annotated value incorrect thanks to how
+        # Django's ORM builds SQLs with annotations
+        reservations_qs = (
+            Stock.objects.using(self.database_connection_name)
+            .filter(product_variant_id__in=variant_ids)
+            .annotate_reserved_quantity()
+            .order_by("pk")
+            .values_list("id", "reserved_quantity")
+        )
+        for stock_id, quantity_reserved in reservations_qs:
+            stocks_reservations[stock_id] = quantity_reserved
         return stocks_reservations
 
     def prepare_warehouse_ids_by_shipping_zone_and_variant_map(

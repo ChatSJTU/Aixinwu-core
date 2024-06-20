@@ -32,6 +32,7 @@ from ..warehouse.management import (
     deallocate_stock_for_order,
     decrease_stock,
     get_order_lines_with_track_inventory,
+    remove_reservations_for_order,
 )
 from ..warehouse.models import Stock
 from . import (
@@ -187,7 +188,7 @@ def cancel_order(
     # transaction ensures proper allocation and event triggering
     with traced_atomic_transaction():
         events.order_canceled_event(order=order, user=user, app=app)
-        deallocate_stock_for_order(order, manager)
+        remove_reservations_for_order(order=order)
         order.status = OrderStatus.CANCELED
         order.save(update_fields=["status", "updated_at"])
 
@@ -284,6 +285,7 @@ def order_fulfilled(
     # events are successfully created
     with traced_atomic_transaction():
         update_order_status(order)
+        remove_reservations_for_order(order=order)
         gift_cards_create(
             order,
             gift_card_lines_info,

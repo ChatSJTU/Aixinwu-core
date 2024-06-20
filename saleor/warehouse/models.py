@@ -250,7 +250,6 @@ class StockQuerySet(models.QuerySet["Stock"]):
             reserved_quantity=Coalesce(
                 Sum(
                     "reservations__quantity_reserved",
-                    filter=Q(reservations__reserved_until__gt=timezone.now()),
                 ),
                 0,
             )
@@ -478,6 +477,11 @@ class ReservationQuerySet(models.QuerySet[T]):
 
         return self
 
+    def exclude_order_lines(self, order_lines: Optional[Iterable[OrderLine]]):
+        if order_lines:
+            return self.exclude(order_line__in=order_lines)
+        return self
+
 
 ReservationManager = models.Manager.from_queryset(ReservationQuerySet)
 
@@ -511,6 +515,13 @@ class PreorderReservation(models.Model):
 
 
 class Reservation(models.Model):
+    order_line = models.ForeignKey(
+        OrderLine,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="reservations",
+    )
     checkout_line = models.ForeignKey(
         CheckoutLine,
         null=True,
@@ -533,6 +544,6 @@ class Reservation(models.Model):
     class Meta:
         unique_together = [["checkout_line", "stock"]]
         indexes = [
-            models.Index(fields=["checkout_line", "reserved_until"]),
+            models.Index(fields=["order_line", "reserved_until"]),
         ]
         ordering = ("pk",)
