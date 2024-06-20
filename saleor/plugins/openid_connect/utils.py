@@ -341,14 +341,14 @@ def _update_user_details(
         match_orders_with_new_user(user)
         fields_to_save.update({"email", "search_document"})
 
-    delta = login_time - user.last_login
+    delta = login_time.day - user.last_login.day
 
-    if delta.days == 1:
+    if delta == 1:
         user.continuous += 1
         user.balance += Decimal(settings.CONTINUOUS_BALANCE_ADD)
         consecutive_login_balance_event(user=user)
         fields_to_save.add("balance")
-    elif delta.days > 1:
+    elif delta > 1:
         user.continuous = 1
     user.last_login = login_time
 
