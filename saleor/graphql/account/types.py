@@ -308,6 +308,7 @@ class User(ModelObjectType[models.User]):
         required=True, description="The type of the user. Defined by the OIDC provider"
     )
     balance = graphene.Int(required=True, description="The balance of the user.")
+    code = graphene.String(required=True, description="The code of a user.")
     continuous = graphene.Int(
         required=True, description="The continous login days of the user."
     )

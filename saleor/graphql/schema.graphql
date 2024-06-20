@@ -10382,6 +10382,9 @@ type User implements Node & ObjectWithMetadata @doc(category: "Users") {
   """The balance of the user."""
   balance: Int!
 
+  """The code of a user."""
+  code: String!
+
   """The continous login days of the user."""
   continuous: Int!
 
