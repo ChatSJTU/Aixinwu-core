@@ -1736,19 +1736,7 @@ class Order(ModelObjectType[models.Order]):
 
     @staticmethod
     def resolve_is_paid(root: models.Order, info):
-        def _resolve_is_paid(transactions):
-            if transactions:
-                charged_money = prices.Money(Decimal(0), root.currency)
-                for transaction in transactions:
-                    charged_money += transaction.amount_charged
-                return charged_money >= root.total.gross
-            return root.is_fully_paid()
-
-        return (
-            TransactionItemsByOrderIDLoader(info.context)
-            .load(root.id)
-            .then(_resolve_is_paid)
-        )
+        return root.is_fully_paid()
 
     @staticmethod
     def resolve_number(root: models.Order, _info):

@@ -374,7 +374,7 @@ class Order(ModelWithMetadata, ModelWithExternalReference):
         ]
 
     def is_fully_paid(self):
-        return self.total_charged >= self.total.gross
+        return self.charge_status == ChargeStatus.FULLY_CHARGED
 
     def is_partly_paid(self):
         return self.total_charged_amount > 0

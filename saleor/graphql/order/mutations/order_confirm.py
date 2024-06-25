@@ -97,9 +97,12 @@ class OrderConfirm(ModelMutation):
                 payment = order.get_last_payment()
                 order.status = OrderStatus.UNFULFILLED
                 order.charge_status = ChargeStatus.FULLY_CHARGED
+                order.total_charged_amount = order.total_net_amount
                 payment.charge_status = ChargeStatus.FULLY_CHARGED
                 user.balance -= order.total_net_amount
-                order.save(update_fields=["status", "charge_status"])
+                order.save(
+                    update_fields=["status", "charge_status", "total_charged_amount"]
+                )
                 user.save(update_fields=["balance"])
                 payment.save(update_fields=["charge_status"])
                 order_events.order_confirmed_event(order=order, user=user, app=None)
