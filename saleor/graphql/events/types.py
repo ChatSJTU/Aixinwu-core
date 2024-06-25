@@ -13,7 +13,7 @@ class BalanceEvent(ModelObjectType[models.BalanceEvent]):
     type = graphene.String(description="Type of a balance event.")
     name = graphene.String(description="User name of a balance event.")
     code = graphene.String(description="Code of the customer.")
-
+    date = graphene.DateTime(description="Datetime of the event.")
     class Meta:
         description = "Represents balance events."
         interfaces = [graphene.relay.Node]
@@ -26,6 +26,10 @@ class BalanceEvent(ModelObjectType[models.BalanceEvent]):
     @staticmethod
     def resolve_balance(root, info: ResolveInfo):
         return root.balance
+
+    @staticmethod
+    def resolve_date(root, info:ResolveInfo):
+        return root.date
 
     @staticmethod
     def resolve_type(root, info: ResolveInfo):
