@@ -86,15 +86,20 @@ def resolve_orders_total(info, period, channel_slug):
 
 
 def resolve_order(info, id):
-    if id is None:
+    user = info.user
+
+    if user is None or id is None:
         return None
     try:
         id = UUID(id)
         lookup = Q(id=id)
     except ValueError:
         lookup = Q(number=id) & Q(use_old_id=True)
+
     database_connection_name = get_database_connection_name(info.context)
-    return models.Order.objects.using(database_connection_name).filter(lookup).first()
+    qs = models.Order.objects.using(database_connection_name).filter(lookup)
+
+    return qs.first() if user.is_superuser() else qs.filter(user=user).first()
 
 
 def resolve_homepage_events(info):
