@@ -393,6 +393,13 @@ class BalanceEvent(models.Model):
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,
     )
 
+    delta = models.DecimalField(
+        blank=True,
+        null = True,
+        max_digits = settings.DEFAULT_MAX_DIGITS,
+        decimal_places=settings.DEFAULT_DECIMAL_PLACES,
+    )
+
     class Meta:
         ordering = ("date",)
 
