@@ -86,7 +86,7 @@ def resolve_orders_total(info, period, channel_slug):
 
 
 def resolve_order(info, id):
-    user = info.user
+    user = info.context.user
 
     if user is None or id is None:
         return None
