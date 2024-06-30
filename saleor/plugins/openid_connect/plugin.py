@@ -43,6 +43,7 @@ from .utils import (
     get_user_from_token,
     is_owner_of_token_valid,
     validate_refresh_token,
+    update_continuous_days,
 )
 
 logger = logging.getLogger(__name__)
@@ -415,7 +416,7 @@ class OpenIDConnectPlugin(BasePlugin):
                 token_data.get("id_token"), self.config.json_web_key_set_url
             )
             user = get_user_from_token(parsed_id_token)
-
+            update_continuous_days(user)
             user_permissions = self.get_and_update_user_permissions(user)
 
             tokens = create_tokens_from_oauth_payload(

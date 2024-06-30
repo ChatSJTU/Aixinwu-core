@@ -315,6 +315,26 @@ def get_domain_from_email(email: str):
     return domain if delim else None
 
 
+def _update_continuous_days(user: User, login_time: datetime, fields_to_save: set):
+    delta = login_time.day - user.last_login.day
+    if delta == 1:
+        user.continuous += 1
+        user.balance += Decimal(settings.CONTINUOUS_BALANCE_ADD)
+        consecutive_login_balance_event(user=user)
+        fields_to_save.add("balance")
+    elif delta > 1:
+        user.continuous = 1
+    user.last_login = login_time
+
+    fields_to_save.update({"continuous", "last_login"})
+
+
+def update_continuous_days(user: User):
+    fields_to_save = set()
+    _update_continuous_days(user, datetime.now(), fields_to_save)
+    user.save(update_fields=fields_to_save)
+
+
 def _update_user_details(
     user: User,
     oidc_key: str,
@@ -341,18 +361,7 @@ def _update_user_details(
         match_orders_with_new_user(user)
         fields_to_save.update({"email", "search_document"})
 
-    delta = login_time.day - user.last_login.day
-
-    if delta == 1:
-        user.continuous += 1
-        user.balance += Decimal(settings.CONTINUOUS_BALANCE_ADD)
-        consecutive_login_balance_event(user=user)
-        fields_to_save.add("balance")
-    elif delta > 1:
-        user.continuous = 1
-    user.last_login = login_time
-
-    fields_to_save.update({"continuous", "last_login"})
+    _update_continuous_days(user, login_time, fields_to_save)
 
     if user.first_name != user_first_name:
         user.first_name = user_first_name
