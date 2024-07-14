@@ -1,10 +1,11 @@
 from decimal import DecimalException
 import graphene
+from saleor.account.models import User
 from saleor.graphql.account.utils import check_is_owner_or_has_one_of_perms
 
 from saleor.graphql.utils import get_user_or_app_from_context
 
-from ...graphql.account.dataloaders import UserByUserIdLoader
+from ...graphql.account.dataloaders import UserByUserCodeLoader, UserByUserIdLoader
 from ...permission.auth_filters import AuthorizationFilters
 from ...graphql.core.doc_category import DOC_CATEGORY_DONATIONS
 from ...permission.enums import AccountPermissions, DonationPermissions
@@ -18,28 +19,26 @@ from ...donation import models
 class Donation(ModelObjectType[models.Donation]):
     id = graphene.ID(required=True, description="The ID of the donation.")
     created_at = graphene.DateTime(
-        required=True, description="The date and time when the donation was created."
+        required=False, description="The date and time when the donation was created."
     )
     updated_at = graphene.DateTime(
-        required=True,
+        required=False,
         description="The date and time when the donation was last updated.",
     )
-    completed = graphene.Boolean(
-        required=False,
-        description="Whether this donation is completed or not.",
-    )
-    title = graphene.String(required=True, description="The title of the donation.")
+    barcode = graphene.String(required=False, description="Barcode of the donation.")
+    title = graphene.String(required=False, description="The title of the donation.")
     donator = graphene.Field(
         "saleor.graphql.account.types.User",
         description=f"The user who made the donation. Requires one of permissions: {AccountPermissions.MANAGE_USERS.name}, {DonationPermissions.MANAGE_DONATIONS.name}, f{AuthorizationFilters.OWNER.name}",
     )
     description = graphene.String(
-        required=True, description="The description of the donation."
+        required=False, description="The description of the donation."
     )
     price = graphene.Field(
-        Money, required=True, description="The price of the donation."
+        Money, required=False, description="The price of the donation."
     )
-    quantity = graphene.Int(required=True, description="The quantity of the donation.")
+    quantity = graphene.Int(required=False, description="The quantity of the donation.")
+    status = graphene.String(required=False, description="The status of the donation")
 
     class Meta:
         description = "Represents donation."
@@ -75,21 +74,22 @@ class Donation(ModelObjectType[models.Donation]):
         return root.quantity
 
     @staticmethod
-    def resolve_user(root: models.Donation, info: ResolveInfo):
-        if not root.user_id:
+    def resolve_donator(root: models.Donation, info: ResolveInfo):
+        if not root.donator:
             return None
         requestor = get_user_or_app_from_context(info.context)
+        donator = UserByUserCodeLoader(info.context).load(root.donator).get()
         check_is_owner_or_has_one_of_perms(
             requestor,
-            root.user,
+            donator,
             AccountPermissions.MANAGE_USERS,
             DonationPermissions.MANAGE_DONATIONS,
         )
-        return root.user
+        return donator
 
     @staticmethod
-    def resolve_completed(root: models.Donation, _info: ResolveInfo):
-        return root.completed
+    def resolve_status(root: models.Donation, _info: ResolveInfo):
+        return root.status
 
 
 class DonationCountableConnection(CountableConnection):
