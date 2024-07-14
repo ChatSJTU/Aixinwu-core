@@ -56,6 +56,7 @@ class OrderPermissions(BasePermissionEnum):
 
 
 class DonationPermissions(BasePermissionEnum):
+    ADD_DONATIONS = "donation.add_donations"
     MANAGE_DONATIONS = "donation.manage_donations"
 
 
