@@ -4,6 +4,7 @@ import graphene
 
 from saleor.core.exceptions import PermissionDenied
 from saleor.graphql.donation.dataloaders import DonationByIdDataLoader
+from saleor.graphql.payment.utils import check_if_requestor_has_access
 from ..core import ResolveInfo
 from ..core.context import get_database_connection_name
 from ..utils import get_user_or_app_from_context
@@ -18,12 +19,14 @@ def resolve_donations(info: ResolveInfo):
         deleted_at__isnull=True
     )
     if not user:
-        raise PermissionDenied(message=f"You do not have access to Donations.")
+        raise PermissionDenied(
+            message=f"You do not have access to Donations.",
+        )
 
     if user.has_perm(DonationPermissions.MANAGE_DONATIONS):
         return qs
 
-    return qs.filter(donator=user)
+    return qs.filter(donator=user.code)
 
 
 def resolve_donation_by_id(info: ResolveInfo, id: str) -> Donation:
