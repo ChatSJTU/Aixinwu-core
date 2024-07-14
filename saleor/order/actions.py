@@ -8,6 +8,7 @@ from uuid import UUID
 
 from django.contrib.sites.models import Site
 from django.db import transaction
+from django.utils import timezone
 from stripe import Charge
 
 from ..account.models import User
@@ -189,12 +190,12 @@ def cancel_order(
     with traced_atomic_transaction():
         events.order_canceled_event(order=order, user=user, app=app)
         remove_reservations_for_order(order=order)
+        create_cancel_fulfillment(order=order, manager=manager)
         order.status = OrderStatus.CANCELED
+        order.updated_at = timezone.now()
         order.save(update_fields=["status", "updated_at"])
-
         call_event(manager.order_cancelled, order, webhooks=webhooks_cancelled)
         call_event(manager.order_updated, order, webhooks=webhooks_updated)
-
         call_event(send_order_canceled_confirmation, order, user, app, manager)
 
 
@@ -238,7 +239,7 @@ def order_refunded(
         if order.channel.name.find("shared"):
             order.status = OrderStatus.RETURNED
         else:
-            order.status = OrderStatus.CANCELED
+            order.status = OrderStatus.REFUNDED
 
         order.save(update_fields=["status"])
 
@@ -1070,7 +1071,7 @@ def _move_order_lines_to_target_fulfillment(
             fulfillment_lines_to_create.append(fulfillment_line)
 
             line_allocations_exists = line_to_move.allocations.exists()
-            if line_allocations_exists:
+            if line_allocations_exists and line_to_move.variant.return_on_cancel:
                 lines_to_dellocate.append(
                     OrderLineInfo(line=line_to_move, quantity=unfulfilled_to_move)
                 )
@@ -1158,6 +1159,26 @@ def __get_shipping_refund_amount(
     return shipping_refund_amount
 
 
+def create_cancel_fulfillment(
+    order,
+    manager: "PluginsManager",
+):
+    with transaction_with_commit_on_errors():
+        order_lines_to_refund = list(order.lines.all())
+
+        fulfillment = Fulfillment.objects.create(
+            status=FulfillmentStatus.CANCELED,
+            order=order,
+        )
+        _move_order_lines_to_target_fulfillment(
+            order_lines_to_move=order_lines_to_refund,
+            target_fulfillment=fulfillment,
+            manager=manager,
+        )
+
+        return fulfillment
+
+
 def create_refund_fulfillment(
     user: Optional[User],
     app: Optional["App"],
@@ -1180,6 +1201,8 @@ def create_refund_fulfillment(
     shipping_refund_amount = __get_shipping_refund_amount(
         refund_shipping_costs, amount, order.shipping_price_gross_amount
     )
+    if not order_lines_to_refund:
+        order_lines_to_refund = list(order.lines.all())
 
     with transaction_with_commit_on_errors():
         total_refund_amount = _process_refund(

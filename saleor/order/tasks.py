@@ -106,7 +106,7 @@ def _expire_orders(manager, now):
         ~Exists(TransactionItem.objects.filter(order=OuterRef("pk"))),
         ~Exists(Payment.objects.filter(order=OuterRef("pk"))),
         Exists(channels),
-        status=OrderStatus.UNCONFIRMED,
+        status__in=[OrderStatus.UNCONFIRMED, OrderStatus.UNFULFILLED],
     )
     ids_batch = list(qs.values_list("pk", flat=True)[:EXPIRE_ORDER_BATCH_SIZE])
     with traced_atomic_transaction():

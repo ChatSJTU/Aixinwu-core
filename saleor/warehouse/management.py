@@ -5,9 +5,11 @@ from typing import TYPE_CHECKING, Any, Optional, cast
 from uuid import UUID
 
 from django.db import transaction
-from django.db.models import F, Sum
+from django.db.models import F, Sum, Q
 from django.db.models.expressions import Exists, OuterRef
 from django.db.models.functions import Coalesce
+
+from saleor.order import OrderStatus
 
 from ..channel import AllocationStrategy
 from ..checkout.models import CheckoutLine
@@ -622,7 +624,11 @@ def deallocate_stock_for_order(order: "Order", manager: PluginsManager):
 @traced_atomic_transaction()
 def deallocate_stock_for_orders(orders_id, manager: PluginsManager):
     """Remove all allocations for given order."""
-    lines = OrderLine.objects.filter(order_id__in=orders_id)
+    lines = OrderLine.objects.filter(
+        (Q(order__status=OrderStatus.UNFULFILLED) & Q(variant__return_on_cancel=True))
+        | Q(order__status=OrderStatus.UNCONFIRMED),
+        order_id__in=orders_id,
+    )
     allocations = Allocation.objects.filter(
         Exists(lines.filter(id=OuterRef("order_line_id"))), quantity_allocated__gt=0
     ).select_related("stock")
