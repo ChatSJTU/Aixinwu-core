@@ -26,6 +26,18 @@ class UserByUserIdLoader(DataLoader):
         return [user_map.get(user_id) for user_id in keys]
 
 
+class UserByUserCodeLoader(DataLoader):
+    context_key = "user_by_id"
+
+    def batch_load(self, keys):
+        users = (
+            User.objects.using(self.database_connection_name)
+            .filter(code__in=keys)
+            .all()
+        )
+        return [user for user in users]
+
+
 class CustomerEventsByUserLoader(DataLoader):
     context_key = "customer_events_by_user"
 
