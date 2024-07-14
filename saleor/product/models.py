@@ -380,6 +380,9 @@ class ProductVariant(SortableModel, ModelWithMetadata, ModelWithExternalReferenc
             else Money(price_override, channel_listing.currency)
         )
 
+    def get_sales(self):
+        return sum([line.quantity for line in self.order_lines.all()])
+
     def get_price(
         self,
         channel_listing: "ProductVariantChannelListing",

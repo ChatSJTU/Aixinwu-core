@@ -1,4 +1,5 @@
 import datetime
+from ipaddress import collapse_addresses
 from typing import Union
 
 import pytz
@@ -286,6 +287,9 @@ class ProductVariantQueryset(models.QuerySet):
             "attributes__assignment__attribute",
             "variant_media__media",
         )
+
+    def annotate_sales(self):
+        return self.annotate(sales=Coalesce(Sum("order_lines__quantity"), Value(0)))
 
 
 ProductVariantManager = models.Manager.from_queryset(ProductVariantQueryset)

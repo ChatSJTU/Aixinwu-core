@@ -324,6 +324,7 @@ class ProductVariant(ChannelContextTypeWithMetadata[models.ProductVariant]):
         description="Total quantity ordered.",
         permissions=[ProductPermissions.MANAGE_PRODUCTS],
     )
+    sales = graphene.Int(description="Total Sales of the product.")
     revenue = PermissionsField(
         TaxedMoney,
         period=graphene.Argument(ReportingPeriod),
@@ -709,7 +710,11 @@ class ProductVariant(ChannelContextTypeWithMetadata[models.ProductVariant]):
         return getattr(root.node, "quantity_ordered", None)
 
     @staticmethod
-    @traced_resolver
+    def resolve_sales(root: ChannelContext[models.ProductVariant], _info):
+        # This field is added through annotation when using the
+        # `resolve_report_product_sales` resolver.
+        return root.node.get_sales()
+
     def resolve_revenue(root: ChannelContext[models.ProductVariant], info, *, period):
         start_date = reporting_period_to_date(period)
         variant = root.node
