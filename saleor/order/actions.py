@@ -1193,8 +1193,15 @@ def create_refund_fulfillment(
             refund_shipping_costs=refund_shipping_costs,
             manager=manager,
         )
+
+        status = (
+            FulfillmentStatus.REFUNDED
+            if not order.channel.name.find("shared")
+            else FulfillmentStatus.REFUNDED_AND_RETURNED
+        )
+
         refunded_fulfillment = Fulfillment.objects.create(
-            status=FulfillmentStatus.REFUNDED,
+            status=status,
             order=order,
             total_refund_amount=total_refund_amount,
             shipping_refund_amount=shipping_refund_amount,
@@ -1634,12 +1641,6 @@ def _process_refund(
     manager: "PluginsManager",
 ):
     lines_to_refund: dict[OrderLineIDType, tuple[QuantityType, OrderLine]] = dict()
-    refund_data = RefundData(
-        order_lines_to_refund=order_lines_to_refund,
-        fulfillment_lines_to_refund=fulfillment_lines_to_refund,
-        refund_shipping_costs=refund_shipping_costs,
-        refund_amount_is_automatically_calculated=amount is None,
-    )
     if amount is None:
         amount = _calculate_refund_amount(
             order_lines_to_refund, fulfillment_lines_to_refund, lines_to_refund
@@ -1648,28 +1649,6 @@ def _process_refund(
         # provided.
         if refund_shipping_costs:
             amount += order.shipping_price_gross_amount
-    if amount and payment:
-        amount = min(payment.captured_amount, amount)
-        gateway.refund(
-            payment,
-            manager,
-            amount=amount,
-            channel_slug=order.channel.slug,
-            refund_data=refund_data,
-        )
-        payment.refresh_from_db()
-        order_refunded(
-            order=order,
-            user=user,
-            app=app,
-            amount=amount,
-            payment=payment,
-            manager=manager,
-            # The mutations that use this function, always trigger order_updated at the
-            # end of the block. In that case we don't want to duplicate the webhooks
-            # triggered by single mutation.
-            trigger_order_updated=False,
-        )
 
     transaction.on_commit(
         lambda: fulfillment_refunded_event(

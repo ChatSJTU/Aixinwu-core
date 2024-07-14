@@ -99,14 +99,4 @@ class OrderRefund(BaseMutation):
             payment,
             manager,
         )
-
-        if order.channel.name.find("shared"):
-            order.fulfillments.create(
-                status=FulfillmentStatus.REFUNDED_AND_RETURNED,
-                total_refund_amount=amount,
-            )
-        else:
-            order.fulfillments.create(
-                status=FulfillmentStatus.REFUNDED, total_refund_amount=amount
-            )
         return OrderRefund(order=order)
