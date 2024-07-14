@@ -180,6 +180,9 @@ class UserInput(BaseInputObjectType):
         description="Fields required to update the user metadata." + ADDED_IN_314,
         required=False,
     )
+    balance = graphene.Float(
+        required=False, description="The balance of a certain user."
+    )
     private_metadata = NonNullList(
         MetadataInput,
         description=(
