@@ -35,13 +35,13 @@ class DonationDelete(ModelMutation):
 
     @classmethod
     def perform_mutation(cls, _root, info, /, **data):
-        donation = resolve_donation_by_id(info, data["id"])
-        if (
-            donation.donator.id != info.context.user.id
-            or not info.context.user.has_perm(DonationPermissions.MANAGE_DONATIONS)
-        ):
-            return cls(errors=[DonationError(code="PERMISSION_DENIED")], success=False)
-        donation.deleted_at = pytz.utc.localize(datetime.datetime.now())
-        donation.updated_at = pytz.utc.localize(datetime.datetime.now())
-        donation.save(update_fields=["deleted_at", "updated_at"])
-        return cls(errors=[], success=True)
+        # donation = resolve_donation_by_id(info, data["id"])
+        # if (
+        #     donation.donator.id != info.context.user.id
+        #     or not info.context.user.has_perm(DonationPermissions.MANAGE_DONATIONS)
+        # ):
+        #     return cls(errors=[DonationError(code="PERMISSION_DENIED")], success=False)
+        # donation.deleted_at = pytz.utc.localize(datetime.datetime.now())
+        # donation.updated_at = pytz.utc.localize(datetime.datetime.now())
+        # donation.save(update_fields=["deleted_at", "updated_at"])
+        return cls(errors=[], success=False)

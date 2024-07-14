@@ -1,6 +1,8 @@
+from django.utils import timezone
 from ...donation.mutations.utils import (
     validate_donation_price,
     validate_donation_quantity,
+    validate_update_permission,
 )
 from ...core.scalars import PositiveDecimal
 from ...core.types.base import BaseInputObjectType
@@ -12,20 +14,25 @@ from ....webhook.event_types import WebhookEventAsyncType
 from ...core.doc_category import DOC_CATEGORY_DONATIONS
 from ..dataloaders import DonationByIdDataLoader
 from ...core.mutations import ModelMutation
-from ....donation import models
+from ....donation import DonationStatus, models
 from ..types import Donation
 from ...core import ResolveInfo
 import graphene
 
 
 class DonationUpdateInput(BaseInputObjectType):
-    id = graphene.ID(required=True, description="ID of the donation.")
     title = graphene.String(required=False, description="The title of the donation.")
     description = graphene.String(
         required=False, description="The description of the donation."
     )
     quantity = graphene.Int(required=False, description="The quantity of the donation.")
     price = MoneyInput(required=False, description="The price of the donation.")
+    barcode = graphene.String(
+        required=False, description="The barcode of the donation."
+    )
+    donator = graphene.String(
+        required=False, description="The Student ID of the donation"
+    )
 
     class Meta:
         doc_category = DOC_CATEGORY_DONATIONS
@@ -37,6 +44,7 @@ class DonationUpdate(ModelMutation):
     )
 
     class Arguments:
+        id = graphene.ID(required=True, description="ID of the donation.")
         input = DonationUpdateInput(
             required=True, description="Fields required to update a donation."
         )
@@ -57,25 +65,23 @@ class DonationUpdate(ModelMutation):
         ]
 
     @classmethod
-    def validate_donation_input(cls, info: ResolveInfo, input):
-        validate_donation_price(input)
-        validate_donation_quantity(input)
+    def validate_donation_input(
+        cls, info: ResolveInfo, instance: models.Donation, input
+    ):
+        if input.get("price", None):
+            validate_donation_price(input)
+
+        if input.get("quantity", None):
+            validate_donation_quantity(input)
+        validate_update_permission(info, instance)
 
     @classmethod
-    def clean_input(cls, info: ResolveInfo, instance: models.Donation, data):
-        cls.validate_donation_input(info, data)
-        data["currency"] = data["price"].currency
-        data["price_amount"] = data["price"].amount
-        return data
-
-    @classmethod
-    def perform_mutation(cls, _root, info: ResolveInfo, /, **data):
-        input = data.get("input")
-        donation = DonationByIdDataLoader(info.context).load(input["id"])
-        if not donation:
-            return cls(errors=[DonationError(code="NOT_FOUND")], success=False)
-        if donation.donator != info.context.user or not info.context.user.has_perm(
-            DonationPermissions.MANAGE_DONATIONS
-        ):
-            return cls(errors=[DonationError(code="PERMISSION_DENIED")], success=False)
-        super().perform_mutation(_root, info, **data)
+    def clean_input(cls, info: ResolveInfo, instance: models.Donation, input):
+        cls.validate_donation_input(info, instance, input)
+        if input.get("price", None):
+            input["currency"] = input["price"].currency
+            input["price_amount"] = input["price"].amount
+        input = super().clean_input(info, instance, input)
+        input["status"] = DonationStatus.UNREVIEWED
+        input["updated_at"] = timezone.now()
+        return input

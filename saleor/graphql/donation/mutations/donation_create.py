@@ -1,3 +1,4 @@
+from saleor.permission.enums import DonationPermissions
 from ...core import ResolveInfo
 from ...core.utils import WebhookEventInfo
 from ....webhook.event_types import WebhookEventAsyncType
@@ -12,6 +13,7 @@ from ...core.mutations import ModelMutation
 from ...payment.mutations.payment.payment_check_balance import MoneyInput
 
 from .utils import (
+    validate_create_permission,
     validate_donation_price,
     validate_donation_quantity,
 )
@@ -31,6 +33,12 @@ class DonationCreateInput(BaseInputObjectType):
     price = graphene.Field(
         MoneyInput, description="The price of the donation.", required=True
     )
+    name = graphene.String(description="The name of the donator", required=True)
+    donator = graphene.String(
+        description="Student ID of the donator",
+        required=False,
+    )
+    barcode = graphene.String(required=True, description="The barcode of the donation.")
 
     class Meta:
         doc_category = DOC_CATEGORY_DONATIONS
@@ -59,19 +67,17 @@ class DonationCreate(ModelMutation):
         ]
 
     @classmethod
-    def validate_donation_input(cls, info: ResolveInfo, input):
+    def validate_creation_input(
+        cls, info: ResolveInfo, instance: models.Donation, input
+    ):
         validate_donation_price(input)
         validate_donation_quantity(input)
+        validate_create_permission(info, instance)
 
     @classmethod
-    def clean_input(cls, info: ResolveInfo, instance: models.Donation, data):
-        cls.validate_donation_input(info, data)
-        data["currency"] = data["price"].currency
-        data["price_amount"] = data["price"].amount
-        return data
-
-    @classmethod
-    def perform_mutation(cls, _root, info: ResolveInfo, /, **data):
-        data["input"]["donator"] = info.context.user
-        response = super().perform_mutation(_root, info, **data)
-        return response
+    def clean_input(cls, info: ResolveInfo, instance: models.Donation, input):
+        cls.validate_creation_input(info, instance, input)
+        input = super().clean_input(info, instance, input)
+        input["currency"] = input["price"].currency
+        input["price_amount"] = input["price"].amount
+        return input
