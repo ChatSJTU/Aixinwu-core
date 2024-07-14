@@ -99,7 +99,7 @@ def resolve_order(info, id):
     database_connection_name = get_database_connection_name(info.context)
     qs = models.Order.objects.using(database_connection_name).filter(lookup)
 
-    return qs.first() if user.is_superuser() else qs.filter(user=user).first()
+    return qs.first() if user.is_superuser else qs.filter(user=user).first()
 
 
 def resolve_homepage_events(info):
