@@ -1202,7 +1202,10 @@ def create_refund_fulfillment(
         refund_shipping_costs, amount, order.shipping_price_gross_amount
     )
     if not order_lines_to_refund:
-        order_lines_to_refund = list(order.lines.all())
+        order_lines_to_refund = [
+            OrderLineInfo(line=line, quantity=line.quantity)
+            for line in list(order.lines.all())
+        ]
 
     with transaction_with_commit_on_errors():
         total_refund_amount = _process_refund(
