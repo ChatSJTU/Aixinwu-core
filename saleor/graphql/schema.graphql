@@ -22911,6 +22911,9 @@ input ProductVariantBulkCreateInput @doc(category: "Products") {
   """
   externalReference: String
 
+  """Whether or not to return the products on refund."""
+  returnOnCancel: Boolean
+
   """Stocks of a product available for sale."""
   stocks: [StockInput!]
 
@@ -23719,6 +23722,9 @@ input ProductVariantCreateInput @doc(category: "Products") {
   """
   externalReference: String
 
+  """Whether or not to return the products on refund."""
+  returnOnCancel: Boolean
+
   """Product ID of which type is the variant."""
   product: ID!
 
@@ -23933,6 +23939,9 @@ input ProductVariantBulkUpdateInput @doc(category: "Products") {
   Added in Saleor 3.10.
   """
   externalReference: String
+
+  """Whether or not to return the products on refund."""
+  returnOnCancel: Boolean
 
   """
   Stocks input.
@@ -24156,6 +24165,9 @@ input ProductVariantInput @doc(category: "Products") {
   Added in Saleor 3.10.
   """
   externalReference: String
+
+  """Whether or not to return the products on refund."""
+  returnOnCancel: Boolean
 }
 
 """
@@ -31562,6 +31574,9 @@ input UserCreateInput @doc(category: "Users") {
   """
   metadata: [MetadataInput!]
 
+  """The balance of a certain user."""
+  balance: Float
+
   """
   Fields required to update the user private metadata.
   
@@ -31640,6 +31655,9 @@ input CustomerInput @doc(category: "Users") {
   Added in Saleor 3.14.
   """
   metadata: [MetadataInput!]
+
+  """The balance of a certain user."""
+  balance: Float
 
   """
   Fields required to update the user private metadata.
@@ -31826,6 +31844,9 @@ input StaffCreateInput @doc(category: "Users") {
   """
   metadata: [MetadataInput!]
 
+  """The balance of a certain user."""
+  balance: Float
+
   """
   Fields required to update the user private metadata.
   
@@ -31879,6 +31900,9 @@ input StaffUpdateInput @doc(category: "Users") {
   Added in Saleor 3.14.
   """
   metadata: [MetadataInput!]
+
+  """The balance of a certain user."""
+  balance: Float
 
   """
   Fields required to update the user private metadata.

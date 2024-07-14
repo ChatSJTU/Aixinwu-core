@@ -93,6 +93,10 @@ class ProductVariantInput(BaseInputObjectType):
         required=False,
     )
 
+    return_on_cancel = graphene.Boolean(
+        description="Whether or not to return the products on refund.", required=False
+    )
+
     class Meta:
         doc_category = DOC_CATEGORY_PRODUCTS
 

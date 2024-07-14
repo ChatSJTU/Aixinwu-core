@@ -340,6 +340,7 @@ class ProductVariant(SortableModel, ModelWithMetadata, ModelWithExternalReferenc
         "product.ProductMedia", through="product.VariantMedia"
     )
     track_inventory = models.BooleanField(default=True)
+    return_on_cancel = models.BooleanField(default=False)
     is_preorder = models.BooleanField(default=False)
     preorder_end_date = models.DateTimeField(null=True, blank=True)
     preorder_global_threshold = models.IntegerField(blank=True, null=True)
