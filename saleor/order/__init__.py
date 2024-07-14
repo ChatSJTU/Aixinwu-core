@@ -24,6 +24,7 @@ class OrderStatus:
     EXPIRED = "expired"  # order marked as expired
 
     LEASED = "leased"
+    REFUNDED = "refunded"
 
     CHOICES = [
         (DRAFT, "Draft"),
