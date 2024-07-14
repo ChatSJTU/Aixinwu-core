@@ -213,7 +213,13 @@ def _check_quantity_limits(
 ) -> Optional[NoReturn]:
     quantity_limit = variant.quantity_limit_per_customer or global_quantity_limit
     lines = (
-        OrderLine.objects.exclude(order__status=OrderStatus.CANCELED)
+        OrderLine.objects.exclude(
+            order__status__in=[
+                OrderStatus.CANCELED,
+                OrderStatus.REFUNDED,
+                OrderStatus.EXPIRED,
+            ]
+        )
         .filter(order__user=user)
         .filter(variant__pk=variant.id)
     )
