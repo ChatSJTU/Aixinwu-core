@@ -14,6 +14,7 @@ from django.db.models.functions import Coalesce
 
 from saleor.account.models import User
 from saleor.graphql.order.dataloaders import OrderLinesByVariantIdAndChannelIdLoader
+from saleor.order import OrderStatus
 
 from ..checkout.error_codes import CheckoutErrorCode
 from ..checkout.fetch import DeliveryMethodBase
@@ -21,7 +22,6 @@ from ..core.exceptions import InsufficientStock, InsufficientStockData
 from ..product.models import ProductVariantChannelListing
 from .models import Reservation, Stock, StockQuerySet
 from .reservations import get_listings_reservations
-
 from ..checkout.fetch import CheckoutLineInfo
 from ..checkout.models import CheckoutLine
 from ..order.models import OrderLine
@@ -212,7 +212,11 @@ def _check_quantity_limits(
     global_quantity_limit: Optional[int],
 ) -> Optional[NoReturn]:
     quantity_limit = variant.quantity_limit_per_customer or global_quantity_limit
-    lines = OrderLine.objects.filter(order__user=user).filter(variant__pk=variant.id)
+    lines = (
+        OrderLine.objects.exclude(order__status=OrderStatus.CANCELED)
+        .filter(order__user=user)
+        .filter(variant__pk=variant.id)
+    )
     accumulated = 0
     for line in lines.iterator():
         accumulated += line.quantity

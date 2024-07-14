@@ -237,7 +237,10 @@ def order_refunded(
 
         if order.channel.name.find("shared"):
             order.status = OrderStatus.RETURNED
-            order.save(update_fields=["status"])
+        else:
+            order.status = OrderStatus.CANCELED
+
+        order.save(update_fields=["status"])
 
         user = order.user
         user.balance += order.total_net_amount
