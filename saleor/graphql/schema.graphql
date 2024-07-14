@@ -7564,6 +7564,9 @@ type ProductVariant implements Node & ObjectWithMetadata @doc(category: "Product
     countryCode: CountryCode
   ): Int
 
+  """Quantity of a product that a user is allowed to buy."""
+  quantityAllowed: Int
+
   """
   Preorder data for product variant.
   

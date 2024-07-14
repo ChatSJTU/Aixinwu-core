@@ -205,28 +205,40 @@ def _split_lines_for_trackable_and_preorder(
     )
 
 
+def variant_quantity_allowed(
+    user: Optional[User],
+    variant: "ProductVariant",
+    global_quantity_limit: Optional[int] = None,
+) -> int:
+    quantity_limit = variant.quantity_limit_per_customer or global_quantity_limit
+    if quantity_limit:
+        lines = (
+            OrderLine.objects.exclude(
+                order__status__in=[
+                    OrderStatus.CANCELED,
+                    OrderStatus.REFUNDED,
+                    OrderStatus.EXPIRED,
+                ]
+            )
+            .filter(order__user=user)
+            .filter(variant__pk=variant.id)
+        )
+        accumulated = 0
+        for line in lines.iterator():
+            accumulated += line.quantity
+        return quantity_limit - accumulated
+    else:
+        return -1  # no limit on purchase
+
+
 def _check_quantity_limits(
     user: Optional[User],
     variant: "ProductVariant",
     quantity: int,
     global_quantity_limit: Optional[int],
 ) -> Optional[NoReturn]:
-    quantity_limit = variant.quantity_limit_per_customer or global_quantity_limit
-    lines = (
-        OrderLine.objects.exclude(
-            order__status__in=[
-                OrderStatus.CANCELED,
-                OrderStatus.REFUNDED,
-                OrderStatus.EXPIRED,
-            ]
-        )
-        .filter(order__user=user)
-        .filter(variant__pk=variant.id)
-    )
-    accumulated = 0
-    for line in lines.iterator():
-        accumulated += line.quantity
-    if quantity_limit is not None and quantity > quantity_limit - accumulated:
+    quantity_allowed = variant_quantity_allowed(user, variant, global_quantity_limit)
+    if quantity_allowed != -1 and quantity > quantity_allowed:
         raise ValidationError(
             {
                 "quantity": ValidationError(

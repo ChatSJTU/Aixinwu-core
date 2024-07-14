@@ -1,5 +1,10 @@
 from django.db.models import Exists, OuterRef, Sum
 
+from typing import cast
+
+from saleor.account.models import User
+from saleor.warehouse.availability import variant_quantity_allowed
+
 from ...channel.models import Channel
 from ...order import OrderStatus
 from ...order.models import Order
@@ -8,7 +13,7 @@ from ...product import models
 from ...product.models import ALL_PRODUCTS_PERMISSIONS
 from ..channel import ChannelQsContext
 from ..core import ResolveInfo
-from ..core.context import get_database_connection_name
+from ..core.context import SaleorContext, get_database_connection_name
 from ..core.tracing import traced_resolver
 from ..core.utils import from_global_id_or_error
 from ..utils import get_user_or_app_from_context
@@ -215,3 +220,9 @@ def resolve_report_product_sales(info, period, channel_slug) -> ChannelQsContext
     qs = qs.order_by("-quantity_ordered")
 
     return ChannelQsContext(qs=qs, channel_slug=channel_slug)
+
+
+def resolve_variant_allowed(info: SaleorContext, variant: models.ProductVariant) -> int:
+    requestor = get_user_or_app_from_context(info)
+    requestor = cast(User, requestor)
+    return variant_quantity_allowed(requestor, variant, None)

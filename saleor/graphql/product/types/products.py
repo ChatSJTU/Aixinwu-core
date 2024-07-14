@@ -143,7 +143,11 @@ from ..dataloaders import (
     VariantsChannelListingByProductIdAndChannelSlugLoader,
 )
 from ..enums import ProductMediaType, ProductTypeKindEnum, VariantAttributeScope
-from ..resolvers import resolve_product_variants, resolve_products
+from ..resolvers import (
+    resolve_product_variants,
+    resolve_products,
+    resolve_variant_allowed,
+)
 from ..sorters import MediaSortingInput
 from .channels import ProductChannelListing, ProductVariantChannelListing
 from .digital_contents import DigitalContent
@@ -386,6 +390,12 @@ class ProductVariant(ChannelContextTypeWithMetadata[models.ProductVariant]):
             ),
         ),
     )
+
+    quantity_allowed = graphene.Int(
+        required=False,
+        description=("Quantity of a product that a user is allowed to buy."),
+    )
+
     preorder = graphene.Field(
         PreorderData,
         required=False,
@@ -702,6 +712,10 @@ class ProductVariant(ChannelContextTypeWithMetadata[models.ProductVariant]):
         return product.then(
             lambda product: ChannelContext(node=product, channel_slug=root.channel_slug)
         )
+
+    @staticmethod
+    def resolve_quantity_allowed(root: ChannelContext[models.ProductVariant], info):
+        return resolve_variant_allowed(info, root.node)
 
     @staticmethod
     def resolve_quantity_ordered(root: ChannelContext[models.ProductVariant], _info):
