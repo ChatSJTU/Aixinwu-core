@@ -1369,11 +1369,6 @@ def complete_checkout(
         metadata_list=metadata_list,
         private_metadata_list=private_metadata_list,
     )
-    order_lines = fetch_order_lines(order=order)
-    _reserve_stocks_without_availability_check(
-        checkout_info=checkout_info, lines=order_lines
-    )
-
     return order, False, {}
 
 
