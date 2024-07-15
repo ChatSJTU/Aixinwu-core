@@ -149,13 +149,7 @@ class AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(
         # Return the quantities after capping them at the maximum quantity allowed in
         # checkout. This prevent users from tracking the store's precise stock levels.
         global_quantity_limit = site.settings.limit_quantity_per_checkout
-        return [
-            (
-                variant_id,
-                min(quantity_map[variant_id], global_quantity_limit or sys.maxsize),
-            )
-            for variant_id in variant_ids
-        ]
+        return [(variant_id, quantity_map[variant_id]) for variant_id in variant_ids]
 
     def get_warehouse_shipping_zones(self, country_code, channel_slug):
         """Get the WarehouseShippingZone instances for a given channel and country."""
@@ -366,7 +360,7 @@ class AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(
                         ][variant_id]
                     quantity_values.append(quantity)
 
-                quantity_map[variant_id] = max(quantity_values)
+                quantity_map[variant_id] = sum(quantity_values)
 
         return quantity_map
 
