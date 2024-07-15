@@ -243,7 +243,7 @@ def _check_quantity_limits(
             {
                 "quantity": ValidationError(
                     (
-                        f"Cannot add more than {quantity_limit} "
+                        f"Cannot add more than {quantity_allowed} "
                         f"times this item: {variant}."
                     ),
                     code=CheckoutErrorCode.QUANTITY_GREATER_THAN_LIMIT.value,
