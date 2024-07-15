@@ -11,6 +11,8 @@ from django.db import transaction
 from django.utils import timezone
 from stripe import Charge
 
+from saleor.core.prices import quantize_price
+
 from ..account.models import User
 from ..core.exceptions import AllocationError, InsufficientStock, InsufficientStockData
 from ..core.tracing import traced_atomic_transaction
@@ -245,6 +247,7 @@ def order_refunded(
 
         user = order.user
         user.balance += order.total_net_amount
+        user.balance = quantize_price(user.balance, "AXB")
         user.save(update_fields=["balance"])
         refunded_balance_event(user=user, order=order)
         last_payment.save(update_fields=["charge_status"])

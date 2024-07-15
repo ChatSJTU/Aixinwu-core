@@ -1,9 +1,12 @@
 from collections import defaultdict
+from decimal import Decimal
 from urllib.parse import urlencode
 
 import graphene
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
+
+from saleor.core.prices import quantize_price
 
 from ....account import events as account_events
 from ....account.error_codes import AccountErrorCode
@@ -255,8 +258,12 @@ class BaseCustomerCreate(ModelMutation, I18nMixin):
     def clean_input(cls, info: ResolveInfo, instance, data, **kwargs):
         shipping_address_data = data.pop(SHIPPING_ADDRESS_FIELD, None)
         billing_address_data = data.pop(BILLING_ADDRESS_FIELD, None)
-        cleaned_input = super().clean_input(info, instance, data, **kwargs)
+        balance = data.pop("balance", None)
+        if balance:
+            balance = Decimal(balance)
+            data["balance"] = quantize_price(balance, "AXB")
 
+        cleaned_input = super().clean_input(info, instance, data, **kwargs)
         if shipping_address_data:
             address_metadata = shipping_address_data.pop("metadata", list())
             shipping_address = cls.validate_address(

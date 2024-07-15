@@ -4,6 +4,7 @@ import graphene
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from saleor.core.prices import quantize_price
 from saleor.core.tracing import traced_atomic_transaction
 from saleor.graphql.core.enums import PaymentErrorCode
 from saleor.graphql.core.types.common import PaymentError
@@ -100,6 +101,7 @@ class OrderConfirm(ModelMutation):
                 order.total_charged_amount = order.total_net_amount
                 payment.charge_status = ChargeStatus.FULLY_CHARGED
                 user.balance -= order.total_net_amount
+                user.balance = quantize_price(user.balance, "AXB")
                 order.save(
                     update_fields=["status", "charge_status", "total_charged_amount"]
                 )
