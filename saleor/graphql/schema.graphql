@@ -3314,6 +3314,8 @@ enum PermissionEnum @doc(category: "Users") {
   MANAGE_SHIPPING
   MANAGE_SETTINGS
   MANAGE_TRANSLATIONS
+  ADD_DONATIONS
+  MANAGE_DONATIONS
 }
 
 """

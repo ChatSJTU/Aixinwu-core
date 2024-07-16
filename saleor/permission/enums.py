@@ -106,6 +106,7 @@ PERMISSIONS_ENUMS = [
     ProductTypePermissions,
     ShippingPermissions,
     SitePermissions,
+    DonationPermissions,
 ]
 
 
