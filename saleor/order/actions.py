@@ -220,16 +220,6 @@ def order_refunded(
             payment=payment,
         )
 
-    call_event(
-        send_order_refunded_confirmation,
-        order,
-        user,
-        app,
-        amount,
-        order.currency,
-        manager,
-    )
-
     call_event(manager.order_refunded, order)
     if trigger_order_updated:
         call_event(manager.order_updated, order)
@@ -246,10 +236,13 @@ def order_refunded(
         order.save(update_fields=["status"])
 
         user = order.user
-        user.balance += order.total_net_amount
+        if not amount:
+            user.balance += order.total_net_amount
+        else:
+            user.balance += amount
         user.balance = quantize_price(user.balance, "AXB")
         user.save(update_fields=["balance"])
-        refunded_balance_event(user=user, order=order)
+        refunded_balance_event(user=user, order=order, amount=amount)
         last_payment.save(update_fields=["charge_status"])
         call_event(manager.order_fully_refunded, order)
 
@@ -1074,7 +1067,7 @@ def _move_order_lines_to_target_fulfillment(
             fulfillment_lines_to_create.append(fulfillment_line)
 
             line_allocations_exists = line_to_move.allocations.exists()
-            if line_allocations_exists and line_to_move.variant.return_on_cancel:
+            if line_allocations_exists:
                 lines_to_dellocate.append(
                     OrderLineInfo(line=line_to_move, quantity=unfulfilled_to_move)
                 )
@@ -1678,6 +1671,8 @@ def _process_refund(
         # provided.
         if refund_shipping_costs:
             amount += order.shipping_price_gross_amount
+
+    order_refunded(order, user, app, amount, payment, manager, False)
 
     transaction.on_commit(
         lambda: fulfillment_refunded_event(

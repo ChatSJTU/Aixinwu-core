@@ -133,7 +133,10 @@ def assigned_name_to_a_customer_event(
 
 def first_login_balance_event(*, user: User) -> BalanceEvent:
     return BalanceEvent.objects.create(
-        user=user, type=BalanceEvents.FIRST_LOGIN, balance=Decimal(0.0), delta=Decimal(300.0)
+        user=user,
+        type=BalanceEvents.FIRST_LOGIN,
+        balance=Decimal(0.0),
+        delta=Decimal(300.0),
     )
 
 
@@ -141,14 +144,17 @@ def consecutive_login_balance_event(*, user: User) -> BalanceEvent:
     return BalanceEvent.objects.create(
         user=user,
         type=BalanceEvents.CONSECUTIVE_LOGIN,
-        balance = user.balance,
+        balance=user.balance,
         delta=settings.CONTINUOUS_BALANCE_ADD,
     )
 
 
 def change_balance_event(*, user: User, balance: Decimal) -> BalanceEvent:
     return BalanceEvent.objects.create(
-        user=user, type=BalanceEvents.MANUALLY_UPDATED, balance=balance, delta = (balance - user.balance)
+        user=user,
+        type=BalanceEvents.MANUALLY_UPDATED,
+        balance=balance,
+        delta=(balance - user.balance),
     )
 
 
@@ -164,7 +170,9 @@ def consumption_balance_event(*, user: User, order: Order) -> BalanceEvent:
     )
 
 
-def refunded_balance_event(*, user: User, order: Order) -> BalanceEvent:
+def refunded_balance_event(
+    *, user: User, order: Order, amount: Decimal
+) -> BalanceEvent:
     return BalanceEvent.objects.create(
-        user=user, type=BalanceEvents.REFUNDED, balance=order.total_net_amount
+        user=user, type=BalanceEvents.REFUNDED, balance=amount
     )
