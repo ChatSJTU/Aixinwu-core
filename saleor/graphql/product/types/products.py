@@ -715,7 +715,7 @@ class ProductVariant(ChannelContextTypeWithMetadata[models.ProductVariant]):
 
     @staticmethod
     def resolve_quantity_allowed(root: ChannelContext[models.ProductVariant], info):
-        return resolve_variant_allowed(info, root.node)
+        return resolve_variant_allowed(info.context, root.node)
 
     @staticmethod
     def resolve_quantity_ordered(root: ChannelContext[models.ProductVariant], _info):

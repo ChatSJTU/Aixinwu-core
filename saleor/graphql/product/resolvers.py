@@ -222,7 +222,9 @@ def resolve_report_product_sales(info, period, channel_slug) -> ChannelQsContext
     return ChannelQsContext(qs=qs, channel_slug=channel_slug)
 
 
-def resolve_variant_allowed(info: SaleorContext, variant: models.ProductVariant) -> int:
-    requestor = get_user_or_app_from_context(info)
+def resolve_variant_allowed(
+    context: SaleorContext, variant: models.ProductVariant
+) -> int:
+    requestor = get_user_or_app_from_context(context)
     requestor = cast(User, requestor)
     return variant_quantity_allowed(requestor, variant, None)
