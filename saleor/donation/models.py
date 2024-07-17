@@ -45,4 +45,5 @@ class Donation(models.Model):
         ordering = ("-created_at", "pk")
         permissions = (
             (DonationPermissions.MANAGE_DONATIONS.codename, "Manage donations"),
+            (DonationPermissions.ADD_DONATIONS.codename, "Add donations"),
         )
