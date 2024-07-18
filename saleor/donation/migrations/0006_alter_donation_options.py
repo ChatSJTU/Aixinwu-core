@@ -4,14 +4,19 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('donation', '0005_auto_20240714_0620'),
+        ("donation", "0005_auto_20240714_0620"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='donation',
-            options={'ordering': ('-created_at', 'pk'), 'permissions': (('manage_donations', 'Manage donations'), ('add_donations', 'Add donations'))},
+            name="donation",
+            options={
+                "ordering": ("-created_at", "pk"),
+                "permissions": (
+                    ("manage_donations", "Manage donations"),
+                    ("add_donations", "Add donations"),
+                ),
+            },
         ),
     ]

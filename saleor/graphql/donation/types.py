@@ -1,19 +1,16 @@
-from decimal import DecimalException
 import graphene
-from saleor.account.models import User
-from saleor.graphql.account.utils import check_is_owner_or_has_one_of_perms
 
-from saleor.graphql.utils import get_user_or_app_from_context
-
-from ...graphql.account.dataloaders import UserByUserCodeLoader, UserByUserIdLoader
-from ...permission.auth_filters import AuthorizationFilters
-from ...graphql.core.doc_category import DOC_CATEGORY_DONATIONS
-from ...permission.enums import AccountPermissions, DonationPermissions
-from ..core.connection import CountableConnection
-from ..core.types.model import ModelObjectType
-from ..core.types import Money
-from ..core import ResolveInfo
 from ...donation import models
+from ...graphql.account.dataloaders import UserByUserCodeLoader
+from ...graphql.account.utils import check_is_owner_or_has_one_of_perms
+from ...graphql.core.doc_category import DOC_CATEGORY_DONATIONS
+from ...graphql.utils import get_user_or_app_from_context
+from ...permission.auth_filters import AuthorizationFilters
+from ...permission.enums import AccountPermissions, DonationPermissions
+from ..core import ResolveInfo
+from ..core.connection import CountableConnection
+from ..core.types import Money
+from ..core.types.model import ModelObjectType
 
 
 class Donation(ModelObjectType[models.Donation]):
@@ -26,6 +23,7 @@ class Donation(ModelObjectType[models.Donation]):
         description="The date and time when the donation was last updated.",
     )
     barcode = graphene.String(required=False, description="Barcode of the donation.")
+    number = graphene.String(required=False, description="The number of the donation.")
     title = graphene.String(required=False, description="The title of the donation.")
     donator = graphene.Field(
         "saleor.graphql.account.types.User",

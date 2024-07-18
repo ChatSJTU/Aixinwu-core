@@ -12,7 +12,7 @@ from ..core.fields import BaseField, FilterConnectionField
 from ..core.connection import filter_connection_queryset, create_connection_slice
 from .types import Donation, DonationCountableConnection
 from ..core import ResolveInfo
-from .resolvers import resolve_donations
+from .resolvers import resolve_donation_by_id, resolve_donations
 
 
 class DonationQueries(graphene.ObjectType):
@@ -27,11 +27,21 @@ class DonationQueries(graphene.ObjectType):
         doc_category=DOC_CATEGORY_ORDERS,
     )
 
+    donation = BaseField(
+        Donation,
+        id=graphene.Argument(graphene.ID, description="ID of the donation"),
+        doc_category=DOC_CATEGORY_ORDERS,
+    )
+
     @staticmethod
     def resolve_donations(_root, info: ResolveInfo, **kwargs):
         qs = resolve_donations(info)
         qs = filter_connection_queryset(qs, kwargs, info.context)
         return create_connection_slice(qs, info, kwargs, DonationCountableConnection)
+
+    @staticmethod
+    def resolve_donation(_root, info: ResolveInfo, *, id):
+        return resolve_donation_by_id(info, id=id)
 
 
 class DonationMutations(graphene.ObjectType):

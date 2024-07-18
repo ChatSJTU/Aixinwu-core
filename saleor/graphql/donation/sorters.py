@@ -1,6 +1,6 @@
-from ..core.types.sort_input import SortInputObjectType
 from ..core.doc_category import DOC_CATEGORY_DONATIONS
 from ..core.types import BaseEnum
+from ..core.types.sort_input import SortInputObjectType
 
 
 class DonationSortField(BaseEnum):
@@ -13,7 +13,7 @@ class DonationSortField(BaseEnum):
     def description(self):
         if self.name in DonationSortField.__enum__._member_names_:
             sort_name = self.name.lower().replace("_", " ")
-            return f"Sort checkouts by {sort_name}."
+            return f"Sort donations by {sort_name}."
         raise ValueError(f"Unsupported enum value: {self.value}")
 
 

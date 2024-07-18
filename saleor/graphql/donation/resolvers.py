@@ -15,21 +15,16 @@ from ..core.utils import from_global_id_or_error
 
 def resolve_donations(info: ResolveInfo):
     user = get_user_or_app_from_context(info.context)
-    qs = Donation.objects.using(get_database_connection_name(info.context)).filter(
-        deleted_at__isnull=True
-    )
+    qs = Donation.objects.using(get_database_connection_name(info.context))
     if not user:
         raise PermissionDenied(
             message=f"You do not have access to Donations.",
         )
-
-    if user.has_perm(DonationPermissions.MANAGE_DONATIONS):
-        return qs
-
-    return qs.filter(donator=user.code)
+    if not user.has_perm(DonationPermissions.MANAGE_DONATIONS):
+        return qs.filter(donator=user.code)
+    return qs
 
 
 def resolve_donation_by_id(info: ResolveInfo, id: str) -> Donation:
-    _, local_id = from_global_id_or_error(id, "Donation")
-
-    return DonationByIdDataLoader(info.context).load(local_id).get()
+    _, id = from_global_id_or_error(id, "Donation")
+    return DonationByIdDataLoader(info.context).load(id).get()

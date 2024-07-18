@@ -1,27 +1,19 @@
-from ..utils.filters import filter_range_field
+import django_filters
+from django.db.models import Q
+
+from ...donation.models import Donation
 from ..core.doc_category import DOC_CATEGORY_ORDERS
-from ..core.types.filter_input import FilterInputObjectType
 from ..core.filters import (
-    GlobalIDMultipleChoiceFilter,
     MetadataFilterBase,
     ObjectTypeFilter,
 )
 from ..core.types.common import DateRangeInput
-from ...donation.models import Donation
-
-from django.db.models import Q
-import django_filters
+from ..core.types.filter_input import FilterInputObjectType
+from ..utils.filters import filter_range_field
 
 
 def filter_user(qs, _, value):
-    qs = qs.filter(
-        Q(user__email__ilike=value)
-        | Q(user__email__trigram_similar=value)
-        | Q(user__first_name__trigram_similar=value)
-        | Q(user__last_name__trigram_similar=value)
-        | Q(user__code__trigram_similar=value)
-        | Q(user__account__trigram_similar=value)
-    )
+    qs = qs.filter(code=value)
     return qs
 
 

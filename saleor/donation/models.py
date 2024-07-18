@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, connection
 from saleor import settings
 from django.utils import timezone
 from django_prices.models import MoneyField
@@ -9,9 +9,19 @@ from . import DonationStatus
 import uuid
 
 
+def get_donation_number():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT nextval('donation_donation_number_seq')")
+        result = cursor.fetchone()
+        return result[0]
+
+
 class Donation(models.Model):
     id = models.UUIDField(
         primary_key=True, editable=False, unique=True, default=uuid.uuid4
+    )
+    number = models.IntegerField(
+        unique=True, default=get_donation_number, null=True, blank=True
     )
     donator = models.CharField(max_length=128, null=True, blank=True)
     barcode = models.CharField(max_length=256, null=True, blank=True)
