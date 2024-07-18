@@ -175,6 +175,7 @@ class BaseAddressDelete(ModelDeleteMutation):
 class UserInput(BaseInputObjectType):
     first_name = graphene.String(description="Given name.")
     last_name = graphene.String(description="Family name.")
+    code = graphene.String(description="User code.")
     email = graphene.String(description="The unique email address of the user.")
     is_active = graphene.Boolean(required=False, description="User account is active.")
     note = graphene.String(description="A note about the user.")
