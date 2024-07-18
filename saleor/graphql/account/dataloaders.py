@@ -27,15 +27,17 @@ class UserByUserIdLoader(DataLoader):
 
 
 class UserByUserCodeLoader(DataLoader):
-    context_key = "user_by_id"
+    context_key = "user_by_user_code"
 
     def batch_load(self, keys):
-        users = (
+        user_maps = defaultdict(None)
+        for user in (
             User.objects.using(self.database_connection_name)
             .filter(code__in=keys)
-            .all()
-        )
-        return [user for user in users]
+            .iterator()
+        ):
+            user_maps[user.code] = user
+        return [user_maps.get(key, None) for key in keys]
 
 
 class CustomerEventsByUserLoader(DataLoader):
