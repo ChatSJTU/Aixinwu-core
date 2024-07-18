@@ -1151,6 +1151,10 @@ type Query {
     """
     last: Int
   ): DonationCountableConnection @doc(category: "Orders")
+  donation(
+    """ID of the donation"""
+    id: ID
+  ): Donation @doc(category: "Orders")
 
   """
   Look up a sale by ID.
@@ -14188,6 +14192,9 @@ type Donation implements Node @doc(category: "Donations") {
   """Barcode of the donation."""
   barcode: String
 
+  """The number of the donation."""
+  number: String
+
   """The title of the donation."""
   title: String
 
@@ -14218,7 +14225,7 @@ input DonationSortingInput @doc(category: "Donations") {
 }
 
 enum DonationSortField @doc(category: "Donations") {
-  """Sort checkouts by creation date."""
+  """Sort donations by creation date."""
   CREATION_DATE
 }
 
@@ -31563,6 +31570,9 @@ input UserCreateInput @doc(category: "Users") {
   """Family name."""
   lastName: String
 
+  """User code."""
+  code: String
+
   """The unique email address of the user."""
   email: String
 
@@ -31644,6 +31654,9 @@ input CustomerInput @doc(category: "Users") {
 
   """Family name."""
   lastName: String
+
+  """User code."""
+  code: String
 
   """The unique email address of the user."""
   email: String
@@ -31833,6 +31846,9 @@ input StaffCreateInput @doc(category: "Users") {
   """Family name."""
   lastName: String
 
+  """User code."""
+  code: String
+
   """The unique email address of the user."""
   email: String
 
@@ -31889,6 +31905,9 @@ input StaffUpdateInput @doc(category: "Users") {
 
   """Family name."""
   lastName: String
+
+  """User code."""
+  code: String
 
   """The unique email address of the user."""
   email: String
