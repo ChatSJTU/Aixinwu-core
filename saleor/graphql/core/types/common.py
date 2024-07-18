@@ -11,6 +11,7 @@ from ...core.doc_category import (
     DOC_CATEGORY_APPS,
     DOC_CATEGORY_ATTRIBUTES,
     DOC_CATEGORY_AUTH,
+    DOC_CATEGORY_BARCODES,
     DOC_CATEGORY_CHANNELS,
     DOC_CATEGORY_CHECKOUT,
     DOC_CATEGORY_DISCOUNTS,
@@ -43,6 +44,7 @@ from ..enums import (
     AttributeErrorCode,
     AttributeTranslateErrorCode,
     AttributeValueTranslateErrorCode,
+    BarcodeErrorCode,
     ChannelErrorCode,
     CheckoutErrorCode,
     CollectionErrorCode,
@@ -217,6 +219,13 @@ class AttributeError(Error):
 
     class Meta:
         doc_category = DOC_CATEGORY_ATTRIBUTES
+
+
+class BarcodeError(Error):
+    code = BarcodeErrorCode(description="The error code", required=True)
+
+    class Meta:
+        doc_category = DOC_CATEGORY_BARCODES
 
 
 class StaffError(AccountError):

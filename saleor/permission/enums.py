@@ -84,6 +84,10 @@ class ShippingPermissions(BasePermissionEnum):
     MANAGE_SHIPPING = "shipping.manage_shipping"
 
 
+class BarcodePermissions(BasePermissionEnum):
+    MANAGE_BARCODE = "barcode.manage_barcodes"
+
+
 class SitePermissions(BasePermissionEnum):
     MANAGE_SETTINGS = "site.manage_settings"
     MANAGE_TRANSLATIONS = "site.manage_translations"

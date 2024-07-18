@@ -4,6 +4,7 @@ from django.conf import settings
 from ...account import error_codes as account_error_codes
 from ...app import error_codes as app_error_codes
 from ...attribute import error_codes as attribute_error_codes
+from ...barcode import error_codes as barcode_error_codes
 from ...channel import error_codes as channel_error_codes
 from ...checkout import error_codes as checkout_error_codes
 from ...core import JobStatus, TimePeriodType
@@ -17,6 +18,7 @@ from ...core.units import (
 )
 from ...csv import error_codes as csv_error_codes
 from ...discount import error_codes as discount_error_codes
+from ...donation import error_codes as donation_error_codes
 from ...giftcard import error_codes as giftcard_error_codes
 from ...invoice import error_codes as invoice_error_codes
 from ...menu import error_codes as menu_error_codes
@@ -33,10 +35,10 @@ from ...translations import error_codes as translatable_error_codes
 from ...warehouse import error_codes as warehouse_error_codes
 from ...webhook import error_codes as webhook_error_codes
 from ..notifications import error_codes as external_notifications_error_codes
-from ...donation import error_codes as donation_error_codes
 from .doc_category import (
     DOC_CATEGORY_APPS,
     DOC_CATEGORY_ATTRIBUTES,
+    DOC_CATEGORY_BARCODES,
     DOC_CATEGORY_CHANNELS,
     DOC_CATEGORY_CHECKOUT,
     DOC_CATEGORY_DISCOUNTS,
@@ -384,3 +386,7 @@ WebhookTriggerErrorCode.doc_category = DOC_CATEGORY_WEBHOOKS
 DonationErrorCode = graphene.Enum.from_enum(donation_error_codes.DonationErrorCode)
 
 DonationErrorCode.doc_category = DOC_CATEGORY_DONATIONS
+
+
+BarcodeErrorCode = graphene.Enum.from_enum(barcode_error_codes.BarcodeErrorCode)
+BarcodeErrorCode.doc_category = DOC_CATEGORY_BARCODES

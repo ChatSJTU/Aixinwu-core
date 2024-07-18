@@ -247,6 +247,7 @@ INSTALLED_APPS = [
     "saleor.auth",
     "saleor.plugins",
     "saleor.account",
+    "saleor.barcode",
     "saleor.discount",
     "saleor.donation",
     "saleor.giftcard",
