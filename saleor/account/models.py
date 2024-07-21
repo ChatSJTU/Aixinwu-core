@@ -7,7 +7,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.postgres.indexes import GinIndex
-from django.db import models
+from django.db import connection, models
 from django.db.models import JSONField, Q, Value
 from django.db.models.expressions import Exists, OuterRef
 from django.forms.models import model_to_dict
@@ -373,6 +373,13 @@ class CustomerEvent(models.Model):
         return f"{self.__class__.__name__}(type={self.type!r}, user={self.user!r})"
 
 
+def get_balance_event_number():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT nextval('account_balanceevent_number_seq')")
+        result = cursor.fetchone()
+        return result[0]
+
+
 class BalanceEvent(models.Model):
     """Model used to store events that happened during the balance lifecycle."""
 
@@ -383,6 +390,11 @@ class BalanceEvent(models.Model):
             (type_name.upper(), type_name) for type_name, _ in BalanceEvents.CHOICES
         ],
     )
+
+    number = models.IntegerField(
+        null=True, blank=True, default=get_balance_event_number
+    )
+
     user = models.ForeignKey(
         User, related_name="balance_events", on_delete=models.CASCADE, null=True
     )
@@ -395,8 +407,8 @@ class BalanceEvent(models.Model):
 
     delta = models.DecimalField(
         blank=True,
-        null = True,
-        max_digits = settings.DEFAULT_MAX_DIGITS,
+        null=True,
+        max_digits=settings.DEFAULT_MAX_DIGITS,
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,
     )
 

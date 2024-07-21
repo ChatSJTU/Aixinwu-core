@@ -8,12 +8,14 @@ from ...account import models
 
 class BalanceEvent(ModelObjectType[models.BalanceEvent]):
     id = graphene.ID(required=True, description="The ID of the balance event.")
+    number = graphene.Int(description="The number of the balance event.")
     account = graphene.String(description="User account of a balance event.")
     balance = graphene.Float(description="Balance of a balance event.")
     type = graphene.String(description="Type of a balance event.")
     name = graphene.String(description="User name of a balance event.")
     code = graphene.String(description="Code of the customer.")
     date = graphene.DateTime(description="Datetime of the event.")
+
     class Meta:
         description = "Represents balance events."
         interfaces = [graphene.relay.Node]
@@ -28,7 +30,11 @@ class BalanceEvent(ModelObjectType[models.BalanceEvent]):
         return root.balance
 
     @staticmethod
-    def resolve_date(root, info:ResolveInfo):
+    def resolve_number(root, info: ResolveInfo):
+        return root.balance
+
+    @staticmethod
+    def resolve_date(root, info: ResolveInfo):
         return root.date
 
     @staticmethod
