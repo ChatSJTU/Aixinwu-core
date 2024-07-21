@@ -3,6 +3,7 @@ from uuid import UUID
 import graphene
 
 from saleor.core.exceptions import PermissionDenied
+from saleor.graphql.account.utils import is_owner_or_has_one_of_perms
 from saleor.graphql.donation.dataloaders import DonationByIdDataLoader
 from saleor.graphql.payment.utils import check_if_requestor_has_access
 from ..core import ResolveInfo
@@ -27,4 +28,19 @@ def resolve_donations(info: ResolveInfo):
 
 def resolve_donation_by_id(info: ResolveInfo, id: str) -> Donation:
     _, id = from_global_id_or_error(id, "Donation")
-    return DonationByIdDataLoader(info.context).load(id).get()
+    user = get_user_or_app_from_context(info.context)
+    if not user:
+        raise PermissionDenied(
+            message=f"You do not have access to this donation.",
+        )
+
+    donation = DonationByIdDataLoader(info.context).load(id).get()
+
+    if user.code == donation.donator or user.has_perm(
+        DonationPermissions.MANAGE_DONATIONS
+    ):
+        return donation
+    else:
+        raise PermissionDenied(
+            message=f"You do not have access to this donation.",
+        )
