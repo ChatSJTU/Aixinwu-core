@@ -1160,7 +1160,9 @@ def create_cancel_fulfillment(
     manager: "PluginsManager",
 ):
     with transaction_with_commit_on_errors():
-        order_lines_to_refund = list(order.lines.all())
+        order_lines_to_refund = [
+            OrderLineInfo(line, line.quantity) for line in order.lines.iterator()
+        ]
 
         fulfillment = Fulfillment.objects.create(
             status=FulfillmentStatus.CANCELED,
