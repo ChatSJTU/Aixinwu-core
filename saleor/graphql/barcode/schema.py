@@ -12,6 +12,8 @@ from ..core.fields import FilterConnectionField
 from .filters import BarcodeFilterInput
 from .sorters import BarcodeSortingInput
 from .types import BarcodeCountableConnection
+from .mutations import BarcodeDefaultCreate
+from .bulk_mutations import BarcodeBatchCreate
 
 
 class BarcodeQueries(graphene.ObjectType):
@@ -24,7 +26,6 @@ class BarcodeQueries(graphene.ObjectType):
             description="Slug of a channel for which the data should be returned."
         ),
         doc_category=DOC_CATEGORY_BARCODES,
-        permission=[BarcodePermissions.MANAGE_BARCODE],
     )
 
     @staticmethod
@@ -32,3 +33,9 @@ class BarcodeQueries(graphene.ObjectType):
         qs = resolve_barcodes(info)
         qs = filter_connection_queryset(qs, kwargs, info.context)
         return create_connection_slice(qs, info, kwargs, BarcodeCountableConnection)
+
+
+class BarcodeMutations(graphene.ObjectType):
+    barcode_default_create = BarcodeDefaultCreate.Field()
+
+    barcode_batch_create = BarcodeBatchCreate.Field()

@@ -4,7 +4,8 @@ import graphene
 
 from saleor.graphql.core.context import get_database_connection_name
 
-from ....barcode.models import Barcode
+from ....barcode import models
+from ..types import Barcode
 from ....permission.enums import BarcodePermissions
 from ...core import ResolveInfo
 from ...core.doc_category import DOC_CATEGORY_BARCODES
@@ -19,7 +20,11 @@ class BarcodeDefaultCreate(BaseMutation):
         required=True, description="Whether this is created or not."
     )
 
-    class Argument:
+    used_before = graphene.Boolean(
+        required=True, description="Whether this has been used before."
+    )
+
+    class Arguments:
         number = graphene.Int(required=True, description="The number of the barcode.")
 
     class Meta:
@@ -36,13 +41,16 @@ class BarcodeDefaultCreate(BaseMutation):
         number = data.get("number", 0)
         year_month = number / 100000
         sub = number % 100000
-
-        barcode, created = Barcode.objects.using(
+        barcode, created = models.Barcode.objects.using(
             get_database_connection_name(_info.context)
         ).get_or_create(year_month=year_month, sub=sub)
+
+        used_before = barcode.used
 
         if not barcode.used:
             barcode.used = True
             barcode.save()
 
-        return BarcodeDefaultCreate(barcode=barcode, created=created, errors=None)
+        return BarcodeDefaultCreate(
+            barcode=barcode, created=created, used_before=used_before, errors=None
+        )
