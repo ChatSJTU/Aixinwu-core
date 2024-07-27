@@ -63,6 +63,12 @@ def prepare_order_search_vector_value(
                     Value(order.user.last_name), config="simple", weight="A"
                 )
             )
+        if order.user.code:
+            search_vectors.append(
+                NoValidationSearchVector(
+                    Value(order.user.code), config="simple", weight="A"
+                )
+            )
 
     if order.billing_address:
         search_vectors += generate_address_search_vector_value(
