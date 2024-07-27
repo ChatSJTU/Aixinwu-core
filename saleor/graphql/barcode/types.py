@@ -23,7 +23,7 @@ class Barcode(ModelObjectType[models.Barcode]):
         model = models.Barcode
 
     @staticmethod
-    def get_number(root: models.Barcode, info: ResolveInfo):
+    def resolve_number(root: models.Barcode, info: ResolveInfo):
         return root.year_month * 100000 + root.sub
 
 

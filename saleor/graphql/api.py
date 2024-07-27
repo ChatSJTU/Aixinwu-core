@@ -7,6 +7,7 @@ from ..graphql.notifications.schema import ExternalNotificationMutations
 from .account.schema import AccountMutations, AccountQueries
 from .app.schema import AppMutations, AppQueries
 from .attribute.schema import AttributeMutations, AttributeQueries
+from .barcode.schema import BarcodeQueries, BarcodeMutations
 from .channel.schema import ChannelMutations, ChannelQueries
 from .checkout.schema import CheckoutMutations, CheckoutQueries
 from .core.enums import unit_enums
@@ -45,6 +46,7 @@ class Query(
     AccountQueries,
     AppQueries,
     AttributeQueries,
+    BarcodeQueries,
     ChannelQueries,
     CheckoutQueries,
     CoreQueries,
@@ -74,6 +76,7 @@ class Mutation(
     AccountMutations,
     AppMutations,
     AttributeMutations,
+    BarcodeMutations,
     ChannelMutations,
     CheckoutMutations,
     CoreMutations,

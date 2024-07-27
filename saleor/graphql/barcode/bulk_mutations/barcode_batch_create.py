@@ -1,4 +1,5 @@
 import graphene
+from django.db import transaction
 
 from ....barcode import models
 from ....permission.enums import BarcodePermissions
@@ -34,7 +35,11 @@ class BarcodeBatchCreate(BaseMutation):
     @classmethod
     def perform_mutation(cls, _root, _info: ResolveInfo, **data):
         count = data.pop("count")
-        barcodes = models.Barcode.objects.using(
-            get_database_connection_name(_info.context)
-        ).bulk_create([Barcode() for _ in range(count)])
-        return BarcodeBatchCreate(barcodes=barcodes, errors=None)
+        with transaction.atomic():
+            barcodes = [
+                models.Barcode.objects.using(
+                    get_database_connection_name(_info.context)
+                ).create()
+                for _ in range(count)
+            ]
+            return BarcodeBatchCreate(barcodes=barcodes, errors=None)

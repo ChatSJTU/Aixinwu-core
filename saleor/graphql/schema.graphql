@@ -1453,6 +1453,36 @@ type Query {
   """
   channels: [Channel!] @doc(category: "Channels")
 
+  """
+  Donations made by the user or collected by users if requested by staff.
+  """
+  barcodes(
+    """Sort orders."""
+    sortBy: BarcodeSortingInput
+
+    """Filtering options for orders."""
+    filter: BarcodeFilterInput
+
+    """Slug of a channel for which the data should be returned."""
+    channel: String
+
+    """Return the elements in the list that come before the specified cursor."""
+    before: String
+
+    """Return the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
+    """
+    first: Int
+
+    """
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
+    """
+    last: Int
+  ): BarcodeCountableConnection @doc(category: "Barcodes")
+
   """List of the shop's attributes."""
   attributes(
     """Filtering options for attributes."""
@@ -14112,6 +14142,9 @@ type BalanceEvent implements Node {
   """The ID of the balance event."""
   id: ID!
 
+  """The number of the balance event."""
+  number: Int
+
   """User account of a balance event."""
   account: String
 
@@ -14958,6 +14991,56 @@ type CheckoutLineCountableEdge @doc(category: "Checkout") {
 
   """A cursor for use in pagination."""
   cursor: String!
+}
+
+type BarcodeCountableConnection @doc(category: "Barcodes") {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+  edges: [BarcodeCountableEdge!]!
+
+  """A total count of items in the collection."""
+  totalCount: Int
+}
+
+type BarcodeCountableEdge @doc(category: "Barcodes") {
+  """The item at the end of the edge."""
+  node: Barcode!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""Represents barcode."""
+type Barcode implements Node {
+  """The ID of the barcode"""
+  id: ID!
+
+  """The date and time when the barcode is created."""
+  createdAt: DateTime
+
+  """Whether the barcode is used or not."""
+  used: Boolean
+
+  """the number of the barcode"""
+  number: Int
+}
+
+input BarcodeSortingInput @doc(category: "Barcodes") {
+  """Specifies the direction in which to sort barcodes."""
+  direction: OrderDirection!
+
+  """Sort barcodes by the selected field."""
+  field: BarcodeSortField!
+}
+
+enum BarcodeSortField @doc(category: "Barcodes") {
+  """Sort donations by creation date."""
+  CREATION_DATE
+}
+
+input BarcodeFilterInput @doc(category: "Barcodes") {
+  yearMonth: IntRangeInput
+  metadata: [MetadataFilter!]
 }
 
 input AttributeSortingInput @doc(category: "Attributes") {
@@ -19395,6 +19478,23 @@ type Mutation {
     """The list of reordering operations for the given channel warehouses."""
     moves: [ReorderInput!]!
   ): ChannelReorderWarehouses @doc(category: "Channels")
+
+  """
+  Creates or get barcode 
+  
+  Requires one of the following permissions: MANAGE_BARCODE.
+  """
+  barcodeDefaultCreate(
+    """The number of the barcode."""
+    number: Int!
+  ): BarcodeDefaultCreate @doc(category: "Barcodes")
+
+  """
+  Create barcodes. 
+  
+  Requires one of the following permissions: MANAGE_BARCODE.
+  """
+  barcodeBatchCreate(count: Int!): BarcodeBatchCreate @doc(category: "Barcodes")
 
   """
   Creates an attribute.
@@ -29930,6 +30030,54 @@ type ChannelReorderWarehouses @doc(category: "Channels") {
   """Channel within the warehouses are reordered."""
   channel: Channel
   errors: [ChannelError!]!
+}
+
+"""
+Creates or get barcode 
+
+Requires one of the following permissions: MANAGE_BARCODE.
+"""
+type BarcodeDefaultCreate @doc(category: "Barcodes") {
+  """The returned barcode"""
+  barcode: Barcode!
+
+  """Whether this is created or not."""
+  created: Boolean!
+
+  """Whether this has been used before."""
+  usedBefore: Boolean!
+  barcodeErrors: [BarcodeError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
+  errors: [BarcodeError!]!
+}
+
+type BarcodeError @doc(category: "Barcodes") {
+  """
+  Name of a field that caused the error. A value of `null` indicates that the error isn't associated with a particular field.
+  """
+  field: String
+
+  """The error message."""
+  message: String
+
+  """The error code"""
+  code: BarcodeErrorCode!
+}
+
+"""An enumeration."""
+enum BarcodeErrorCode @doc(category: "Barcodes") {
+  INVALID
+}
+
+"""
+Create barcodes. 
+
+Requires one of the following permissions: MANAGE_BARCODE.
+"""
+type BarcodeBatchCreate @doc(category: "Barcodes") {
+  """Barcodes created"""
+  barcodes: [Barcode!]!
+  barcodeErrors: [BarcodeError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
+  errors: [BarcodeError!]!
 }
 
 """

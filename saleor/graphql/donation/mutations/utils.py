@@ -90,12 +90,3 @@ def validate_complete_permission(info: ResolveInfo, instance: models.Donation):
                 )
             }
         )
-    if instance.status != DonationStatus.UNREVIEWED:
-        raise ValidationError(
-            {
-                "donation": ValidationError(
-                    "This donation is reviewed thus cannot be completed again.",
-                    code=DonationErrorCode.INVALID,
-                )
-            }
-        )
