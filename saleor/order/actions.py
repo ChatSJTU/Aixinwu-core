@@ -228,12 +228,9 @@ def order_refunded(
     if last_payment and last_payment.charge_status == ChargeStatus.FULLY_CHARGED:
         last_payment.charge_status = ChargeStatus.FULLY_REFUNDED
 
-        if order.channel.name.find("shared"):
+        if order.channel.slug.find("shared") > 0:
             order.status = OrderStatus.RETURNED
-        else:
-            order.status = OrderStatus.REFUNDED
-
-        order.save(update_fields=["status"])
+            order.save(update_fields=["status"])
 
         user = order.user
         if not amount:
@@ -1218,7 +1215,7 @@ def create_refund_fulfillment(
 
         status = (
             FulfillmentStatus.REFUNDED
-            if not order.channel.name.find("shared")
+            if not order.channel.slug.find("shared") > 0
             else FulfillmentStatus.REFUNDED_AND_RETURNED
         )
 

@@ -192,19 +192,28 @@ def update_order_status(order: Order):
 
     # total_quantity == 0 means that all products have been replaced, we don't change
     # the order status in that case
-    if total_quantity == 0:
-        status = order.status
-    elif quantity_fulfilled <= 0:
-        status = OrderStatus.UNFULFILLED
-    # elif 0 < quantity_returned < total_quantity:
-    #     status = OrderStatus.PARTIALLY_RETURNED
-    # elif quantity_returned == total_quantity:
-    #     status = OrderStatus.RETURNED
-    elif quantity_fulfilled < total_quantity or awaiting_approval:
-        status = OrderStatus.PARTIALLY_FULFILLED
-    else:
-        if order.channel.name.find("shared"):
+    if order.channel.slug.find("shared") > 0:
+        if total_quantity == 0:
+            status = order.status
+        elif quantity_fulfilled <= 0:
+            status = OrderStatus.UNFULFILLED
+        elif quantity_returned == total_quantity:
+            status = OrderStatus.RETURNED
+        elif quantity_fulfilled < total_quantity or awaiting_approval:
+            status = OrderStatus.PARTIALLY_FULFILLED
+        else:
             status = OrderStatus.LEASED
+    else:
+        if total_quantity == 0:
+            status = order.status
+        elif quantity_fulfilled <= 0:
+            status = OrderStatus.UNFULFILLED
+        elif 0 < quantity_returned < total_quantity:
+            status = OrderStatus.PARTIALLY_RETURNED
+        elif quantity_returned == total_quantity:
+            status = OrderStatus.RETURNED
+        elif quantity_fulfilled < total_quantity or awaiting_approval:
+            status = OrderStatus.PARTIALLY_FULFILLED
         else:
             status = OrderStatus.FULFILLED
 
