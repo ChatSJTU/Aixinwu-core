@@ -412,10 +412,10 @@ LOGGING = {
 AUTH_USER_MODEL = "account.User"
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        "OPTIONS": {"min_length": 8},
-    }
+    # {
+    #     "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    #     "OPTIONS": {"min_length": 8},
+    # }
 ]
 
 DEFAULT_COUNTRY = os.environ.get("DEFAULT_COUNTRY", "US")
