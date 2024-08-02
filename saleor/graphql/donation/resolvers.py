@@ -21,7 +21,7 @@ def resolve_donations(info: ResolveInfo):
         raise PermissionDenied(
             message=f"You do not have access to Donations.",
         )
-    if not user.has_perm(DonationPermissions.MANAGE_DONATIONS):
+    if not user.has_perm(DonationPermissions.ADD_DONATIONS):
         return qs.filter(donator=user.code)
     return qs
 
@@ -37,7 +37,7 @@ def resolve_donation_by_id(info: ResolveInfo, id: str) -> Donation:
     donation = DonationByIdDataLoader(info.context).load(id).get()
 
     if user.code == donation.donator or user.has_perm(
-        DonationPermissions.MANAGE_DONATIONS
+        DonationPermissions.ADD_DONATIONS
     ):
         return donation
     else:

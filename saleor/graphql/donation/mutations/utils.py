@@ -52,10 +52,7 @@ def validate_create_permission(info: ResolveInfo, instance: models.Donation):
 def validate_update_permission(info: ResolveInfo, instance: models.Donation):
     requestor = get_user_or_app_from_context(info.context)
 
-    if not requestor or not has_one_of_permissions(
-        requestor,
-        [DonationPermissions.MANAGE_DONATIONS],
-    ):
+    if not requestor:
         raise ValidationError(
             {
                 "requestor": ValidationError(
@@ -64,12 +61,27 @@ def validate_update_permission(info: ResolveInfo, instance: models.Donation):
                 )
             }
         )
-    if instance.status == DonationStatus.COMPLETED:
+    if instance.status == DonationStatus.COMPLETED and not has_one_of_permissions(
+        requestor,
+        [DonationPermissions.MANAGE_DONATIONS],
+    ):
         raise ValidationError(
             {
                 "donation": ValidationError(
                     "This donation is completed thus constant.",
                     code=DonationErrorCode.INVALID,
+                )
+            }
+        )
+    if instance.status != DonationStatus.COMPLETED and not has_one_of_permissions(
+        requestor,
+        [DonationPermissions.ADD_DONATIONS],
+    ):
+        raise ValidationError(
+            {
+                "requestor": ValidationError(
+                    "Requestor did not have the permission",
+                    code=DonationErrorCode.PERMISSION_DENIED,
                 )
             }
         )
