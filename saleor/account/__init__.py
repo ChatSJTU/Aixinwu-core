@@ -49,6 +49,7 @@ class CustomerEvents:
 
 class BalanceEvents:
     DONATION_GRANTED = "donation_granted"
+    DONATION_REJECTED = "donation_rejected"
     MANUALLY_UPDATED = "manually_updated"
     FIRST_LOGIN = "first_login"
     CONSECUTIVE_LOGIN = "consecutive_login"
@@ -59,6 +60,7 @@ class BalanceEvents:
             DONATION_GRANTED,
             "The user received credits for fulfilling a donation proposal.",
         ),
+        (DONATION_REJECTED, "The user's granted credits were subtracted."),
         (
             FIRST_LOGIN,
             "The user received credits for the first login.",
