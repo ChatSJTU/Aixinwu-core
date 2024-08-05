@@ -39,7 +39,7 @@ class BarcodeDefaultCreate(BaseMutation):
     @classmethod
     def perform_mutation(cls, _root, _info: ResolveInfo, **data):
         number = data.get("number", 0)
-        year_month = number / 100000
+        year_month = number // 100000
         sub = number % 100000
         barcode, created = models.Barcode.objects.using(
             get_database_connection_name(_info.context)
