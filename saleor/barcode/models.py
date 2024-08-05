@@ -23,10 +23,7 @@ def get_sub():
 class Barcode(models.Model):
     id = models.AutoField(primary_key=True)
     year_month = models.IntegerField(
-        editable=False,
-        null=False,
-        blank=False,
-        default=int(timezone.now().strftime("%y%m")),
+        editable=False, null=False, blank=False, default=current_year_month
     )
     used = models.BooleanField(default=False, editable=True, null=False, blank=False)
     sub = models.IntegerField(editable=False, null=False, blank=False, default=get_sub)
