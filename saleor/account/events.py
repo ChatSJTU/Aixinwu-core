@@ -170,6 +170,12 @@ def consumption_balance_event(*, user: User, order: Order) -> BalanceEvent:
     )
 
 
+def donation_rejected_balance_event(*, user: User, donation: Donation) -> BalanceEvent:
+    return BalanceEvent.objects.create(
+        user=user, type=BalanceEvents.DONATION_REJECTED, balance=donation.price_amount
+    )
+
+
 def refunded_balance_event(
     *, user: User, order: Order, amount: Decimal
 ) -> BalanceEvent:
