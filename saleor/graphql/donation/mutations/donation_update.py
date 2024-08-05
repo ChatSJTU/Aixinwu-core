@@ -1,5 +1,6 @@
 from django.utils import timezone
 from ...donation.mutations.utils import (
+    validate_donation_barcode,
     validate_donation_price,
     validate_donation_quantity,
     validate_update_permission,
@@ -73,6 +74,10 @@ class DonationUpdate(ModelMutation):
 
         if input.get("quantity", None):
             validate_donation_quantity(input)
+
+        if input.get("barcode", None):
+            validate_donation_barcode(info, input)
+
         validate_update_permission(info, instance)
 
     @classmethod

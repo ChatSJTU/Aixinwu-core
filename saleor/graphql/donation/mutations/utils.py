@@ -1,6 +1,8 @@
 from django.forms import ValidationError
 
+from saleor.barcode.models import Barcode
 from saleor.graphql.core import ResolveInfo
+from saleor.graphql.core.context import get_database_connection_name
 from saleor.graphql.utils import get_user_or_app_from_context
 from saleor.permission.enums import DonationPermissions
 from saleor.permission.utils import has_one_of_permissions
@@ -26,6 +28,22 @@ def validate_donation_quantity(input):
             {
                 "quantity": ValidationError(
                     "Quantity must be greater than 0.",
+                    code=DonationErrorCode.INVALID,
+                )
+            }
+        )
+
+
+def validate_donation_barcode(info: ResolveInfo, input):
+    if (
+        Barcode.objects.using(get_database_connection_name(info.context))
+        .filter(barcode=input["barcode"])
+        .exists()
+    ):
+        raise ValidationError(
+            {
+                "barcode": ValidationError(
+                    "Barcode should not be duplicated for donation",
                     code=DonationErrorCode.INVALID,
                 )
             }

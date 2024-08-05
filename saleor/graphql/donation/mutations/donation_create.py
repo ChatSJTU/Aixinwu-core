@@ -14,6 +14,7 @@ from ...payment.mutations.payment.payment_check_balance import MoneyInput
 
 from .utils import (
     validate_create_permission,
+    validate_donation_barcode,
     validate_donation_price,
     validate_donation_quantity,
 )
@@ -72,6 +73,7 @@ class DonationCreate(ModelMutation):
     ):
         validate_donation_price(input)
         validate_donation_quantity(input)
+        validate_donation_barcode(info, input)
         validate_create_permission(info, instance)
 
     @classmethod
