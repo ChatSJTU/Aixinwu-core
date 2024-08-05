@@ -31,7 +31,7 @@ class BalanceEvent(ModelObjectType[models.BalanceEvent]):
 
     @staticmethod
     def resolve_number(root, info: ResolveInfo):
-        return root.balance
+        return root.number
 
     @staticmethod
     def resolve_date(root, info: ResolveInfo):
