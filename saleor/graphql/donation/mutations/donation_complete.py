@@ -1,23 +1,24 @@
+import graphene
+from django.utils import timezone
+
+from saleor.account.events import (
+    donation_granted_balance_event,
+    donation_rejected_balance_event,
+)
 from saleor.graphql.core.types.base import BaseInputObjectType
 from saleor.graphql.donation.mutations.utils import (
     validate_complete_permission,
-    validate_donation_price,
-    validate_donation_quantity,
 )
-from saleor.graphql.donation.resolvers import resolve_donation_by_id
-from saleor.permission.enums import DonationPermissions
+
+from ....account.models import User
+from ....donation import DonationStatus, models
+from ....webhook.event_types import WebhookEventAsyncType
+from ...core import ResolveInfo
+from ...core.doc_category import DOC_CATEGORY_DONATIONS
+from ...core.mutations import ModelMutation
 from ...core.types.common import DonationError
 from ...core.utils import WebhookEventInfo
-from ....webhook.event_types import WebhookEventAsyncType
-from ...core.doc_category import DOC_CATEGORY_DONATIONS
-from ..dataloaders import DonationByIdDataLoader
-from ...core.mutations import ModelMutation
-from ....donation import DonationStatus, models
-from ....account.models import User
 from ..types import Donation
-from ...core import ResolveInfo
-from django.utils import timezone
-import graphene
 
 
 class DonationCompleteInput(BaseInputObjectType):
@@ -62,14 +63,32 @@ class DonationComplete(ModelMutation):
         else:
             input["status"] = DonationStatus.REJECTED
         input["updated_at"] = timezone.now()
+        input["previous"] = instance.status
         return input
 
     @classmethod
     def post_save_action(cls, info: ResolveInfo, instance, cleaned_input):
-        if instance.status == DonationStatus.COMPLETED and instance.donator:
+        if (
+            cleaned_input["previous"] != DonationStatus.COMPLETED
+            and instance.status == DonationStatus.COMPLETED
+            and instance.donator
+        ):
             try:
                 user = User.objects.get(code=instance.donator)
                 user.balance += instance.price_amount
                 user.save(update_fields=["balance"])
+                donation_granted_balance_event(user=user, donation=instance)
+            except (User.DoesNotExist, User.MultipleObjectsReturned):
+                pass
+        elif (
+            cleaned_input["previous"] == DonationStatus.COMPLETED
+            and instance.status == DonationStatus.REJECTED
+            and instance.donator
+        ):
+            try:
+                user = User.objects.get(code=instance.donator)
+                user.balance -= instance.price_amount
+                user.save(update_fields=["balance"])
+                donation_rejected_balance_event(user=user, donation=instance)
             except (User.DoesNotExist, User.MultipleObjectsReturned):
                 pass
