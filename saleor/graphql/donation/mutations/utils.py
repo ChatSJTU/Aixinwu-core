@@ -33,9 +33,10 @@ def validate_donation_quantity(input):
         )
 
 
-def validate_donation_barcode(info: ResolveInfo, input):
+def validate_donation_barcode(info: ResolveInfo, instance, input):
     if (
         models.Donation.objects.using(get_database_connection_name(info.context))
+        .exclude(pk=instance.pk)
         .filter(barcode=input["barcode"])
         .exists()
     ):

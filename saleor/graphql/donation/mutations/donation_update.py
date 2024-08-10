@@ -76,7 +76,7 @@ class DonationUpdate(ModelMutation):
             validate_donation_quantity(input)
 
         if input.get("barcode", None):
-            validate_donation_barcode(info, input)
+            validate_donation_barcode(info, instance, input)
 
         validate_update_permission(info, instance)
 
