@@ -33,7 +33,7 @@ def clean_order_cancel(order: Optional[models.Order]) -> models.Order:
 
 def check_order_ownership(order: Optional[models.Order], user):
     if not user.is_superuser or user.is_staff:
-        if order.user.id != user.id:
+        if not order.user.id == user.id:
             raise ValidationError(
                 {
                     "order": ValidationError(
@@ -43,7 +43,7 @@ def check_order_ownership(order: Optional[models.Order], user):
                 }
             )
         else:
-            if order.status != OrderStatus.UNCONFIRMED:
+            if not order.status == OrderStatus.UNCONFIRMED:
                 raise ValidationError(
                     {
                         "order": ValidationError(
