@@ -1,24 +1,23 @@
+import graphene
 from django.utils import timezone
+
+from ....donation import DonationStatus, models
+from ....webhook.event_types import WebhookEventAsyncType
+from ...core import ResolveInfo
+from ...core.doc_category import DOC_CATEGORY_DONATIONS
+from ...core.mutations import ModelMutation
+from ...core.types.base import BaseInputObjectType
+from ...core.types.common import DonationError
+from ...core.utils import WebhookEventInfo
 from ...donation.mutations.utils import (
     validate_donation_barcode,
     validate_donation_price,
     validate_donation_quantity,
+    validate_donator,
     validate_update_permission,
 )
-from ...core.scalars import PositiveDecimal
-from ...core.types.base import BaseInputObjectType
-from ....permission.enums import DonationPermissions
-from ...core.types.common import DonationError
 from ...payment.mutations.payment.payment_check_balance import MoneyInput
-from ...core.utils import WebhookEventInfo
-from ....webhook.event_types import WebhookEventAsyncType
-from ...core.doc_category import DOC_CATEGORY_DONATIONS
-from ..dataloaders import DonationByIdDataLoader
-from ...core.mutations import ModelMutation
-from ....donation import DonationStatus, models
 from ..types import Donation
-from ...core import ResolveInfo
-import graphene
 
 
 class DonationUpdateInput(BaseInputObjectType):
@@ -77,6 +76,9 @@ class DonationUpdate(ModelMutation):
 
         if input.get("barcode", None):
             validate_donation_barcode(info, instance, input)
+
+        if input.get("donator", None):
+            validate_donator(info, input)
 
         validate_update_permission(info, instance)
 

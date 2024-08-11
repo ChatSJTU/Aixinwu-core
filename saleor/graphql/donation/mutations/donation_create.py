@@ -1,26 +1,24 @@
-from saleor.permission.enums import DonationPermissions
-from ...core import ResolveInfo
-from ...core.utils import WebhookEventInfo
-from ....webhook.event_types import WebhookEventAsyncType
-from ...core.types.common import DonationError
-from ...core.types.money import Money
+import logging
+
+import graphene
+
 from ....donation import models
-from ..types import Donation
-from ...core.types.base import BaseInputObjectType
-from ...core.scalars import PositiveDecimal
+from ....webhook.event_types import WebhookEventAsyncType
+from ...core import ResolveInfo
 from ...core.doc_category import DOC_CATEGORY_DONATIONS
 from ...core.mutations import ModelMutation
+from ...core.types.base import BaseInputObjectType
+from ...core.types.common import DonationError
+from ...core.utils import WebhookEventInfo
 from ...payment.mutations.payment.payment_check_balance import MoneyInput
-
+from ..types import Donation
 from .utils import (
     validate_create_permission,
     validate_donation_barcode,
     validate_donation_price,
     validate_donation_quantity,
+    validate_donator,
 )
-
-import graphene
-import logging
 
 logger = logging.getLogger()
 
@@ -37,7 +35,7 @@ class DonationCreateInput(BaseInputObjectType):
     name = graphene.String(description="The name of the donator", required=True)
     donator = graphene.String(
         description="Student ID of the donator",
-        required=False,
+        required=True,
     )
     barcode = graphene.String(required=True, description="The barcode of the donation.")
 
@@ -73,7 +71,8 @@ class DonationCreate(ModelMutation):
     ):
         validate_donation_price(input)
         validate_donation_quantity(input)
-        validate_donation_barcode(info, input)
+        validate_donation_barcode(info, instance, input)
+        validate_donator(info, input)
         validate_create_permission(info, instance)
 
     @classmethod
