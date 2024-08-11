@@ -377,7 +377,7 @@ class CustomerEvent(models.Model):
 def get_balance_event_number():
     now = timezone.now()
     current_year_month = datetime(now.year, now.month, 1, tzinfo=now.tzinfo)
-    return BalanceEvent.objects.filter(created_at__gte=current_year_month).count() + 1
+    return BalanceEvent.objects.filter(date__gte=current_year_month).count() + 1
 
 
 class BalanceEvent(models.Model):

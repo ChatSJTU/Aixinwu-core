@@ -100,7 +100,9 @@ OrderManager = models.Manager.from_queryset(OrderQueryset)
 
 def get_order_number():
     time_now = now()
-    current_year_month = datetime(time_now.year, time_now.month, 1, tzinfo=now.tzinfo)
+    current_year_month = datetime(
+        time_now.year, time_now.month, 1, tzinfo=time_now.tzinfo
+    )
     return Order.objects.filter(created_at__gte=current_year_month).count() + 1
 
 
