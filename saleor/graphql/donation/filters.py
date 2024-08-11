@@ -13,7 +13,7 @@ from ..utils.filters import filter_range_field
 
 
 def filter_user(qs, _, value):
-    qs = qs.filter(code=value)
+    qs = qs.filter(donator=value)
     return qs
 
 
