@@ -1740,7 +1740,9 @@ class Order(ModelObjectType[models.Order]):
 
     @staticmethod
     def resolve_number(root: models.Order, _info):
-        return str(root.number)
+        if not root.created_at or not root.number:
+            return None
+        return root.created_at.strftime("%y%h") + str(root.number).zfill(4)
 
     @staticmethod
     @traced_resolver

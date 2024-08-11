@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from operator import attrgetter
 from re import match
@@ -98,15 +99,14 @@ OrderManager = models.Manager.from_queryset(OrderQueryset)
 
 
 def get_order_number():
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT nextval('order_order_number_seq')")
-        result = cursor.fetchone()
-        return result[0]
+    time_now = now()
+    current_year_month = datetime(time_now.year, time_now.month, 1, tzinfo=now.tzinfo)
+    return Order.objects.filter(created_at__gte=current_year_month).count() + 1
 
 
 class Order(ModelWithMetadata, ModelWithExternalReference):
     id = models.UUIDField(primary_key=True, editable=False, unique=True, default=uuid4)
-    number = models.IntegerField(unique=True, default=get_order_number, editable=False)
+    number = models.IntegerField(default=get_order_number, editable=False)
     use_old_id = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=now, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False, db_index=True)
