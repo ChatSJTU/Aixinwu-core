@@ -1,12 +1,14 @@
 from django.forms import ValidationError
 
-from saleor.graphql.core import ResolveInfo
-from saleor.graphql.core.context import get_database_connection_name
-from saleor.graphql.utils import get_user_or_app_from_context
-from saleor.permission.enums import DonationPermissions
-from saleor.permission.utils import has_one_of_permissions
-from ...core.enums import DonationErrorCode
+from saleor.account.models import User
+
 from ....donation import DonationStatus, models
+from ....permission.enums import DonationPermissions
+from ....permission.utils import has_one_of_permissions
+from ...core import ResolveInfo
+from ...core.context import get_database_connection_name
+from ...core.enums import DonationErrorCode
+from ...utils import get_user_or_app_from_context
 
 
 def validate_donation_price(input):
@@ -45,6 +47,21 @@ def validate_donation_barcode(info: ResolveInfo, instance, input):
                 "barcode": ValidationError(
                     "Barcode should not be duplicated for donation",
                     code=DonationErrorCode.INVALID,
+                )
+            }
+        )
+
+
+def validate_donator(info: ResolveInfo, input):
+    if (
+        User.objects.using(get_database_connection_name(info.context))
+        .filter(code=input.get("donator", "invalid"))
+        .exists()
+    ):
+        raise ValidationError(
+            {
+                "donator": ValidationError(
+                    "Donator does not exist", code=DonationErrorCode.INVALID
                 )
             }
         )
