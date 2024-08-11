@@ -1,28 +1,28 @@
-from django.db import models, connection
-from saleor import settings
+import uuid
+from datetime import datetime
+
+from django.conf import settings
+from django.db import models
 from django.utils import timezone
 from django_prices.models import MoneyField
-from django.conf import settings
-from saleor.account.models import User
-from saleor.permission.enums import DonationPermissions
+
+from saleor import settings
+
+from ..permission.enums import DonationPermissions
 from . import DonationStatus
-import uuid
 
 
 def get_donation_number():
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT nextval('donation_donation_number_seq')")
-        result = cursor.fetchone()
-        return result[0]
+    now = timezone.now()
+    current_year_month = datetime(now.year, now.month, 1, tzinfo=now.tzinfo)
+    return Donation.objects.filter(created_at__gte=current_year_month).count() + 1
 
 
 class Donation(models.Model):
     id = models.UUIDField(
         primary_key=True, editable=False, unique=True, default=uuid.uuid4
     )
-    number = models.IntegerField(
-        unique=True, default=get_donation_number, null=True, blank=True
-    )
+    number = models.IntegerField(default=get_donation_number, null=True, blank=True)
     donator = models.CharField(max_length=128, null=True, blank=True)
     barcode = models.CharField(max_length=256, null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now, editable=False)

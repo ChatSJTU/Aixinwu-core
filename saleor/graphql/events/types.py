@@ -11,7 +11,7 @@ from ..core.types.model import ModelObjectType
 
 class BalanceEvent(ModelObjectType[account_models.BalanceEvent]):
     id = graphene.ID(required=True, description="The ID of the balance event.")
-    number = graphene.Int(description="The number of the balance event.")
+    number = graphene.String(description="The number of the balance event.")
     account = graphene.String(description="User account of a balance event.")
     balance = graphene.Float(description="Balance of a balance event.")
     type = graphene.String(description="Type of a balance event.")
@@ -34,7 +34,9 @@ class BalanceEvent(ModelObjectType[account_models.BalanceEvent]):
 
     @staticmethod
     def resolve_number(root, info: ResolveInfo):
-        return root.number
+        if not root.created_at or not root.number:
+            return None
+        return root.date.strftime("%y%h") + str(root.number).zfill(4)
 
     @staticmethod
     def resolve_date(root, info: ResolveInfo):

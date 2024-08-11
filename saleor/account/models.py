@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from datetime import datetime
 from decimal import Decimal
 from functools import partial
 from typing import Union
@@ -374,10 +375,9 @@ class CustomerEvent(models.Model):
 
 
 def get_balance_event_number():
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT nextval('account_balanceevent_number_seq')")
-        result = cursor.fetchone()
-        return result[0]
+    now = timezone.now()
+    current_year_month = datetime(now.year, now.month, 1, tzinfo=now.tzinfo)
+    return BalanceEvent.objects.filter(created_at__gte=current_year_month).count() + 1
 
 
 class BalanceEvent(models.Model):
