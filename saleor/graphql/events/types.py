@@ -1,12 +1,15 @@
 import graphene
+
+from ...account import models as account_models
+from ...order import models as order_models
+from ..account.types import CustomerEvent
 from ..core import ResolveInfo
 from ..core.connection import CountableConnection
 from ..core.doc_category import DOC_CATEGORY_EVENTS
 from ..core.types.model import ModelObjectType
-from ...account import models
 
 
-class BalanceEvent(ModelObjectType[models.BalanceEvent]):
+class BalanceEvent(ModelObjectType[account_models.BalanceEvent]):
     id = graphene.ID(required=True, description="The ID of the balance event.")
     number = graphene.Int(description="The number of the balance event.")
     account = graphene.String(description="User account of a balance event.")
@@ -19,7 +22,7 @@ class BalanceEvent(ModelObjectType[models.BalanceEvent]):
     class Meta:
         description = "Represents balance events."
         interfaces = [graphene.relay.Node]
-        model = models.BalanceEvent
+        model = account_models.BalanceEvent
 
     @staticmethod
     def resolve_id(root, info: ResolveInfo):
@@ -54,7 +57,31 @@ class BalanceEvent(ModelObjectType[models.BalanceEvent]):
         return root.user.code
 
 
+class OrderEvent(ModelObjectType[order_models.OrderEvent]):
+    id = graphene.ID(required=True, description="The ID of the balance event.")
+    date = graphene.DateTime(description="Datetime of the event.")
+
+    class Meta:
+        description = "Represents balance events."
+        interfaces = [graphene.relay.Node]
+        model = order_models.OrderEvent
+
+    @staticmethod
+    def resolve_id(root, info: ResolveInfo):
+        return root.id
+
+    @staticmethod
+    def resolve_date(root, info: ResolveInfo):
+        return root.date
+
+
 class BalanceEventCountableConnection(CountableConnection):
     class Meta:
         doc_category = DOC_CATEGORY_EVENTS
         node = BalanceEvent
+
+
+class CustomerEventCountableConnection(CountableConnection):
+    class Meta:
+        doc_category = DOC_CATEGORY_EVENTS
+        node = CustomerEvent
