@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 
 from ....core.tracing import traced_atomic_transaction
 from ....giftcard.utils import deactivate_order_gift_cards
-from ....order import models
+from ....order import OrderStatus, models
 from ....order.actions import cancel_order
 from ....order.error_codes import OrderErrorCode
 from ....permission.enums import OrderPermissions
@@ -32,7 +32,10 @@ def clean_order_cancel(order: Optional[models.Order]) -> models.Order:
 
 
 def check_order_ownership(order: Optional[models.Order], user):
-    if order.user.id != user.id and not user.is_superuser() and not user.is_staff():
+    if user.is_superuser or user.is_staff:
+        return
+
+    if order.user.id != user.id:
         raise ValidationError(
             {
                 "order": ValidationError(
@@ -41,7 +44,16 @@ def check_order_ownership(order: Optional[models.Order], user):
                 )
             }
         )
-    return order
+    else:
+        if order.status != OrderStatus.UNFULFILLED:
+            raise ValidationError(
+                {
+                    "order": ValidationError(
+                        "Normal users can only cancel orders that are not fulfilled.",
+                        code=OrderErrorCode.CANNOT_CANCEL_ORDER.value,
+                    )
+                }
+            )
 
 
 class OrderCancel(BaseMutation):
@@ -62,7 +74,7 @@ class OrderCancel(BaseMutation):
     ):
         user = info.context.user
         order = cls.get_node_or_error(info, id, only_type=Order)
-        cls.check_channel_permissions(info, [order.channel_id])
+        # cls.check_channel_permissions(info, [order.channel_id])
         order = clean_order_cancel(order)
         order = check_order_ownership(order, user)
 
