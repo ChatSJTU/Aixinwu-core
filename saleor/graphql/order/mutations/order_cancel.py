@@ -32,28 +32,27 @@ def clean_order_cancel(order: Optional[models.Order]) -> models.Order:
 
 
 def check_order_ownership(order: Optional[models.Order], user):
-    if user.is_superuser or user.is_staff:
-        return
-
-    if order.user.id != user.id:
-        raise ValidationError(
-            {
-                "order": ValidationError(
-                    "This order can not be manipulated by the current user.",
-                    code=OrderErrorCode.CANNOT_CANCEL_ORDER.value,
-                )
-            }
-        )
-    else:
-        if order.status != OrderStatus.UNFULFILLED:
+    if not user.is_superuser or user.is_staff:
+        if order.user.id != user.id:
             raise ValidationError(
                 {
                     "order": ValidationError(
-                        "Normal users can only cancel orders that are not fulfilled.",
+                        "This order can not be manipulated by the current user.",
                         code=OrderErrorCode.CANNOT_CANCEL_ORDER.value,
                     )
                 }
             )
+        else:
+            if order.status != OrderStatus.UNCONFIRMED:
+                raise ValidationError(
+                    {
+                        "order": ValidationError(
+                            "Normal users can only cancel orders that are not fulfilled.",
+                            code=OrderErrorCode.CANNOT_CANCEL_ORDER.value,
+                        )
+                    }
+                )
+    return order
 
 
 class OrderCancel(BaseMutation):
