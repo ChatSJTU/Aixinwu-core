@@ -48,6 +48,12 @@ class Donation(ModelObjectType[models.Donation]):
         return graphene.Node.to_global_id("Donation", root.pk)
 
     @staticmethod
+    def resolve_number(root: models.Donation, _info: ResolveInfo):
+        if not root.created_at or not root.number:
+            return None
+        return root.created_at.strftime("%y%m") + str(root.number).zfill(4)
+
+    @staticmethod
     def resolve_title(root: models.Donation, _info: ResolveInfo):
         return root.title
 
