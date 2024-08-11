@@ -54,7 +54,7 @@ def validate_donation_barcode(info: ResolveInfo, instance, input):
 
 def validate_donator(info: ResolveInfo, input):
     if (
-        User.objects.using(get_database_connection_name(info.context))
+        not User.objects.using(get_database_connection_name(info.context))
         .filter(code=input.get("donator", "invalid"))
         .exists()
     ):
