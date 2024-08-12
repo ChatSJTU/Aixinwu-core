@@ -14399,6 +14399,8 @@ enum DonationSortField @doc(category: "Donations") {
 
 input DonationFilterInput @doc(category: "Orders") {
   donator: String
+  title: String
+  number: String
   created: DateRangeInput
   updated: DateRangeInput
   metadata: [MetadataFilter!]
