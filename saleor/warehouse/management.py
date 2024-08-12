@@ -1,7 +1,7 @@
 import math
 from collections import defaultdict, namedtuple
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 from uuid import UUID
 
 from django.db import transaction
@@ -9,7 +9,7 @@ from django.db.models import F, Sum, Q
 from django.db.models.expressions import Exists, OuterRef
 from django.db.models.functions import Coalesce
 
-from saleor.order import OrderStatus
+from saleor.order import FulfillmentLineData, OrderStatus
 
 from ..channel import AllocationStrategy
 from ..checkout.models import CheckoutLine
@@ -279,7 +279,8 @@ def _create_allocations(
 
 
 def deallocate_stock(
-    order_lines_data: Iterable["OrderLineInfo"], manager: PluginsManager
+    order_lines_data: Iterable["OrderLineInfo"],
+    manager: PluginsManager,
 ):
     """Deallocate stocks for given `order_lines`.
 
@@ -308,15 +309,15 @@ def deallocate_stock(
 
     allocations_to_update = []
     stocks_to_update = []
-    not_dellocated_lines = []
+    not_deallocated_lines = []
     for line_info in order_lines_data:
         order_line = line_info.line
         quantity = line_info.quantity
         allocations = line_to_allocations[order_line.pk]
-        quantity_dealocated = 0
+        quantity_deallocated = 0
         for allocation in allocations:
             quantity_to_deallocate = min(
-                (quantity - quantity_dealocated), allocation.quantity_allocated
+                (quantity - quantity_deallocated), allocation.quantity_allocated
             )
             if quantity_to_deallocate > 0:
                 allocation.quantity_allocated = (
@@ -327,12 +328,12 @@ def deallocate_stock(
                     F("quantity_allocated") - quantity_to_deallocate
                 )
                 stocks_to_update.append(stock)
-                quantity_dealocated += quantity_to_deallocate
+                quantity_deallocated += quantity_to_deallocate
                 allocations_to_update.append(allocation)
-                if quantity_dealocated == quantity:
+                if quantity_deallocated == quantity:
                     break
-        if not quantity_dealocated == quantity:
-            not_dellocated_lines.append(order_line)
+        if not quantity_deallocated == quantity:
+            not_deallocated_lines.append(order_line)
 
     allocations_before_update = list(
         Allocation.objects.filter(
@@ -358,8 +359,8 @@ def deallocate_stock(
 
     Stock.objects.bulk_update(stocks_to_update, ["quantity_allocated"])
 
-    if not_dellocated_lines:
-        raise AllocationError(not_dellocated_lines)
+    if not_deallocated_lines:
+        raise AllocationError(not_deallocated_lines)
 
 
 @traced_atomic_transaction()
