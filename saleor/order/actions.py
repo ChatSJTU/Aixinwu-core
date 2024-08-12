@@ -1247,11 +1247,6 @@ def create_refund_fulfillment(
             target_fulfillment=refunded_fulfillment,
         )
 
-        for f in fulfillment_lines_to_refund:
-            stock = f.line.stock
-            stock.quantity += f.quantity
-            stock.save(update_fields=["quantity"])
-
         # Delete fulfillments without lines after lines are moved.
         Fulfillment.objects.filter(
             order=order,
@@ -1483,6 +1478,11 @@ def create_return_fulfillment(
                     order_line,
                 )
         returned_lines_list = list(returned_lines.values())
+
+        for line_info in fulfillment_lines:
+            stock: Stock = line_info.line.stock
+            stock.increase_stock(line_info.quantity, True)
+
         transaction.on_commit(
             lambda: order_returned(
                 order,
