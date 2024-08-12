@@ -9,10 +9,8 @@ from uuid import UUID
 from django.contrib.sites.models import Site
 from django.db import transaction
 from django.utils import timezone
-from stripe import Charge
 
-from saleor.core.prices import quantize_price
-
+from ..account.events import refunded_balance_event
 from ..account.models import User
 from ..core.exceptions import AllocationError, InsufficientStock, InsufficientStockData
 from ..core.tracing import traced_atomic_transaction
@@ -47,7 +45,6 @@ from . import (
     events,
     utils,
 )
-from ..account.events import refunded_balance_event
 from .events import (
     draft_order_created_from_replace_event,
     fulfillment_refunded_event,
@@ -248,6 +245,7 @@ def order_refunded(
 
         refunded_balance_event(user=user, order=order, amount=amount)
         call_event(manager.order_fully_refunded, order)
+
 
 def order_voided(
     order: "Order",
@@ -1144,6 +1142,8 @@ def _move_fulfillment_lines_to_target_fulfillment(
             id__in=[f.id for f in empty_fulfillment_lines_to_delete]
         ).delete()
 
+        return fulfillment_lines_to_update, fulfillment_lines_to_create
+
 
 def __get_shipping_refund_amount(
     refund_shipping_costs: bool,
@@ -1238,11 +1238,19 @@ def create_refund_fulfillment(
             manager=manager,
         )
 
-        _move_fulfillment_lines_to_target_fulfillment(
+        (
+            fulfillment_lines_to_create,
+            fulfillment_lines_to_update,
+        ) = _move_fulfillment_lines_to_target_fulfillment(
             fulfillment_lines_to_move=fulfillment_lines_to_refund,
             lines_in_target_fulfillment=created_fulfillment_lines,
             target_fulfillment=refunded_fulfillment,
         )
+
+        for f in fulfillment_lines_to_refund:
+            stock = f.line.stock
+            stock.quantity += f.quantity
+            stock.save(update_fields=["quantity"])
 
         # Delete fulfillments without lines after lines are moved.
         Fulfillment.objects.filter(
@@ -1673,7 +1681,7 @@ def _process_refund(
         refund_shipping_costs=refund_shipping_costs,
         refund_amount_is_automatically_calculated=amount is None,
     )
-    
+
     if amount is None:
         amount = _calculate_refund_amount(
             order_lines_to_refund, fulfillment_lines_to_refund, lines_to_refund
@@ -1691,7 +1699,7 @@ def _process_refund(
             amount=amount,
             channel_slug=order.channel.slug,
             refund_data=refund_data,
-            customer_id=user.pk
+            customer_id=user.pk,
         )
         payment.refresh_from_db()
         order_refunded(
