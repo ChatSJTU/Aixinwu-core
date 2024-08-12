@@ -224,25 +224,30 @@ def order_refunded(
     if trigger_order_updated:
         call_event(manager.order_updated, order)
 
+    total_refunded = Decimal(0)
     last_payment = payment if payment else order.get_last_payment()
-    if last_payment and last_payment.charge_status == ChargeStatus.FULLY_CHARGED:
-        last_payment.charge_status = ChargeStatus.FULLY_REFUNDED
+    if last_payment and last_payment.charge_status in [
+        ChargeStatus.PARTIALLY_REFUNDED,
+        ChargeStatus.FULLY_REFUNDED,
+    ]:
+        total_refunded += sum(
+            last_payment.transactions.filter(
+                kind=TransactionKind.REFUND, is_success=True
+            ).values_list("amount", flat=True),
+            Decimal(0),
+        )
 
+    total_refunded += sum(
+        order.payment_transactions.all().values_list("refunded_value", flat=True),
+        Decimal(0),
+    )
+    if total_refunded >= order.total.gross.amount:
         if order.channel.slug.find("shared") > 0:
             order.status = OrderStatus.RETURNED
             order.save(update_fields=["status"])
 
-        user = order.user
-        if not amount:
-            user.balance += order.total_net_amount
-        else:
-            user.balance += amount
-        user.balance = quantize_price(user.balance, "AXB")
-        user.save(update_fields=["balance"])
         refunded_balance_event(user=user, order=order, amount=amount)
-        last_payment.save(update_fields=["charge_status"])
         call_event(manager.order_fully_refunded, order)
-
 
 def order_voided(
     order: "Order",
@@ -1196,11 +1201,11 @@ def create_refund_fulfillment(
     shipping_refund_amount = __get_shipping_refund_amount(
         refund_shipping_costs, amount, order.shipping_price_gross_amount
     )
-    if not order_lines_to_refund:
-        order_lines_to_refund = [
-            OrderLineInfo(line=line, quantity=line.quantity)
-            for line in list(order.lines.all())
-        ]
+    # if not order_lines_to_refund:
+    #     order_lines_to_refund = [
+    #         OrderLineInfo(line=line, quantity=line.quantity)
+    #         for line in list(order.lines.all())
+    #     ]
 
     with transaction_with_commit_on_errors():
         total_refund_amount = _process_refund(
@@ -1662,6 +1667,13 @@ def _process_refund(
     manager: "PluginsManager",
 ):
     lines_to_refund: dict[OrderLineIDType, tuple[QuantityType, OrderLine]] = dict()
+    refund_data = RefundData(
+        order_lines_to_refund=order_lines_to_refund,
+        fulfillment_lines_to_refund=fulfillment_lines_to_refund,
+        refund_shipping_costs=refund_shipping_costs,
+        refund_amount_is_automatically_calculated=amount is None,
+    )
+    
     if amount is None:
         amount = _calculate_refund_amount(
             order_lines_to_refund, fulfillment_lines_to_refund, lines_to_refund
@@ -1671,7 +1683,29 @@ def _process_refund(
         if refund_shipping_costs:
             amount += order.shipping_price_gross_amount
 
-    order_refunded(order, user, app, amount, payment, manager, False)
+    if amount and payment:
+        amount = min(payment.captured_amount, amount)
+        gateway.refund(
+            payment,
+            manager,
+            amount=amount,
+            channel_slug=order.channel.slug,
+            refund_data=refund_data,
+            customer_id=user.pk
+        )
+        payment.refresh_from_db()
+        order_refunded(
+            order=order,
+            user=user,
+            app=app,
+            amount=amount,
+            payment=payment,
+            manager=manager,
+            # The mutations that use this function, always trigger order_updated at the
+            # end of the block. In that case we don't want to duplicate the webhooks
+            # triggered by single mutation.
+            trigger_order_updated=False,
+        )
 
     transaction.on_commit(
         lambda: fulfillment_refunded_event(

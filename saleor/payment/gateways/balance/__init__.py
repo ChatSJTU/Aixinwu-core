@@ -52,6 +52,7 @@ def process_payment(
                 checkout=None,
                 order=order,
                 stored_payment_methods=StorePaymentMethod.OFF_SESSION,
+                captured_amount=payment_information.amount
             )
             return GatewayResponse(
                 is_success=True,

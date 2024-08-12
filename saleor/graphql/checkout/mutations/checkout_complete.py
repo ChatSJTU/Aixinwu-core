@@ -336,7 +336,7 @@ class CheckoutComplete(BaseMutation, I18nMixin):
             metadata_list=metadata,
         )
         _ = create_payment(
-            gateway="Balance",
+            gateway="aixinwu.payments.balance",
             total=order.total_net_amount,
             currency="AXB",
             email=order.get_customer_email(),

@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
-
+from django.db import transaction
+from saleor.account.models import User
+from saleor.payment import TransactionKind
 from saleor.plugins.base_plugin import BasePlugin, ConfigurationTypeField
 
 from ..utils import get_supported_currencies
@@ -11,8 +13,7 @@ from . import (
 
 GATEWAY_NAME = "Account Balance"
 
-if TYPE_CHECKING:
-    from ...interface import GatewayResponse, PaymentData, TokenConfig
+from ...interface import GatewayResponse, PaymentData, TokenConfig
 
 
 class BalanceGatewayPlugin(BasePlugin):
@@ -75,7 +76,21 @@ class BalanceGatewayPlugin(BasePlugin):
     def refund_payment(
         self, payment_information: "PaymentData", previous_value
     ) -> "GatewayResponse":
-        raise NotImplementedError()
+        amount = payment_information.amount
+        with transaction.atomic():
+            user = User.objects.get(pk=payment_information.customer_id)
+            user.balance += amount
+            user.save()
+            return GatewayResponse(
+                is_success=True,
+                action_required=False,
+                kind=TransactionKind.REFUND,
+                amount=amount,
+                currency=payment_information.currency,
+                transaction_id=get_client_token(),
+                error=None,
+                raw_response={"status": "ok"},
+            )
 
     def void_payment(
         self, payment_information: "PaymentData", previous_value

@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 
 from ....giftcard.utils import order_has_gift_card_lines
 from ....order import FulfillmentStatus, models
-from ....order.actions import order_refunded
+from ....order.actions import _process_refund, order_refunded
 from ....order.error_codes import OrderErrorCode
 from ....payment import TransactionKind, gateway
 from ....payment import models as payment_models
@@ -88,6 +88,18 @@ class OrderRefund(BaseMutation):
         payment = order.get_last_payment()
         payment = clean_payment(payment)
         payment = clean_refund_payment(payment)
+        transaction = try_payment_action(
+            order,
+            info.context.user,
+            app,
+            payment,
+            gateway.refund,
+            payment,
+            manager,
+            amount=amount,
+            channel_slug=order.channel.slug,
+            customer_id=info.context.user.pk
+        )
         # Confirm that we changed the status to refund. Some payment can receive
         # asynchronous webhook with update status
         payment.refresh_from_db()
@@ -98,5 +110,8 @@ class OrderRefund(BaseMutation):
             amount,
             payment,
             manager,
+        )
+        order.fulfillments.create(
+            status=FulfillmentStatus.REFUNDED, total_refund_amount=amount
         )
         return OrderRefund(order=order)

@@ -100,13 +100,14 @@ class OrderConfirm(ModelMutation):
                 order.charge_status = ChargeStatus.FULLY_CHARGED
                 order.total_charged_amount = order.total_net_amount
                 payment.charge_status = ChargeStatus.FULLY_CHARGED
+                payment.captured_amount = order.total_net_amount
                 user.balance -= order.total_net_amount
                 user.balance = quantize_price(user.balance, "AXB")
                 order.save(
                     update_fields=["status", "charge_status", "total_charged_amount"]
                 )
                 user.save(update_fields=["balance"])
-                payment.save(update_fields=["charge_status"])
+                payment.save(update_fields=["charge_status", "captured_amount"])
                 order_events.order_confirmed_event(order=order, user=user, app=None)
                 account_events.consumption_balance_event(user=user, order=order)
                 return OrderConfirm(order=order)
