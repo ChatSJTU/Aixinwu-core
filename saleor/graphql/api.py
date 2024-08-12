@@ -7,7 +7,7 @@ from ..graphql.notifications.schema import ExternalNotificationMutations
 from .account.schema import AccountMutations, AccountQueries
 from .app.schema import AppMutations, AppQueries
 from .attribute.schema import AttributeMutations, AttributeQueries
-from .barcode.schema import BarcodeQueries, BarcodeMutations
+from .barcode.schema import BarcodeMutations, BarcodeQueries
 from .channel.schema import ChannelMutations, ChannelQueries
 from .checkout.schema import CheckoutMutations, CheckoutQueries
 from .core.enums import unit_enums
@@ -26,6 +26,7 @@ from .page.schema import PageMutations, PageQueries
 from .payment.schema import PaymentMutations, PaymentQueries
 from .plugins.schema import PluginsMutations, PluginsQueries
 from .product.schema import ProductMutations, ProductQueries
+from .report.schema import ReportQueries
 from .shipping.schema import ShippingMutations, ShippingQueries
 from .shop.schema import ShopMutations, ShopQueries
 from .tax.schema import TaxMutations, TaxQueries
@@ -57,6 +58,7 @@ class Query(
     PluginsQueries,
     GiftCardQueries,
     MenuQueries,
+    ReportQueries,
     OrderQueries,
     PageQueries,
     PaymentQueries,

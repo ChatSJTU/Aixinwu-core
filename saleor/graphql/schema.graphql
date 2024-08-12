@@ -881,6 +881,23 @@ type Query {
     token: UUID!
   ): Order @doc(category: "Orders") @deprecated(reason: "This field will be removed in Saleor 4.0.")
 
+  """
+  Order Report
+  
+  Requires one of the following permissions: MANAGE_ORDERS.
+  """
+  orderReport(date: DateTimeRangeInput!): BaseReport @doc(category: "Reports")
+
+  "\\n\\nRequires one of the following permissions: MANAGE_USERS."
+  customerReport(date: DateTimeRangeInput!): Int
+
+  """
+  Donation Report
+  
+  Requires one of the following permissions: MANAGE_DONATIONS.
+  """
+  donationReport(date: DateTimeRangeInput!): BaseReport @doc(category: "Reports")
+
   """Look up a navigation menu by ID or name."""
   menu(
     """Slug of a channel for which the data should be returned."""
@@ -13927,6 +13944,17 @@ input OrderDraftFilterInput @doc(category: "Orders") {
   search: String
   metadata: [MetadataFilter!]
   channels: [ID!]
+}
+
+type BaseReport {
+  """The total collection in the current range."""
+  collectionTotal: Int
+
+  """The items total in the range."""
+  quantitiesTotal: Int
+
+  """The amount total in the range"""
+  amountTotal: Float
 }
 
 type MenuCountableConnection @doc(category: "Menu") {
