@@ -68,6 +68,7 @@ class CustomerUpdate(CustomerCreate, ModelWithExtRefMutation):
 
         # Compare the data
         has_new_name = old_instance.get_full_name() != new_fullname
+        has_new_balance = old_instance.balance != new_instance.balance
         has_new_email = old_instance.email != new_email
         was_activated = not old_instance.is_active and new_instance.is_active
         was_deactivated = old_instance.is_active and not new_instance.is_active
@@ -97,6 +98,11 @@ class CustomerUpdate(CustomerCreate, ModelWithExtRefMutation):
                 staff_user=info.context.user,
                 app=app,
                 account_id=old_instance.id,
+            )
+
+        if has_new_balance and old_instance is not None:
+            account_events.change_balance_event(
+                user=old_instance, balance=new_instance.balance
             )
 
     @classmethod

@@ -160,19 +160,28 @@ def change_balance_event(*, user: User, balance: Decimal) -> BalanceEvent:
 
 def donation_granted_balance_event(*, user: User, donation: Donation) -> BalanceEvent:
     return BalanceEvent.objects.create(
-        user=user, type=BalanceEvents.DONATION_GRANTED, balance=donation.price_amount
+        user=user,
+        type=BalanceEvents.DONATION_GRANTED,
+        balance=user.balance,
+        delta=donation.price_amount,
     )
 
 
 def consumption_balance_event(*, user: User, order: Order) -> BalanceEvent:
     return BalanceEvent.objects.create(
-        user=user, type=BalanceEvents.CONSUMED, balance=order.total_net_amount
+        user=user,
+        type=BalanceEvents.CONSUMED,
+        balance=user.balance,
+        delta=-order.total_net_amount,
     )
 
 
 def donation_rejected_balance_event(*, user: User, donation: Donation) -> BalanceEvent:
     return BalanceEvent.objects.create(
-        user=user, type=BalanceEvents.DONATION_REJECTED, balance=donation.price_amount
+        user=user,
+        type=BalanceEvents.DONATION_REJECTED,
+        balance=user.balance,
+        delta=-(donation.price_amount or 0),
     )
 
 
@@ -180,5 +189,5 @@ def refunded_balance_event(
     *, user: User, order: Order, amount: Decimal
 ) -> BalanceEvent:
     return BalanceEvent.objects.create(
-        user=user, type=BalanceEvents.REFUNDED, balance=amount
+        user=user, type=BalanceEvents.REFUNDED, balance=user.balance, delta=amount
     )
