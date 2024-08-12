@@ -9,46 +9,57 @@ from ..core import ResolveInfo
 from ..core.doc_category import DOC_CATEGORY_REPORTS
 from ..core.fields import PermissionsField
 from ..core.types.base import BaseObjectType
-from ..core.types.common import DateTimeRangeInput
+from ..core.types.common import DateTimeRangeInput, NonNullList
 from .resolvers import (
     resolve_customers_registered,
-    resolve_donation_report,
-    resolve_order_report,
+    resolve_donation_reports,
+    resolve_order_reports,
 )
-from .types import BaseReport
+from .types import BaseReport, Granularity
 
 
 class ReportQueries(BaseObjectType):
-    orderReport = PermissionsField(
-        BaseReport,
+    orderReports = PermissionsField(
+        NonNullList(
+            BaseReport,
+        ),
         date=DateTimeRangeInput(required=True),
+        granularity=Granularity(required=True),
         description="Order Report",
         doc_category=DOC_CATEGORY_REPORTS,
         permissions=[OrderPermissions.MANAGE_ORDERS],
     )
 
-    customerReport = PermissionsField(
-        graphene.Int,
+    customerReports = PermissionsField(
+        NonNullList(graphene.Int),
         date=DateTimeRangeInput(required=True),
+        granularity=Granularity(required=True),
         permissions=[AccountPermissions.MANAGE_USERS],
     )
 
-    donationReport = PermissionsField(
-        BaseReport,
+    donationReports = PermissionsField(
+        NonNullList(BaseReport),
         date=DateTimeRangeInput(required=True),
+        granularity=Granularity(required=True),
         description="Donation Report",
         doc_category=DOC_CATEGORY_REPORTS,
         permissions=[DonationPermissions.MANAGE_DONATIONS],
     )
 
     @staticmethod
-    def resolve_orderReport(_root, info: ResolveInfo, *, date: DateTimeRangeInput):
-        return resolve_order_report(info, date)
+    def resolve_orderReports(
+        _root, info: ResolveInfo, *, date: DateTimeRangeInput, granularity: Granularity
+    ):
+        return resolve_order_reports(info, date, granularity)
 
     @staticmethod
-    def resolve_customerReport(_root, info: ResolveInfo, *, date: DateTimeRangeInput):
-        return resolve_customers_registered(info, date)
+    def resolve_customerReports(
+        _root, info: ResolveInfo, *, date: DateTimeRangeInput, granularity: Granularity
+    ):
+        return resolve_customers_registered(info, date, granularity)
 
     @staticmethod
-    def resolve_donationReport(_root, info: ResolveInfo, *, date: DateTimeRangeInput):
-        return resolve_donation_report(info, date)
+    def resolve_donationReports(
+        _root, info: ResolveInfo, *, date: DateTimeRangeInput, granularity: Granularity
+    ):
+        return resolve_donation_reports(info, date, granularity)

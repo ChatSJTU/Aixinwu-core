@@ -886,17 +886,17 @@ type Query {
   
   Requires one of the following permissions: MANAGE_ORDERS.
   """
-  orderReport(date: DateTimeRangeInput!): BaseReport @doc(category: "Reports")
+  orderReports(date: DateTimeRangeInput!, granularity: Granularity!): [BaseReport!] @doc(category: "Reports")
 
   "\\n\\nRequires one of the following permissions: MANAGE_USERS."
-  customerReport(date: DateTimeRangeInput!): Int
+  customerReports(date: DateTimeRangeInput!, granularity: Granularity!): [Int!]
 
   """
   Donation Report
   
   Requires one of the following permissions: MANAGE_DONATIONS.
   """
-  donationReport(date: DateTimeRangeInput!): BaseReport @doc(category: "Reports")
+  donationReports(date: DateTimeRangeInput!, granularity: Granularity!): [BaseReport!] @doc(category: "Reports")
 
   """Look up a navigation menu by ID or name."""
   menu(
@@ -13955,6 +13955,12 @@ type BaseReport {
 
   """The amount total in the range"""
   amountTotal: Float
+}
+
+enum Granularity {
+  DAILY
+  MONTHLY
+  YEARLY
 }
 
 type MenuCountableConnection @doc(category: "Menu") {
