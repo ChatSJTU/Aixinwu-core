@@ -1,5 +1,7 @@
 import graphene
 
+from saleor.graphql.app.enums import description
+
 from ...account import models as account_models
 from ...order import models as order_models
 from ..account.types import CustomerEvent
@@ -14,6 +16,7 @@ class BalanceEvent(ModelObjectType[account_models.BalanceEvent]):
     number = graphene.String(description="The number of the balance event.")
     account = graphene.String(description="User account of a balance event.")
     balance = graphene.Float(description="Balance of a balance event.")
+    delta = graphene.Float(description="Delta of a balance event.")
     type = graphene.String(description="Type of a balance event.")
     name = graphene.String(description="User name of a balance event.")
     code = graphene.String(description="Code of the customer.")
@@ -31,6 +34,10 @@ class BalanceEvent(ModelObjectType[account_models.BalanceEvent]):
     @staticmethod
     def resolve_balance(root, info: ResolveInfo):
         return root.balance
+
+    @staticmethod
+    def resolve_delta(root, info: ResolveInfo):
+        return root.delta
 
     @staticmethod
     def resolve_number(root, info: ResolveInfo):

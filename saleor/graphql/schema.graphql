@@ -14235,6 +14235,9 @@ type BalanceEvent implements Node {
   """Balance of a balance event."""
   balance: Float
 
+  """Delta of a balance event."""
+  delta: Float
+
   """Type of a balance event."""
   type: String
 
