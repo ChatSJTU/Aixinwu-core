@@ -34,9 +34,9 @@ class BalanceEvent(ModelObjectType[account_models.BalanceEvent]):
 
     @staticmethod
     def resolve_number(root, info: ResolveInfo):
-        if not root.created_at or not root.number:
+        if not root.date or not root.number:
             return None
-        return root.date.strftime("%y%m") + str(root.number).zfill(4)
+        return root.date.strftime("%Y%m%d") + str(root.number).zfill(4)
 
     @staticmethod
     def resolve_date(root, info: ResolveInfo):
