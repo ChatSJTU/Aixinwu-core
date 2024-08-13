@@ -3,7 +3,7 @@ from datetime import datetime
 from django.db.models import Max, Min, Q, Sum
 from django.forms import ValidationError
 
-from ...account.models import CustomerEvent, CustomerEvents
+from ...account.models import User
 from ...donation.models import Donation, DonationStatus
 from ...order import OrderStatus
 from ...order.models import Order
@@ -75,11 +75,9 @@ def resolve_order_reports(
 def resolve_customers_registered(
     info: ResolveInfo, date: DateTimeRangeInput, granularity: Granularity
 ) -> list[int]:
-    qs = CustomerEvent.objects.using(get_database_connection_name(info.context)).filter(
-        type=CustomerEvents.ACCOUNT_CREATED
-    )
+    qs = User.objects.using(get_database_connection_name(info.context))
     try:
-        date = _revise_date_input(qs, "date", date)
+        date = _revise_date_input(qs, "date_joined", date)
     except ValidationError:
         return list()
 
@@ -87,7 +85,7 @@ def resolve_customers_registered(
 
     for dt in _split_date_input(date, granularity):
         qss = qs.all()
-        qss = filter_range_field(qss, "date", dt)
+        qss = filter_range_field(qss, "date_joined", dt)
         results.append(qss.count())
 
     return results
