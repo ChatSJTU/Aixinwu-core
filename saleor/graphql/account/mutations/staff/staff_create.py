@@ -3,6 +3,7 @@ from typing import cast
 from urllib.parse import urlencode
 
 import graphene
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 
@@ -116,6 +117,11 @@ class StaffCreate(ModelMutation):
         email = cleaned_input.get("email")
         if email:
             cleaned_input["email"] = email.lower()
+
+        password = cleaned_input.get("password")
+
+        if password:
+            cleaned_input["password"] = make_password(password)
 
         if errors:
             raise ValidationError(errors)
