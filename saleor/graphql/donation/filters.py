@@ -19,7 +19,7 @@ def filter_title(qs, _, value):
 
 def filter_number(qs, _, value):
     try:
-        dt = datetime.strptime("y%m", value[:4])
+        dt = datetime.strptime(value[:4], "%y%m")
         sub = int(value[-4:])
         return qs.filter(created_at__gte=dt).filter(number=sub)
     except ValueError:
