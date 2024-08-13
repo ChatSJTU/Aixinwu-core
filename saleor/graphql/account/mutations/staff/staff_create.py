@@ -42,6 +42,7 @@ class StaffCreateInput(StaffInput):
             "set the password. URL in RFC 1808 format."
         )
     )
+    password = graphene.String(description="Password of the staff")
 
     class Meta:
         description = "Fields required to create a staff user."
@@ -60,7 +61,6 @@ class StaffCreate(ModelMutation):
             "Apps are not allowed to perform this mutation."
         )
         doc_category = DOC_CATEGORY_USERS
-        exclude = ["password"]
         model = models.User
         object_type = User
         permissions = (AccountPermissions.MANAGE_STAFF,)

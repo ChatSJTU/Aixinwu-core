@@ -32167,6 +32167,9 @@ input StaffCreateInput @doc(category: "Users") {
   URL of a view where users should be redirected to set the password. URL in RFC 1808 format.
   """
   redirectUrl: String
+
+  """Password of the staff"""
+  password: String
 }
 
 """
