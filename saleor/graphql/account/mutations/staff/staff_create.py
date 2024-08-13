@@ -118,11 +118,6 @@ class StaffCreate(ModelMutation):
         if email:
             cleaned_input["email"] = email.lower()
 
-        password = cleaned_input.get("password")
-
-        if password:
-            cleaned_input["password"] = make_password(password)
-
         if errors:
             raise ValidationError(errors)
 
@@ -177,6 +172,12 @@ class StaffCreate(ModelMutation):
             user.search_document = prepare_user_search_document_value(
                 user, attach_addresses_data=False
             )
+
+        password = cleaned_input.get("password")
+
+        if password:
+            user.set_password(password)
+
         user.save()
         redirect_url = cleaned_input.get("redirect_url")
         if redirect_url and send_notification:
