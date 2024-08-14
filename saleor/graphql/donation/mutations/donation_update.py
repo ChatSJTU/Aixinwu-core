@@ -85,10 +85,10 @@ class DonationUpdate(ModelMutation):
     @classmethod
     def clean_input(cls, info: ResolveInfo, instance: models.Donation, input):
         cls.validate_donation_input(info, instance, input)
+        input = super().clean_input(info, instance, input)
         if input.get("price", None):
             input["currency"] = input["price"].currency
             input["price_amount"] = input["price"].amount
-        input = super().clean_input(info, instance, input)
         input["status"] = DonationStatus.UNREVIEWED
         input["updated_at"] = timezone.now()
         return input
