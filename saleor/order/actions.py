@@ -243,7 +243,6 @@ def order_refunded(
             order.status = OrderStatus.RETURNED
             order.save(update_fields=["status"])
 
-        refunded_balance_event(user=user, order=order, amount=amount)
         call_event(manager.order_fully_refunded, order)
 
 

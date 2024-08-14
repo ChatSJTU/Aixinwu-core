@@ -186,7 +186,7 @@ def donation_rejected_balance_event(*, user: User, donation: Donation) -> Balanc
 
 
 def refunded_balance_event(
-    *, user: User, order: Order, amount: Decimal
+    *, user: User, amount: Decimal
 ) -> BalanceEvent:
     return BalanceEvent.objects.create(
         user=user, type=BalanceEvents.REFUNDED, balance=user.balance, delta=amount

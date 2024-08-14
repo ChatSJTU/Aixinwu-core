@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 from django.db import transaction
+from saleor.account.events import refunded_balance_event
 from saleor.account.models import User
 from saleor.payment import TransactionKind
 from saleor.plugins.base_plugin import BasePlugin, ConfigurationTypeField
@@ -81,6 +82,7 @@ class BalanceGatewayPlugin(BasePlugin):
             user = User.objects.get(pk=payment_information.customer_id)
             user.balance += amount
             user.save()
+            refunded_balance_event(user=user, amount=amount)
             return GatewayResponse(
                 is_success=True,
                 action_required=False,
@@ -91,6 +93,7 @@ class BalanceGatewayPlugin(BasePlugin):
                 error=None,
                 raw_response={"status": "ok"},
             )
+        
 
     def void_payment(
         self, payment_information: "PaymentData", previous_value
