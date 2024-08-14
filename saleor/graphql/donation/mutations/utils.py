@@ -96,10 +96,7 @@ def validate_update_permission(info: ResolveInfo, instance: models.Donation):
                 )
             }
         )
-    if instance.status == DonationStatus.COMPLETED and not has_one_of_permissions(
-        requestor,
-        [DonationPermissions.MANAGE_DONATIONS],
-    ):
+    if instance.status == DonationStatus.COMPLETED:
         raise ValidationError(
             {
                 "donation": ValidationError(
