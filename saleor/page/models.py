@@ -30,6 +30,7 @@ class Page(ModelWithMetadata, SeoModel, PublishableModel):
     page_type = models.ForeignKey(
         "PageType", related_name="pages", on_delete=models.CASCADE
     )
+    text_content = models.TextField(blank=True, null=True)
     content = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
@@ -49,6 +50,7 @@ class PageTranslation(SeoModelTranslation):
         Page, related_name="translations", on_delete=models.CASCADE
     )
     title = models.CharField(max_length=255, blank=True, null=True)
+    text_content = models.TextField(blank=True, null=True)
     content = SanitizedJSONField(blank=True, null=True, sanitizer=clean_editor_js)
 
     class Meta:

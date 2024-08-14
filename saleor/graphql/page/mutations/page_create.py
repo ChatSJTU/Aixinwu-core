@@ -24,6 +24,7 @@ from ..types import Page
 class PageInput(BaseInputObjectType):
     slug = graphene.String(description="Page internal name.")
     title = graphene.String(description="Page title.")
+    text_content = graphene.String(description="Page Text Content")
     content = JSONString(description="Page content." + RICH_CONTENT)
     attributes = NonNullList(AttributeValueInput, description="List of attributes.")
     is_published = graphene.Boolean(

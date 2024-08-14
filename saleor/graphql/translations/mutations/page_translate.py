@@ -12,6 +12,7 @@ from .utils import BaseTranslateMutation, SeoTranslationInput
 
 class PageTranslationInput(SeoTranslationInput):
     title = graphene.String()
+    text_content = graphene.String(description="Translated page text content.")
     content = JSONString(description="Translated page content." + RICH_CONTENT)
 
 

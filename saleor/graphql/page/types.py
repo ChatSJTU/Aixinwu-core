@@ -107,6 +107,7 @@ class Page(ModelObjectType[models.Page]):
     seo_description = graphene.String(description="Description of the page for SEO.")
     title = graphene.String(required=True, description="Title of the page.")
     content = JSONString(description="Content of the page." + RICH_CONTENT)
+    text_content = graphene.String(description="Text of the page")
     publication_date = Date(
         deprecation_reason=(
             f"{DEPRECATED_IN_3X_FIELD} "

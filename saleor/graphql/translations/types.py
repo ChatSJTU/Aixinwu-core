@@ -485,6 +485,7 @@ class PageTranslation(BaseTranslationType[page_models.PageTranslation]):
     seo_title = graphene.String(description="Translated SEO title.")
     seo_description = graphene.String(description="Translated SEO description.")
     title = graphene.String(description="Translated page title.")
+    text_content = graphene.String(description="Translated page text content.")
     content = JSONString(description="Translated content of the page." + RICH_CONTENT)
     content_json = JSONString(
         description="Translated description of the page." + RICH_CONTENT,

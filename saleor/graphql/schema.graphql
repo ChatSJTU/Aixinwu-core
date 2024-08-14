@@ -8768,6 +8768,9 @@ type PageTranslation implements Node @doc(category: "Pages") {
   """Translated page title."""
   title: String
 
+  """Translated page text content."""
+  textContent: String
+
   """
   Translated content of the page.
   
@@ -8843,6 +8846,9 @@ type Page implements Node & ObjectWithMetadata @doc(category: "Pages") {
   Rich text format. For reference see https://editorjs.io/
   """
   content: JSONString
+
+  """Text of the page"""
+  textContent: String
   publicationDate: Date @deprecated(reason: "This field will be removed in Saleor 4.0. Use the `publishedAt` field to fetch the publication date.")
 
   """
@@ -25446,6 +25452,9 @@ input PageCreateInput @doc(category: "Pages") {
   """Page title."""
   title: String
 
+  """Page Text Content"""
+  textContent: String
+
   """
   Page content.
   
@@ -25533,6 +25542,9 @@ input PageInput @doc(category: "Pages") {
   """Page title."""
   title: String
 
+  """Page Text Content"""
+  textContent: String
+
   """
   Page content.
   
@@ -25579,6 +25591,9 @@ input PageTranslationInput {
   seoTitle: String
   seoDescription: String
   title: String
+
+  """Translated page text content."""
+  textContent: String
 
   """
   Translated page content.
