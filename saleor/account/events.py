@@ -140,12 +140,12 @@ def first_login_balance_event(*, user: User) -> BalanceEvent:
     )
 
 
-def consecutive_login_balance_event(*, user: User) -> BalanceEvent:
+def consecutive_login_balance_event(*, user: User, delta: Decimal) -> BalanceEvent:
     return BalanceEvent.objects.create(
         user=user,
         type=BalanceEvents.CONSECUTIVE_LOGIN,
         balance=user.balance,
-        delta=settings.CONTINUOUS_BALANCE_ADD,
+        delta=delta,
     )
 
 

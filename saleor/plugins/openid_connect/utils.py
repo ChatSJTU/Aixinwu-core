@@ -269,6 +269,9 @@ def get_or_create_user_from_payload(
             defaults=defaults_create,
         )
         first_login_balance_event(user=user)
+        consecutive_login_balance_event(
+            user=user, delta=Decimal(settings.CONTINUOUS_BALANCE_ADD[0])
+        )
         site, _ = Site.objects.get_or_create(id=settings.SITE_ID)
 
         if not site.domain or not site.name:
@@ -317,10 +320,18 @@ def get_domain_from_email(email: str):
 
 def _update_continuous_days(user: User, login_time: datetime, fields_to_save: set):
     delta = login_time.day - user.last_login.day
-    if delta == 1:
+    if delta > 1:
+        user.continuous = 0
+    if delta >= 1:
         user.continuous += 1
-        user.balance += Decimal(settings.CONTINUOUS_BALANCE_ADD)
-        consecutive_login_balance_event(user=user)
+        if user.continuous <= len(settings.CONTINUOUS_BALANCE_ADD):
+            balance_delta = Decimal(
+                settings.CONTINUOUS_BALANCE_ADD[user.continuous - 1]
+            )
+        else:
+            balance_delta = Decimal(settings.CONTINUOUS_BALANCE_ADD[-1])
+        user.balance += Decimal(balance_delta)
+        consecutive_login_balance_event(user=user, delta=balance_delta)
         fields_to_save.add("balance")
     elif delta > 1:
         user.continuous = 1
