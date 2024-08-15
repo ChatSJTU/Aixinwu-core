@@ -33,7 +33,7 @@ def _split_date_input(
     delta = get_relative_delta(granularity)
     x = date.gte
     y = date.lte
-    while x + delta <= y:
+    while x + delta < y:
         ranges.append(dict(gte=x, lte=x + delta))
         x = x + delta
     ranges.append(dict(gte=x, lte=x + delta))
