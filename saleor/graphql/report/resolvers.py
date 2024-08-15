@@ -9,16 +9,16 @@ from ...order import OrderStatus
 from ...order.models import Order
 from ..core import ResolveInfo
 from ..core.context import get_database_connection_name
-from ..core.types.common import DateTimeRangeInput
+from ..core.types.common import DateRangeInput
 from ..utils.filters import filter_range_field
 from .types import BaseReport, Granularity, get_relative_delta
 
 
-def _revise_date_input(qs, field, date: DateTimeRangeInput) -> DateTimeRangeInput:
+def _revise_date_input(qs, field, date: DateRangeInput) -> DateRangeInput:
     if not date.lte:
-        date.lte = qs.aggregate(lte=Max(field))["lte"]
+        date.lte = qs.aggregate(lte=Max(field + "__date"))["lte"]
     if not date.gte:
-        date.gte = qs.aggregate(gte=Min(field))["gte"]
+        date.gte = qs.aggregate(gte=Min(field + "__date"))["gte"]
 
     if date.lte is None or date.gte is None:
         raise ValidationError(message="Range not found.")
@@ -27,13 +27,13 @@ def _revise_date_input(qs, field, date: DateTimeRangeInput) -> DateTimeRangeInpu
 
 
 def _split_date_input(
-    date: DateTimeRangeInput, granularity: Granularity
+    date: DateRangeInput, granularity: Granularity
 ) -> list[dict[str, datetime]]:
     ranges: list[dict[str, datetime]] = []
     delta = get_relative_delta(granularity)
     x = date.gte
     y = date.lte
-    while x + delta < y:
+    while x + delta <= y:
         ranges.append(dict(gte=x, lte=x + delta))
         x = x + delta
     ranges.append(dict(gte=x, lte=x + delta))
@@ -41,7 +41,7 @@ def _split_date_input(
 
 
 def resolve_order_reports(
-    info: ResolveInfo, date: DateTimeRangeInput, granularity: Granularity
+    info: ResolveInfo, date: DateRangeInput, granularity: Granularity
 ) -> list[BaseReport]:
     qs = Order.objects.using(get_database_connection_name(info.context)).exclude(
         Q(status=OrderStatus.CANCELED)
@@ -73,7 +73,7 @@ def resolve_order_reports(
 
 
 def resolve_customers_registered(
-    info: ResolveInfo, date: DateTimeRangeInput, granularity: Granularity
+    info: ResolveInfo, date: DateRangeInput, granularity: Granularity
 ) -> list[int]:
     qs = User.objects.using(get_database_connection_name(info.context))
     try:
@@ -92,7 +92,7 @@ def resolve_customers_registered(
 
 
 def resolve_donation_reports(
-    info: ResolveInfo, date: DateTimeRangeInput, granularity: Granularity
+    info: ResolveInfo, date: DateRangeInput, granularity: Granularity
 ) -> list[BaseReport]:
     qs = Donation.objects.using(get_database_connection_name(info.context)).filter(
         status=DonationStatus.COMPLETED
