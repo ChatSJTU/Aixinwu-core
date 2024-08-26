@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
+import pytz
 import requests
 from authlib.jose import JWTClaims, jwt
 from authlib.jose.errors import DecodeError, JoseError
@@ -13,6 +14,7 @@ from django.contrib.auth.hashers import make_password
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
+from django.db import transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 from jwt import PyJWTError
@@ -319,7 +321,10 @@ def get_domain_from_email(email: str):
 
 
 def _update_continuous_days(user: User, login_time: datetime, fields_to_save: set):
-    delta = login_time.day - user.last_login.day
+    delta = (
+        login_time.astimezone(tz=pytz.timezone("Asia/Shanghai")).day
+        - user.last_login.astimezone(tz=pytz.timezone("Asia/Shanghai")).day
+    )
     if delta > 1:
         user.continuous = 0
     if delta >= 1:
@@ -333,14 +338,14 @@ def _update_continuous_days(user: User, login_time: datetime, fields_to_save: se
         user.balance += Decimal(balance_delta)
         consecutive_login_balance_event(user=user, delta=balance_delta)
         fields_to_save.add("balance")
-    elif delta > 1:
-        user.continuous = 1
     user.last_login = login_time
 
     fields_to_save.update({"continuous", "last_login"})
 
 
+@transaction.atomic
 def update_continuous_days(user: User):
+    user = User.objects.select_for_update().get(pk=user.pk)
     fields_to_save = set()
     _update_continuous_days(user, datetime.now(), fields_to_save)
     user.save(update_fields=fields_to_save)
