@@ -322,9 +322,9 @@ def get_domain_from_email(email: str):
 
 def _update_continuous_days(user: User, login_time: datetime, fields_to_save: set):
     delta = (
-        login_time.astimezone(tz=pytz.timezone("Asia/Shanghai")).day
-        - user.last_login.astimezone(tz=pytz.timezone("Asia/Shanghai")).day
-    )
+        login_time.astimezone(tz=pytz.timezone("Asia/Shanghai")).date()
+        - user.last_login.astimezone(tz=pytz.timezone("Asia/Shanghai")).date()
+    ).days
     if delta > 1:
         user.continuous = 0
     if delta >= 1:
