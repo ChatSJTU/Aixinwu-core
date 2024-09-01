@@ -306,6 +306,8 @@ def get_or_create_user_from_payload(
         user_email=user_email,
         user_first_name=defaults_create["first_name"],
         user_last_name=defaults_create["last_name"],
+        user_code=defaults_create["code"],
+        user_type=defaults_create["user_type"],
         sub=account,  # type: ignore
         login_time=timezone.now(),
     )
@@ -357,6 +359,8 @@ def _update_user_details(
     user_email: str,
     user_first_name: str,
     user_last_name: str,
+    user_code: str,
+    user_type: str,
     sub: str,
     login_time: datetime,
 ):
@@ -386,6 +390,14 @@ def _update_user_details(
     if user.last_name != user_last_name:
         user.last_name = user_last_name
         fields_to_save.update({"last_name", "search_document"})
+
+    if user.code != user_code:
+        user.code = user_code
+        fields_to_save.update({"code", "search_document"})
+
+    if user.user_type != user_type:
+        user.user_type = user_type
+        fields_to_save.update({"user_type", "search_document"})
 
     if "search_document" in fields_to_save:
         user.search_document = prepare_user_search_document_value(
