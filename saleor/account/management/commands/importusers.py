@@ -6,10 +6,12 @@ import pytz
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 
 from ....account.models import User
 from ....order.utils import match_orders_with_new_user
 from ....site.models import Site, SiteStatistics
+from ...search import prepare_user_search_document_value
 
 
 class Command(BaseCommand):
@@ -67,22 +69,27 @@ class Command(BaseCommand):
                         user.get("last_login"), "%Y-%m-%d %H:%M:%S"
                     ).replace(tzinfo=pytz.timezone("Asia/Shanghai")),
                 }
-                user_object, _ = User.objects.get_or_create(
-                    email=user.get("email"),
-                    defaults=defaults_create,
-                )
-                site, _ = Site.objects.get_or_create(id=settings.SITE_ID)
-                if not site.domain or not site.name:
-                    site.name = settings.SITE_NAME
-                    site.domain = settings.SITE_DOMAIN
-                    site.save(update_fields=["name", "domain"])
-                try:
-                    stat = site.stat
-                except:
-                    stat = SiteStatistics.objects.get_or_create(site=site)
-                stat.users += 1
-                stat.save(update_fields=["users"])
-                match_orders_with_new_user(user_object)
+                with transaction.atomic():
+                    user_object, _ = User.objects.get_or_create(
+                        email=user.get("email"),
+                        defaults=defaults_create,
+                    )
+                    user_object.search_document = prepare_user_search_document_value(
+                        user_object, attach_addresses_data=False
+                    )
+                    user_object.save(update_fields=["search_document"])
+                    match_orders_with_new_user(user_object)
+        site, _ = Site.objects.get_or_create(id=settings.SITE_ID)
+        if not site.domain or not site.name:
+            site.name = settings.SITE_NAME
+            site.domain = settings.SITE_DOMAIN
+            site.save(update_fields=["name", "domain"])
+        try:
+            stat = site.stat
+        except:
+            stat = SiteStatistics.objects.get_or_create(site=site)
+        stat.users += len(users) - duplicate
+        stat.save(update_fields=["users"])
         self.stdout.write(
             self.style.SUCCESS(
                 "Successfully imported %d of %d accounts, %d skipped."

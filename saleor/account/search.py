@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from .models import Address, User
 
 
-USER_SEARCH_FIELDS = ["email", "first_name", "last_name"]
+USER_SEARCH_FIELDS = ["email", "first_name", "last_name", "code"]
 ADDRESS_SEARCH_FIELDS = [
     "first_name",
     "last_name",
