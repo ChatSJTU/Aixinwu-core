@@ -136,7 +136,7 @@ def first_login_balance_event(*, user: User) -> BalanceEvent:
         user=user,
         type=BalanceEvents.FIRST_LOGIN,
         balance=Decimal(0.0),
-        delta=Decimal(300.0),
+        delta=Decimal(50.0),
     )
 
 

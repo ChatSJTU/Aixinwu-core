@@ -270,7 +270,7 @@ def get_or_create_user_from_payload(
             email=user_email,
             defaults=defaults_create,
         )
-        # first_login_balance_event(user=user)
+        first_login_balance_event(user=user)
         consecutive_login_balance_event(
             user=user, delta=Decimal(settings.CONTINUOUS_BALANCE_ADD[0])
         )

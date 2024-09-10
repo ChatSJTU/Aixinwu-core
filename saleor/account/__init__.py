@@ -52,27 +52,25 @@ class BalanceEvents:
     DONATION_REJECTED = "donation_rejected"
     MANUALLY_UPDATED = "manually_updated"
     FIRST_LOGIN = "first_login"
+    INVITE_NEW_USER = "invite_new_user"
+    SPECIAL_EVENT = "special_event"
+    BONUS = "bonus"
+    POOR_SIGN = "poor_sign"
     CONSECUTIVE_LOGIN = "consecutive_login"
     CONSUMED = "consumed"
     REFUNDED = "refunded"
+    OTHER = "other"
     CHOICES = [
-        (
-            DONATION_GRANTED,
-            "The user received credits for fulfilling a donation proposal.",
-        ),
+        (DONATION_GRANTED, "The user received credits for fulfilling a donation proposal.",),
         (DONATION_REJECTED, "The user's granted credits were subtracted."),
-        (
-            FIRST_LOGIN,
-            "The user received credits for the first login.",
-        ),
-        (
-            MANUALLY_UPDATED,
-            "The user's balance has been manually updated.",
-        ),
-        (
-            CONSECUTIVE_LOGIN,
-            "The user received credits for the continuous login.",
-        ),
+        (FIRST_LOGIN, "The user received credits for the first login.",),
+        (MANUALLY_UPDATED, "The user's balance has been manually updated.",),
+        (CONSECUTIVE_LOGIN, "The user received credits for the continuous login.",),
         (CONSUMED, "The user consumed the credits."),
         (REFUNDED, "The user received credits for refunds."),
+        (INVITE_NEW_USER, "The user invited other users."),
+        (SPECIAL_EVENT, "The user participated in activities or events."),
+        (BONUS, "Sytem bonus"),
+        (POOR_SIGN, "The user is in special class."),
+        (OTHER, "Other reasons."),
     ]
