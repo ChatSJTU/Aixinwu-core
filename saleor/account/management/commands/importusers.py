@@ -51,6 +51,7 @@ class Command(BaseCommand):
         oauth_url = configuration.get("oauth_authorization_url")
         oidc_metadata_key = f"oidc:{oauth_url}"
         
+        log_number_dic = {}
         for user in users:
             userInfo = user["userinfo"]
             if (userInfo.get("jaccount") not in do_import_user_set):
@@ -83,7 +84,6 @@ class Command(BaseCommand):
                 user_object.save(update_fields=["search_document"])
                 match_orders_with_new_user(user_object)
             coinlogs = user["coinlog"]
-            log_number_dic = {}
             bulk_data = []
 
             for log in coinlogs:
