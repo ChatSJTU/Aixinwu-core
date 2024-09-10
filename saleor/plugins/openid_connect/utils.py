@@ -284,7 +284,7 @@ def get_or_create_user_from_payload(
         try:
             stat = site.stat
         except:
-            stat = SiteStatistics.objects.get_or_create(site=site)
+            stat, _ = SiteStatistics.objects.get_or_create(site=site)
 
         stat.users += 1
         stat.save(update_fields=["users"])
