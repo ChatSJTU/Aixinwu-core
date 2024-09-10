@@ -170,7 +170,7 @@ class User(
         blank=True,
         max_digits=settings.DEFAULT_MAX_DIGITS,
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,
-        default=Decimal("300.0") + Decimal(settings.CONTINUOUS_BALANCE_ADD[0]),
+        default=Decimal(settings.CONTINUOUS_BALANCE_ADD[0]),
     )
     addresses = models.ManyToManyField(
         Address, blank=True, related_name="user_addresses"
