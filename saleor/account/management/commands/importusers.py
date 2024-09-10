@@ -8,7 +8,9 @@ from django.contrib.auth.hashers import make_password
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from ....account.models import User
+from saleor.account import BalanceEvents
+
+from ....account.models import BalanceEvent, User
 from ....order.utils import match_orders_with_new_user
 from ....site.models import Site, SiteStatistics
 from ...search import prepare_user_search_document_value
@@ -35,7 +37,7 @@ class Command(BaseCommand):
         db_user_set = set(db_user_accounts)
 
         # 查询待导入的用户列表
-        file_user_set = set([user.get("jaccount") for user in users])
+        file_user_set = set([user["userinfo"]["jaccount"] for user in users])
 
         # 构建差集
         do_import_user_set = file_user_set - db_user_set
@@ -50,23 +52,24 @@ class Command(BaseCommand):
         oidc_metadata_key = f"oidc:{oauth_url}"
         
         for user in users:
-            if (user.get("jaccount") not in do_import_user_set):
+            userInfo = user["userinfo"]
+            if (userInfo.get("jaccount") not in do_import_user_set):
                 continue;
             defaults_create = {
                 "is_active": True,
                 "is_confirmed": True,
-                "email": user.get("email"),
-                "account": user.get("jaccount"),
+                "email": userInfo.get("email"),
+                "account": userInfo.get("jaccount"),
                 "user_type": "student",
-                "first_name": user.get("username"),
+                "first_name": userInfo.get("username"),
                 "last_name": "",
                 "code": "",
-                "private_metadata": {oidc_metadata_key: user.get("jaccount")},
+                "private_metadata": {oidc_metadata_key: userInfo.get("jaccount")},
                 "password": make_password(None),
-                "balance": Decimal(user.get("coins")),
-                "continuous": int(user.get("continuous")),
+                "balance": Decimal(userInfo.get("coins")),
+                "continuous": int(userInfo.get("continuous")),
                 "last_login": datetime.datetime.strptime(
-                    user.get("last_login"), "%Y-%m-%d %H:%M:%S"
+                    userInfo.get("last_login"), "%Y-%m-%d %H:%M:%S"
                 ).replace(tzinfo=pytz.timezone("Asia/Shanghai")),
             }
             with transaction.atomic():
@@ -79,6 +82,30 @@ class Command(BaseCommand):
                 )
                 user_object.save(update_fields=["search_document"])
                 match_orders_with_new_user(user_object)
+            coinlogs = user["coinlog"]
+            log_number_dic = {}
+            bulk_data = []
+
+            for log in coinlogs:
+                num = log_number_dic.get(log.get("date")[:7], 0) + 1
+                log_number_dic[log.get("date")[:7]] = num
+                bulk_data.append(
+                    BalanceEvent(
+                        user=user_object,
+                        type=log.get("type"),
+                        balance=log.get("balance"),
+                        delta=log.get("delta"),
+                        date=datetime.datetime.strptime(
+                            log.get("date"), "%Y-%m-%d %H:%M:%S"
+                        ).replace(tzinfo=pytz.timezone("Asia/Shanghai")),
+                        number=num
+                    )
+                )
+
+            BalanceEvent.objects.bulk_create(
+                bulk_data
+            )
+
         site, _ = Site.objects.get_or_create(id=settings.SITE_ID)
         if not site.domain or not site.name:
             site.name = settings.SITE_NAME
