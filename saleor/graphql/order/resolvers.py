@@ -1,13 +1,16 @@
 from uuid import UUID
 
 from django.db.models import Q
+from django.forms import ValidationError
+
+from saleor.permission.enums import OrderPermissions
 
 from ...channel.models import Channel
 from ...core.exceptions import PermissionDenied
 from ...order import OrderStatus, models
 from ...order.events import OrderEvents
 from ...order.utils import sum_order_totals
-from ..account.utils import get_user_accessible_channels
+from ..account.utils import check_is_owner_or_has_one_of_perms, get_user_accessible_channels
 from ..app.dataloaders import get_app_promise
 from ..channel.utils import get_default_channel_slug_or_graphql_error
 from ..core.context import get_database_connection_name
@@ -99,8 +102,18 @@ def resolve_order(info, id):
     database_connection_name = get_database_connection_name(info.context)
     qs = models.Order.objects.using(database_connection_name).filter(lookup)
 
-    return qs.first() if user.is_superuser else qs.filter(user=user).first()
-
+    order = qs.first()
+    if (order is None):
+        raise ValidationError(
+            "Can not find the requested order.",
+            code="ORDER_NOT_FOUND"
+        )
+    check_is_owner_or_has_one_of_perms(
+        user, 
+        order.user, 
+        OrderPermissions.MANAGE_ORDERS
+    )
+    return order
 
 def resolve_homepage_events(info):
     # Filter only selected events to be displayed on homepage.
