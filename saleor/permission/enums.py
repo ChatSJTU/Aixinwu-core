@@ -111,6 +111,7 @@ PERMISSIONS_ENUMS = [
     ShippingPermissions,
     SitePermissions,
     DonationPermissions,
+    BarcodePermissions,
 ]
 
 
