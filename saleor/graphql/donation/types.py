@@ -87,7 +87,7 @@ class Donation(ModelObjectType[models.Donation]):
             requestor,
             donator,
             AccountPermissions.MANAGE_USERS,
-            DonationPermissions.MANAGE_DONATIONS,
+            DonationPermissions.ADD_DONATIONS,
         )
         return donator
 
