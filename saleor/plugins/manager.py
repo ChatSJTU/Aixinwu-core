@@ -124,7 +124,8 @@ class PluginsManager(PaymentInterface):
 
         if settings.PLUGIN_SETTINGS.get(PluginClass.PLUGIN_ID) is not None:
             plugin_config = settings.PLUGIN_SETTINGS[PluginClass.PLUGIN_ID]
-            active = True
+            db_config = db_configs_map[PluginClass.PLUGIN_ID]
+            active = db_config.active
 
         return PluginClass(
             configuration=plugin_config,
@@ -1735,7 +1736,7 @@ class PluginsManager(PaymentInterface):
         )
 
     def get_plugins(
-        self, channel_slug: Optional[str] = None, active_only=False
+        self, channel_slug: Optional[str] = None, active_only=True
     ) -> list["BasePlugin"]:
         """Return list of plugins for a given channel."""
         if channel_slug:
@@ -1902,7 +1903,7 @@ class PluginsManager(PaymentInterface):
         self, plugin_id, channel_slug: Optional[str], cleaned_data: dict
     ):
         if channel_slug:
-            plugins = self.get_plugins(channel_slug=channel_slug)
+            plugins = self.get_plugins(channel_slug=channel_slug, active_only=False)
             channel = (
                 Channel.objects.using(self.database).filter(slug=channel_slug).first()
             )
@@ -1931,9 +1932,9 @@ class PluginsManager(PaymentInterface):
                 return configuration
 
     def get_plugin(
-        self, plugin_id: str, channel_slug: Optional[str] = None
+        self, plugin_id: str, channel_slug: Optional[str] = None, active_only=False
     ) -> Optional["BasePlugin"]:
-        plugins = self.get_plugins(channel_slug=channel_slug)
+        plugins = self.get_plugins(channel_slug=channel_slug, active_only=active_only)
         for plugin in plugins:
             if plugin.check_plugin_id(plugin_id):
                 return plugin
@@ -2009,7 +2010,7 @@ class PluginsManager(PaymentInterface):
     ) -> ExternalAccessTokens:
         """Obtain access tokens from authentication plugin."""
         default_value = ExternalAccessTokens()
-        plugin = self.get_plugin(plugin_id)
+        plugin = self.get_plugin(plugin_id, active_only=True)
         return self.__run_method_on_single_plugin(
             plugin, "external_obtain_access_tokens", default_value, data, request
         )
@@ -2019,7 +2020,7 @@ class PluginsManager(PaymentInterface):
     ) -> dict:
         """Handle authentication request."""
         default_value = {}  # type: ignore
-        plugin = self.get_plugin(plugin_id)
+        plugin = self.get_plugin(plugin_id, active_only=True)
         return self.__run_method_on_single_plugin(
             plugin, "external_authentication_url", default_value, data, request
         )
@@ -2029,7 +2030,7 @@ class PluginsManager(PaymentInterface):
     ) -> ExternalAccessTokens:
         """Handle authentication refresh request."""
         default_value = ExternalAccessTokens()
-        plugin = self.get_plugin(plugin_id)
+        plugin = self.get_plugin(plugin_id, active_only=True)
         return self.__run_method_on_single_plugin(
             plugin, "external_refresh", default_value, data, request
         )
@@ -2044,7 +2045,7 @@ class PluginsManager(PaymentInterface):
     ) -> dict:
         """Logout the user."""
         default_value: dict[str, str] = {}
-        plugin = self.get_plugin(plugin_id)
+        plugin = self.get_plugin(plugin_id, active_only=True)
         return self.__run_method_on_single_plugin(
             plugin, "external_logout", default_value, data, request
         )
@@ -2056,7 +2057,7 @@ class PluginsManager(PaymentInterface):
         default_data: dict[str, str] = dict()
         default_user: Optional["User"] = None
         default_value = default_user, default_data
-        plugin = self.get_plugin(plugin_id)
+        plugin = self.get_plugin(plugin_id, active_only=True)
         return self.__run_method_on_single_plugin(
             plugin, "external_verify", default_value, data, request
         )

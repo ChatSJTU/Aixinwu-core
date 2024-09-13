@@ -774,6 +774,18 @@ OPENID_PROVIDER_SETTINGS = {
             "name": "oauth_token_url",
             "value": "https://jaccount.sjtu.edu.cn/oauth2/token",
         },
+        {
+            "name": "json_web_key_set_url",
+            "value": "http://example.com",
+        },
+        {
+            "name": "oauth_logout_url",
+            "value": "http://example.com",
+        },
+        {
+            "name": "user_info_url",
+            "value": "http://example.com",
+        },
         {"name": "email_domain", "value": "@sjtu.edu.cn"},
         {"name": "staff_user_accounts", "value": os.getenv("STAFF_USER_ACCOUNTS", "")},
     ]
