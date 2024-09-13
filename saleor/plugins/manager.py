@@ -124,8 +124,11 @@ class PluginsManager(PaymentInterface):
 
         if settings.PLUGIN_SETTINGS.get(PluginClass.PLUGIN_ID) is not None:
             plugin_config = settings.PLUGIN_SETTINGS[PluginClass.PLUGIN_ID]
-            db_config = db_configs_map[PluginClass.PLUGIN_ID]
-            active = db_config.active
+            db_config = db_configs_map.get(PluginClass.PLUGIN_ID, None)
+            if (db_config):
+                active = db_config.active
+            else:
+                active = True
 
         return PluginClass(
             configuration=plugin_config,
