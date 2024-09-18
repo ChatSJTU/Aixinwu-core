@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core import signing
 from django.core.exceptions import ValidationError
 from django.core.handlers.wsgi import WSGIRequest
+from django.db.models import F
 from jwt import ExpiredSignatureError, InvalidTokenError
 from requests import HTTPError, PreparedRequest
 
@@ -19,7 +20,7 @@ from ...core.jwt import (
     get_user_from_payload,
     jwt_decode,
 )
-from ...site.models import Site
+from ...site.models import Site, SiteStatistics
 from ...permission.enums import get_permissions_codename, get_permissions_from_names
 from ..base_plugin import BasePlugin, ConfigurationTypeField, ExternalAccessTokens
 from ..error_codes import PluginErrorCode
@@ -328,8 +329,7 @@ class OpenIDConnectPlugin(BasePlugin):
         )
 
         site = Site.objects.get_current()
-        site.stat.views += 1
-        site.stat.save(update_fields=["views"])
+        SiteStatistics.objects.filter(site=site).update(views=F("views") + 1)
 
         return ExternalAccessTokens(user=user, **tokens)
 

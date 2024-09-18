@@ -15,7 +15,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import F, QuerySet
 from django.utils import timezone
 from jwt import PyJWTError
 
@@ -286,8 +286,7 @@ def get_or_create_user_from_payload(
         except:
             stat, _ = SiteStatistics.objects.get_or_create(site=site)
 
-        stat.users += 1
-        stat.save(update_fields=["users"])
+        SiteStatistics.objects.filter(id=stat.id).update(users=F("users") + 1)
         match_orders_with_new_user(user)
     except User.MultipleObjectsReturned:
         logger.warning("Multiple users returned for single OIDC sub ID")
