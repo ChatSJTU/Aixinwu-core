@@ -18,13 +18,13 @@ from ..core.fields import (
     PermissionsField,
 )
 from ..core.scalars import UUID
-from ..core.types import FilterInputObjectType, TaxedMoney
+from ..core.types import TaxedMoney
 from ..core.utils import ext_ref_to_global_id_or_error, from_global_id_or_error
 from ..core.validators import validate_one_of_args_is_in_query
 from .bulk_mutations.draft_orders import DraftOrderBulkDelete, DraftOrderLinesBulkDelete
 from .bulk_mutations.order_bulk_cancel import OrderBulkCancel
 from .bulk_mutations.order_bulk_create import OrderBulkCreate
-from .filters import DraftOrderFilter, OrderFilter
+from .filters import OrderDraftFilterInput, OrderFilterInput
 from .mutations.draft_order_complete import DraftOrderComplete
 from .mutations.draft_order_create import DraftOrderCreate
 from .mutations.draft_order_delete import DraftOrderDelete
@@ -74,18 +74,6 @@ def search_string_in_kwargs(kwargs: dict) -> bool:
 
 def sort_field_from_kwargs(kwargs: dict) -> Optional[list[str]]:
     return kwargs.get("sort_by", {}).get("field") or None
-
-
-class OrderFilterInput(FilterInputObjectType):
-    class Meta:
-        doc_category = DOC_CATEGORY_ORDERS
-        filterset_class = OrderFilter
-
-
-class OrderDraftFilterInput(FilterInputObjectType):
-    class Meta:
-        doc_category = DOC_CATEGORY_ORDERS
-        filterset_class = DraftOrderFilter
 
 
 class OrderQueries(graphene.ObjectType):

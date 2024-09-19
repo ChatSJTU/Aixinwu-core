@@ -6,6 +6,9 @@ from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 from graphql.error import GraphQLError
 
+from saleor.graphql.core.doc_category import DOC_CATEGORY_ORDERS
+from saleor.graphql.core.types.filter_input import FilterInputObjectType
+
 from ...giftcard import GiftCardEvents
 from ...giftcard.models import GiftCardEvent
 from ...order.models import Order, OrderLine
@@ -226,3 +229,15 @@ class OrderFilter(DraftOrderFilter):
                 message="'ids' and 'numbers` are not allowed to use together in filter."
             )
         return super().is_valid()
+
+
+class OrderFilterInput(FilterInputObjectType):
+    class Meta:
+        doc_category = DOC_CATEGORY_ORDERS
+        filterset_class = OrderFilter
+
+
+class OrderDraftFilterInput(FilterInputObjectType):
+    class Meta:
+        doc_category = DOC_CATEGORY_ORDERS
+        filterset_class = DraftOrderFilter
