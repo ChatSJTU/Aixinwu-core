@@ -160,7 +160,7 @@ if PUBLIC_URL:
     ENABLE_SSL = urlparse(PUBLIC_URL).scheme.lower() == "https"
 
 if ENABLE_SSL:
-    SECURE_SSL_REDIRECT = not DEBUG
+    SECURE_SSL_REDIRECT = False
 
 DEFAULT_FROM_EMAIL: str = os.environ.get(
     "DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "noreply@example.com"
