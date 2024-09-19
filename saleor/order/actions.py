@@ -8,6 +8,7 @@ from uuid import UUID
 
 from django.contrib.sites.models import Site
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 
 from ..account.events import refunded_balance_event
@@ -28,6 +29,7 @@ from ..payment import (
 from ..payment.interface import RefundData
 from ..payment.models import Payment, Transaction, TransactionItem
 from ..payment.utils import create_payment, create_transaction_for_order
+from ..site.models import SiteStatistics
 from ..warehouse.management import (
     deallocate_stock,
     deallocate_stock_for_order,
@@ -986,11 +988,11 @@ def create_fulfillments(
             )
         )
         site = Site.objects.get_current()
-        site.stat.circulated_currency += order.total_net_amount
-        site.stat.circulated_items += sum(
-            [line.quantity for line in order.lines.iterator()]
+        SiteStatistics.objects.filter(site=site).update(
+            circulated_currency=F("circulated_currency") + order.total_net_amount,
+            circulated_items=F("circulated_items")
+            + sum([line.quantity for line in order.lines.iterator()]),
         )
-        site.stat.save(update_fields=["circulated_items", "circulated_currency"])
 
     return fulfillments
 

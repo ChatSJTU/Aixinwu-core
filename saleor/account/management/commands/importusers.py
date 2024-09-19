@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.db.models import F
 
 from saleor.account import BalanceEvents
 
@@ -115,8 +116,7 @@ class Command(BaseCommand):
             stat = site.stat
         except:
             stat = SiteStatistics.objects.get_or_create(site=site)
-        stat.users += len(do_import_user_set)
-        stat.save(update_fields=["users"])
+        SiteStatistics.objects.filter(id=stat.id).update(users=F("users") + 1)
         self.stdout.write(
             self.style.SUCCESS(
                 "Successfully imported %d of %d accounts, %d skipped."
