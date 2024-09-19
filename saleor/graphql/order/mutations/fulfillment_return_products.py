@@ -168,7 +168,7 @@ class FulfillmentReturnProducts(FulfillmentRefundAndReturnProductBase):
         try:
             app = get_app_promise(info.context).get()
             response = create_fulfillments_for_returned_products(
-                info.context.user,
+                order.user,
                 app,
                 order,
                 cleaned_input.get("payment"),
