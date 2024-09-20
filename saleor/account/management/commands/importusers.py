@@ -116,7 +116,7 @@ class Command(BaseCommand):
             stat = site.stat
         except:
             stat = SiteStatistics.objects.get_or_create(site=site)
-        SiteStatistics.objects.filter(id=stat.id).update(users=F("users") + 1)
+        SiteStatistics.objects.filter(id=stat.id).update(users=F("users") + len(do_import_user_set))
         self.stdout.write(
             self.style.SUCCESS(
                 "Successfully imported %d of %d accounts, %d skipped."
