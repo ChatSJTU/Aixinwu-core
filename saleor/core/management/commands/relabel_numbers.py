@@ -15,8 +15,9 @@ class Command(BaseCommand):
 
     def relabel_orders(self):
         first = Order.objects.order_by("created_at").first()
+        duplicated = []
+        number_set = set()
         assert first is not None
-        number = 0
         current_year_month = datetime(
             first.created_at.year,
             first.created_at.month,
@@ -30,12 +31,19 @@ class Command(BaseCommand):
                 1,
                 tzinfo=order.created_at.tzinfo,
             )
+
             if order_year_month > current_year_month:
-                number = 0
+                for i, order in enumerate(duplicated):
+                    order.number = i + len(number_set) + 1
+                    order.save(update_fields=["number"])
+                duplicated.clear()
+                number_set.clear()
                 current_year_month = order_year_month
-            number += 1
-            order.number = number
-            order.save(update_fields=["number"])
+
+            if order.number in number_set:
+                duplicated.append(order)
+            else:
+                number_set.add(order.number)
 
     def handle(self, *args: Any, **options: Any):
         self.relabel_orders()
