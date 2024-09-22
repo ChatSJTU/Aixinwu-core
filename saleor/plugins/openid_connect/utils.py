@@ -247,7 +247,7 @@ def get_or_create_user_from_payload(
         "is_confirmed": True,
         "email": user_email,
         "account": account,
-        "user_type": payload.get("user_type", "student"),
+        "user_type": payload.get("type", "student"),
         "first_name": payload.get("name", ""),
         "last_name": payload.get("family_name", ""),
         "code": code,
