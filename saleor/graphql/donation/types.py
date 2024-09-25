@@ -49,9 +49,7 @@ class Donation(ModelObjectType[models.Donation]):
 
     @staticmethod
     def resolve_number(root: models.Donation, _info: ResolveInfo):
-        if not root.created_at or not root.number:
-            return None
-        return root.created_at.strftime("%y%m") + str(root.number).zfill(4)
+        return root.number
 
     @staticmethod
     def resolve_title(root: models.Donation, _info: ResolveInfo):
