@@ -1736,7 +1736,7 @@ class Order(ModelObjectType[models.Order]):
 
     @staticmethod
     def resolve_is_paid(root: models.Order, info):
-        return root.is_fully_paid()
+        return not root.is_unconfirmed()
 
     @staticmethod
     def resolve_number(root: models.Order, _info):

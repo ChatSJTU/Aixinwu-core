@@ -212,7 +212,7 @@ class OrderFulfill(BaseMutation):
 
     @classmethod
     def clean_input(cls, info: ResolveInfo, order, data, site):
-        if not order.status == OrderStatus.UNFULFILLED and (
+        if not order.is_fully_paid() and (
             site.settings.fulfillment_auto_approve
             and not site.settings.fulfillment_allow_unpaid
         ):
