@@ -28,7 +28,7 @@ from ..payment import (
 )
 from ..payment.interface import RefundData
 from ..payment.models import Payment, Transaction, TransactionItem
-from ..payment.utils import create_payment, create_transaction_for_order
+from ..payment.utils import create_payment, create_payment_information, create_transaction_for_order
 from ..site.models import SiteStatistics
 from ..warehouse.management import (
     deallocate_stock,
@@ -1629,6 +1629,57 @@ def create_fulfillments_for_returned_products(
         call_event(manager.order_updated, order)
     return return_fulfillment, replace_fulfillment, new_order
 
+def create_fulfillments_for_expired_orders(
+    order: "Order",
+    manager: "PluginsManager",
+):
+    with transaction_with_commit_on_errors():
+        order_lines_to_refund = [
+            OrderLineInfo(line, line.quantity) for line in order.lines.iterator()
+        ]
+        amount_total = 0
+        for line_info in order_lines_to_refund:
+            if (line_info.line.quantity_unfulfilled > 0):
+                amount_total += line_info.line.unit_price_gross_amount * line_info.line.quantity_unfulfilled
+        
+        print(f"order {order.created_at.strftime('%Y%m%d') + str(order.number).zfill(4)} amount {amount_total}")
+        if ((order.user is not None) and amount_total > 0):
+            payment = order.get_last_payment()
+            
+            refund_data = RefundData(
+                order_lines_to_refund=order_lines_to_refund,
+                fulfillment_lines_to_refund=[],
+                refund_shipping_costs=False,
+                refund_amount_is_automatically_calculated=False,
+            )
+            payment_data = create_payment_information(
+                payment=payment,
+                manager=manager,
+                customer_id=order.user.pk,
+                refund_data=refund_data,
+                payment_token="useless",
+            )
+
+            gateway.refund(
+                payment,
+                manager,
+                amount=amount_total,
+                channel_slug=order.channel.slug,
+                refund_data=refund_data,
+                customer_id=order.user.pk,
+            )
+
+        fulfillment = Fulfillment.objects.create(
+            status=FulfillmentStatus.CANCELED,
+            order=order,
+        )
+        _move_order_lines_to_target_fulfillment(
+            order_lines_to_move=order_lines_to_refund,
+            target_fulfillment=fulfillment,
+            manager=manager,
+        )
+
+        return fulfillment
 
 def _calculate_refund_amount(
     return_order_lines: list[OrderLineInfo],

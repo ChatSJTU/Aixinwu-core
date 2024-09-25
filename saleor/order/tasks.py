@@ -4,17 +4,20 @@ from datetime import timedelta
 from django.db.models import Exists, F, Func, OuterRef, Subquery, Value
 from django.utils import timezone
 
+from saleor.order.actions import create_fulfillments_for_expired_orders
+from saleor.payment import ChargeStatus
+
 from ..celeryconf import app
 from ..channel.models import Channel
 from ..core.tracing import traced_atomic_transaction
 from ..core.utils.events import call_event
 from ..discount.models import Voucher, VoucherCode, VoucherCustomer
-from ..payment.gateway import fetch_gateway_response
+from ..payment.gateway import _fetch_gateway_response
 from ..payment.models import Payment, TransactionItem
 from ..payment.utils import create_payment_information
 from ..plugins.manager import get_plugins_manager
-from ..warehouse.management import deallocate_stock_for_orders
-from . import OrderEvents, OrderStatus
+from ..warehouse.management import deallocate_stock_for_orders, remove_reservations_for_order
+from . import OrderChargeStatus, OrderEvents, OrderStatus
 from .models import Order, OrderEvent
 from .utils import invalidate_order_prices
 
@@ -104,39 +107,56 @@ def _expire_orders(manager, now):
         expire_orders_after__lte=time_diff_func_in_minutes,
     )
 
+    # 未支付订单
     qs = Order.objects.filter(
         Exists(channels),
-        status__in=[OrderStatus.UNCONFIRMED, OrderStatus.UNFULFILLED],
+        charge_status__in=[ChargeStatus.NOT_CHARGED, OrderChargeStatus.NONE],
+        status__in=[OrderStatus.UNCONFIRMED],
     )
     ids_batch = list(qs.values_list("pk", flat=True)[:EXPIRE_ORDER_BATCH_SIZE])
+    logger.warning(f"expired order (unpaid): {len(ids_batch)}")
     with traced_atomic_transaction():
-        for order in Order.objects.filter(
-            id__in=ids_batch, status=OrderStatus.UNFULFILLED
-        ).iterator():
-            payment = order.get_last_payment()
-            payment_data = create_payment_information(
-                payment=payment,
-                manager=manager,
-                customer_id=order.user.id,
-                payment_token="useless",
-            )
-            _, _ = fetch_gateway_response(
-                manager.refund_payment,
-                payment.gateway,
-                payment_data,
-                channel_slug=order.channel.slug,
-            )
-        Order.objects.filter(id__in=ids_batch).update(
-            status=OrderStatus.EXPIRED, expired_at=now
-        )
         _bulk_release_voucher_usage(ids_batch)
         _order_expired_events(ids_batch)
         deallocate_stock_for_orders(ids_batch, manager)
         _call_expired_order_events(ids_batch, manager)
+        Order.objects.filter(id__in=ids_batch).update(
+            status=OrderStatus.EXPIRED, expired_at=now
+        )
+
+    # 已支付未交付订单
+    qs = Order.objects.filter(
+        Exists(channels),
+        status__in=[OrderStatus.UNCONFIRMED, OrderStatus.UNFULFILLED, OrderStatus.PARTIALLY_FULFILLED],
+    )
+    orders = list(qs.all())
+    logger.warning(f"expired order count: {len(orders)}")
+    for order in orders:
+        try:
+            with traced_atomic_transaction():
+                remove_reservations_for_order(order=order)
+                create_fulfillments_for_expired_orders(order, manager)
+                order.status = OrderStatus.EXPIRED
+                order.expired_at = timezone.now()
+                order.save(update_fields=["status", "updated_at"])
+                OrderEvent.objects.create(
+                    order=order,
+                    type=OrderEvents.EXPIRED,
+                )
+        except Exception as e:
+            logger.error(e)
+        # Order.objects.filter(id__in=ids_batch).update(
+        #     status=OrderStatus.EXPIRED, expired_at=now
+        # )
+        # _bulk_release_voucher_usage(ids_batch)
+        # _order_expired_events(ids_batch)
+        # deallocate_stock_for_orders(ids_batch, manager)
+        # _call_expired_order_events(ids_batch, manager)
 
 
 @app.task
 def expire_orders_task():
+    logger.warning(f"===expire_orders_task===")
     now = timezone.now()
     manager = get_plugins_manager(allow_replica=False)
     _expire_orders(manager, now)
