@@ -13311,6 +13311,7 @@ enum OrderStatusFilter @doc(category: "Orders") {
   PARTIALLY_FULFILLED
   FULFILLED
   CANCELED
+  EXPIRED
 }
 
 """Represents user's permissions."""

@@ -77,6 +77,7 @@ class OrderStatusFilter(BaseEnum):
     PARTIALLY_FULFILLED = "partially fulfilled"
     FULFILLED = "fulfilled"
     CANCELED = "canceled"
+    EXPIRED = "expired"
 
     class Meta:
         doc_category = DOC_CATEGORY_ORDERS
