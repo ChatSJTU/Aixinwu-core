@@ -9,7 +9,9 @@ from ..channel.models import Channel
 from ..core.tracing import traced_atomic_transaction
 from ..core.utils.events import call_event
 from ..discount.models import Voucher, VoucherCode, VoucherCustomer
+from ..payment.gateway import fetch_gateway_response
 from ..payment.models import Payment, TransactionItem
+from ..payment.utils import create_payment_information
 from ..plugins.manager import get_plugins_manager
 from ..warehouse.management import deallocate_stock_for_orders
 from . import OrderEvents, OrderStatus
@@ -103,13 +105,27 @@ def _expire_orders(manager, now):
     )
 
     qs = Order.objects.filter(
-        ~Exists(TransactionItem.objects.filter(order=OuterRef("pk"))),
-        ~Exists(Payment.objects.filter(order=OuterRef("pk"))),
         Exists(channels),
         status__in=[OrderStatus.UNCONFIRMED, OrderStatus.UNFULFILLED],
     )
     ids_batch = list(qs.values_list("pk", flat=True)[:EXPIRE_ORDER_BATCH_SIZE])
     with traced_atomic_transaction():
+        for order in Order.objects.filter(
+            id__in=ids_batch, status=OrderStatus.UNFULFILLED
+        ).iterator():
+            payment = order.get_last_payment()
+            payment_data = create_payment_information(
+                payment=payment,
+                manager=manager,
+                customer_id=order.user.id,
+                payment_token="useless",
+            )
+            _, _ = fetch_gateway_response(
+                manager.refund_payment,
+                payment.gateway,
+                payment_data,
+                channel_slug=order.channel.slug,
+            )
         Order.objects.filter(id__in=ids_batch).update(
             status=OrderStatus.EXPIRED, expired_at=now
         )
@@ -126,28 +142,28 @@ def expire_orders_task():
     _expire_orders(manager, now)
 
 
-@app.task
-def delete_expired_orders_task():
-    now = timezone.now()
+# @app.task
+# def delete_expired_orders_task():
+#     now = timezone.now()
 
-    channel_qs = Channel.objects.filter(
-        delete_expired_orders_after__gt=timedelta(),
-        id=OuterRef("channel"),
-    )
+#     channel_qs = Channel.objects.filter(
+#         delete_expired_orders_after__gt=timedelta(),
+#         id=OuterRef("channel"),
+#     )
 
-    qs = Order.objects.annotate(
-        delete_expired_orders_after=Subquery(
-            channel_qs.values("delete_expired_orders_after")[:1]
-        )
-    ).filter(
-        ~Exists(TransactionItem.objects.filter(order=OuterRef("pk"))),
-        ~Exists(Payment.objects.filter(order=OuterRef("pk"))),
-        expired_at__isnull=False,
-        status=OrderStatus.EXPIRED,
-        expired_at__lte=now - F("delete_expired_orders_after"),  # type:ignore
-    )
-    ids_batch = qs.values_list("pk", flat=True)[:DELETE_EXPIRED_ORDER_BATCH_SIZE]
-    if not ids_batch:
-        return
-    Order.objects.filter(id__in=ids_batch).delete()
-    delete_expired_orders_task.delay()
+#     qs = Order.objects.annotate(
+#         delete_expired_orders_after=Subquery(
+#             channel_qs.values("delete_expired_orders_after")[:1]
+#         )
+#     ).filter(
+#         ~Exists(TransactionItem.objects.filter(order=OuterRef("pk"))),
+#         ~Exists(Payment.objects.filter(order=OuterRef("pk"))),
+#         expired_at__isnull=False,
+#         status=OrderStatus.EXPIRED,
+#         expired_at__lte=now - F("delete_expired_orders_after"),  # type:ignore
+#     )
+#     ids_batch = qs.values_list("pk", flat=True)[:DELETE_EXPIRED_ORDER_BATCH_SIZE]
+#     if not ids_batch:
+#         return
+#     Order.objects.filter(id__in=ids_batch).delete()
+#     delete_expired_orders_task.delay()
