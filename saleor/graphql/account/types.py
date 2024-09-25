@@ -59,7 +59,6 @@ from ..core.utils import from_global_id_or_error, str_to_enum, to_global_id_or_n
 from ..giftcard.dataloaders import GiftCardsByUserLoader
 from ..meta.types import ObjectWithMetadata
 from ..order.dataloaders import OrderLineByIdLoader, OrdersByUserLoader
-from ..order.resolvers import resolve_orders
 from ..payment.types import StoredPaymentMethod
 from ..plugins.dataloaders import get_plugin_manager_promise
 from ..utils import format_permissions_for_display, get_user_or_app_from_context
@@ -600,7 +599,21 @@ class User(ModelObjectType[models.User]):
         return CustomerEventsByUserLoader(info.context).load(root.id)
 
     @staticmethod
-    def resolve_orders(_root, info: ResolveInfo, *, channel=None, **kwargs):
+    def resolve_orders(root: models.User, info: ResolveInfo, *, channel=None, **kwargs):
+        from ..order.types import OrderCountableConnection
+        user_or_app = get_user_or_app_from_context(info.context)
+        if not user_or_app or (
+            root != user_or_app
+            and not user_or_app.has_perm(OrderPermissions.MANAGE_ORDERS)
+        ):
+            raise PermissionDenied(
+                permissions=[
+                    AuthorizationFilters.OWNER,
+                    OrderPermissions.MANAGE_ORDERS,
+                ]
+            )
+        requester = user_or_app
+    
         from ..core.connection import filter_connection_queryset
         from ..order.schema import (
             OrderCountableConnection,
@@ -622,10 +635,10 @@ class User(ModelObjectType[models.User]):
             kwargs["sort_by"] = product_type.create_container(
                 {"direction": "-", "field": ["search_rank", "id"]}
             )
-        requesting_user = get_user_or_app_from_context(info.context)
-        if not requesting_user:
-            raise GraphQLError("User is empty")
-        qs = resolve_orders(info, channel, requesting_user)
+
+        database_connection_name = get_database_connection_name(info.context)
+        qs = models.Order.objects.using(database_connection_name).non_draft()
+        qs = qs.filter(user_id=root.id)
         qs = filter_connection_queryset(qs, kwargs)
         return create_connection_slice(qs, info, kwargs, OrderCountableConnection)
 
