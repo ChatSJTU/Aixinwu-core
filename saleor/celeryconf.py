@@ -6,6 +6,8 @@ from celery.signals import setup_logging
 from django.conf import settings
 
 from .plugins import discover_plugins_modules
+from dotenv import load_dotenv
+load_dotenv()
 
 CELERY_LOGGER_NAME = "celery"
 

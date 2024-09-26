@@ -605,10 +605,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "saleor.csv.tasks.delete_old_export_files",
         "schedule": crontab(hour=1, minute=0),
     },
-    "handle-promotion-toggle": {
-        "task": "saleor.discount.tasks.handle_promotion_toggle",
-        "schedule": initiated_promotion_webhook_schedule,
-    },
+    # "handle-promotion-toggle": {
+    #     "task": "saleor.discount.tasks.handle_promotion_toggle",
+    #     "schedule": initiated_promotion_webhook_schedule,
+    # },
     "update-products-search-vectors": {
         "task": "saleor.product.tasks.update_products_search_vector_task",
         "schedule": timedelta(seconds=BEAT_UPDATE_SEARCH_SEC),
