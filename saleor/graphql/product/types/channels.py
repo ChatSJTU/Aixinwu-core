@@ -226,6 +226,10 @@ class ProductChannelListing(ModelObjectType[models.ProductChannelListing]):
         return root.is_available_for_purchase()
 
     @staticmethod
+    def resolve_is_published(root: models.ProductChannelListing, _info):
+        return root.is_visible
+
+    @staticmethod
     def resolve_pricing(root: models.ProductChannelListing, info, *, address=None):
         context = info.context
 
