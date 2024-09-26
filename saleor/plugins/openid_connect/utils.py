@@ -234,7 +234,7 @@ def get_or_create_user_from_payload(
     oauth_url: str,
 ) -> User:
     oidc_metadata_key = f"oidc:{oauth_url}"
-    print(payload)
+
     account = payload.get("sub")
     code = str(payload.get("code"))
     assert isinstance(account, str)
