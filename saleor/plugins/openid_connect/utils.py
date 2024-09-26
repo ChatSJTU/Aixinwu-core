@@ -234,7 +234,7 @@ def get_or_create_user_from_payload(
     oauth_url: str,
 ) -> User:
     oidc_metadata_key = f"oidc:{oauth_url}"
-
+    print(payload)
     account = payload.get("sub")
     code = str(payload.get("code"))
     assert isinstance(account, str)
@@ -390,7 +390,7 @@ def _update_user_details(
         user.last_name = user_last_name
         fields_to_save.update({"last_name", "search_document"})
 
-    if user.code != user_code:
+    if user_code and user.code != user_code:
         user.code = user_code
         fields_to_save.update({"code", "search_document"})
 
