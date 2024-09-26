@@ -96,8 +96,10 @@ def _order_expired_events(order_ids):
 
 def _expire_orders(manager, now):
     time_diff_func_in_minutes = (
-        Func(Value("day"), now - OuterRef("created_at"), function="DATE_PART") * 24
-        + Func(Value("hour"), now - OuterRef("created_at"), function="DATE_PART") * 60
+        (
+            Func(Value("day"), now - OuterRef("created_at"), function="DATE_PART") * 24
+            + Func(Value("hour"), now - OuterRef("created_at"), function="DATE_PART")
+        ) * 60
     ) + Func(Value("minute"), now - OuterRef("created_at"), function="DATE_PART")
 
     channels = Channel.objects.filter(
@@ -114,6 +116,10 @@ def _expire_orders(manager, now):
         status__in=[OrderStatus.UNCONFIRMED],
     )
     ids_batch = list(qs.values_list("pk", flat=True)[:EXPIRE_ORDER_BATCH_SIZE])
+
+    from django.db import connection
+    print(connection.queries)
+
     logger.warning(f"expired order (unpaid): {len(ids_batch)}")
     with traced_atomic_transaction():
         _bulk_release_voucher_usage(ids_batch)
