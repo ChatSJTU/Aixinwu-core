@@ -1,5 +1,12 @@
 import graphene
 
+from saleor.graphql.account.mutations.account.account_invitation_create import (
+    AccountInvitationCreate,
+)
+from saleor.graphql.account.mutations.account.account_invitation_delete import (
+    AccountInvitationDelete,
+)
+
 from ...permission.auth_filters import AuthorizationFilters
 from ...permission.enums import AccountPermissions, OrderPermissions
 from ...permission.utils import message_one_of_permissions_required
@@ -313,3 +320,6 @@ class AccountMutations(graphene.ObjectType):
     permission_group_create = PermissionGroupCreate.Field()
     permission_group_update = PermissionGroupUpdate.Field()
     permission_group_delete = PermissionGroupDelete.Field()
+
+    invitation_create = AccountInvitationCreate.Field()
+    invitation_delete = AccountInvitationDelete.Field()

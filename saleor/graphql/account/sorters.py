@@ -34,6 +34,27 @@ class UserSortingInput(SortInputObjectType):
         type_name = "users"
 
 
+class InvitationSortField(BaseEnum):
+    CREATED_AT = ["created_at", "pk"]
+
+    class Meta:
+        doc_category = DOC_CATEGORY_USERS
+
+    @property
+    def description(self):
+        if self.name in InvitationSortField.__enum__._member_names_:
+            sort_name = self.name.lower().replace("_", " ")
+            return f"Sort invitations by {sort_name}."
+        raise ValueError(f"Unsupported enum value: {self.value}")
+
+
+class InvitationsSortingInput(SortInputObjectType):
+    class Meta:
+        doc_category = DOC_CATEGORY_USERS
+        sort_enum = InvitationSortField
+        type_name = "invitations"
+
+
 class PermissionGroupSortField(BaseEnum):
     NAME = ["name"]
 

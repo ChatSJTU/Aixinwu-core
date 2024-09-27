@@ -1,6 +1,9 @@
 import django_filters
 from django.db.models import Count
 
+from saleor.graphql.core.doc_category import DOC_CATEGORY_USERS
+from saleor.graphql.core.types.filter_input import FilterInputObjectType
+
 from ...account.models import User
 from ...account.search import search_users
 from ..core.descriptions import ADDED_IN_38

@@ -1,9 +1,10 @@
-from decimal import Decimal
 import json
 import logging
 from datetime import datetime
+from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
+import graphene
 import pytz
 import requests
 from authlib.jose import JWTClaims, jwt
@@ -19,11 +20,12 @@ from django.db.models import F, QuerySet
 from django.utils import timezone
 from jwt import PyJWTError
 
-from saleor.account.events import (
+from ...account.events import (
+    accept_invitation_balance_event,
     consecutive_login_balance_event,
     first_login_balance_event,
 )
-from ...account.models import Group, User
+from ...account.models import Group, User, Invitation as InvitationModel
 from ...account.search import prepare_user_search_document_value
 from ...account.utils import get_user_groups_permissions
 from ...core.http_client import HTTPClient
@@ -40,6 +42,8 @@ from ...graphql.account.mutations.authentication.utils import (
     _does_token_match,
     _get_new_csrf_token,
 )
+from ...graphql.account.types import Invitation
+from ...graphql.core.utils import from_global_id_or_error
 from ...order.utils import match_orders_with_new_user
 from ...permission.enums import get_permission_names, get_permissions_from_codenames
 from ...permission.models import Permission
@@ -232,7 +236,10 @@ def get_or_create_user_from_payload(
     payload: dict,
     email_domain: str,
     oauth_url: str,
+    invitation_code: Optional[str] = None,
 ) -> User:
+    if invitation_code:
+        _, invitation_code = from_global_id_or_error(invitation_code, Invitation)
     oidc_metadata_key = f"oidc:{oauth_url}"
 
     account = payload.get("sub")
@@ -261,58 +268,69 @@ def get_or_create_user_from_payload(
 
     if user_id:
         get_kwargs = {"id": user_id}
-    try:
-        user = User.objects.using(settings.DATABASE_CONNECTION_REPLICA_NAME).get(
-            **get_kwargs
-        )
-    except User.DoesNotExist:
-        user, _ = User.objects.get_or_create(
-            email=user_email,
-            defaults=defaults_create,
-        )
-        first_login_balance_event(user=user)
-        consecutive_login_balance_event(
-            user=user, delta=Decimal(settings.CONTINUOUS_BALANCE_ADD[0])
-        )
-        site, _ = Site.objects.get_or_create(id=settings.SITE_ID)
-
-        if not site.domain or not site.name:
-            site.name = settings.SITE_NAME
-            site.domain = settings.SITE_DOMAIN
-            site.save(update_fields=["name", "domain"])
-
+    with transaction.atomic():
         try:
-            stat = site.stat
-        except:
-            stat, _ = SiteStatistics.objects.get_or_create(site=site)
+            user = User.objects.using(settings.DATABASE_CONNECTION_REPLICA_NAME).get(
+                **get_kwargs
+            )
+        except User.DoesNotExist:
+            user, _ = User.objects.get_or_create(
+                email=user_email,
+                defaults=defaults_create,
+            )
+            first_login_balance_event(user=user)
+            consecutive_login_balance_event(
+                user=user, delta=Decimal(settings.CONTINUOUS_BALANCE_ADD[0])
+            )
+            site, _ = Site.objects.get_or_create(id=settings.SITE_ID)
 
-        SiteStatistics.objects.filter(id=stat.id).update(users=F("users") + 1)
-        match_orders_with_new_user(user)
-    except User.MultipleObjectsReturned:
-        logger.warning("Multiple users returned for single OIDC sub ID")
-        user, _ = User.objects.get_or_create(
-            email=user_email,
-            defaults=defaults_create,
+            if not site.domain or not site.name:
+                site.name = settings.SITE_NAME
+                site.domain = settings.SITE_DOMAIN
+                site.save(update_fields=["name", "domain"])
+
+            try:
+                stat = site.stat
+            except:
+                stat, _ = SiteStatistics.objects.get_or_create(site=site)
+
+            SiteStatistics.objects.filter(id=stat.id).update(users=F("users") + 1)
+            match_orders_with_new_user(user)
+
+            if invitation_code:
+                invitation = InvitationModel.objects.get(id=invitation_code)
+                invitation.user.balance += Decimal(25.0)
+                invitation.user.updated_at = timezone.now()
+                invitation.user.save(update_fields=["balance", "updated_at"])
+                accept_invitation_balance_event(user=invitation.user)
+
+        except User.MultipleObjectsReturned:
+            logger.warning("Multiple users returned for single OIDC sub ID")
+            user, _ = User.objects.get_or_create(
+                email=user_email,
+                defaults=defaults_create,
+            )
+
+        site_settings = Site.objects.get_current().settings
+        if not user.can_login(
+            site_settings
+        ):  # it is true only if we fetch disabled user.
+            raise AuthenticationError("Unable to log in.")
+
+        _update_user_details(
+            user=user,
+            oidc_key=oidc_metadata_key,
+            user_email=user_email,
+            user_first_name=defaults_create["first_name"],
+            user_last_name=defaults_create["last_name"],
+            user_code=defaults_create["code"],
+            user_type=defaults_create["user_type"],
+            sub=account,  # type: ignore
+            login_time=timezone.now(),
         )
 
-    site_settings = Site.objects.get_current().settings
-    if not user.can_login(site_settings):  # it is true only if we fetch disabled user.
-        raise AuthenticationError("Unable to log in.")
-
-    _update_user_details(
-        user=user,
-        oidc_key=oidc_metadata_key,
-        user_email=user_email,
-        user_first_name=defaults_create["first_name"],
-        user_last_name=defaults_create["last_name"],
-        user_code=defaults_create["code"],
-        user_type=defaults_create["user_type"],
-        sub=account,  # type: ignore
-        login_time=timezone.now(),
-    )
-
-    cache.set(cache_key, user.id, min(JWKS_CACHE_TIME, OIDC_DEFAULT_CACHE_TIME))
-    return user
+        cache.set(cache_key, user.id, min(JWKS_CACHE_TIME, OIDC_DEFAULT_CACHE_TIME))
+        return user
 
 
 def get_domain_from_email(email: str):

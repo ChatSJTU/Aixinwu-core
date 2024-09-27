@@ -2,7 +2,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from typing import Optional, cast
 
-from ...account.models import Address, CustomerEvent, Group, User
+from ...account.models import Address, CustomerEvent, Group, Invitation, User
 from ...channel.models import Channel
 from ...permission.models import Permission
 from ...thumbnail.models import Thumbnail
@@ -51,6 +51,19 @@ class CustomerEventsByUserLoader(DataLoader):
         for event in events:
             events_by_user_map[event.user_id].append(event)
         return [events_by_user_map.get(user_id, []) for user_id in keys]
+
+
+class InvitationByUserIdLoader(DataLoader):
+    context_key = "invitation_by_user"
+
+    def batch_load(self, keys):
+        invitations = Invitation.objects.using(self.database_connection_name).filter(
+            user_id__in=keys
+        )
+        invitations_by_user_map = defaultdict(list)
+        for invitation in invitations:
+            invitations_by_user_map[invitation.user_id].append(invitation)
+        return [invitations.get(user_id, []) for user_id in keys]
 
 
 class ThumbnailByUserIdSizeAndFormatLoader(

@@ -170,7 +170,7 @@ class User(
         blank=True,
         max_digits=settings.DEFAULT_MAX_DIGITS,
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,
-        default=Decimal(50)+Decimal(settings.CONTINUOUS_BALANCE_ADD[0]),
+        default=Decimal(50) + Decimal(settings.CONTINUOUS_BALANCE_ADD[0]),
     )
     addresses = models.ManyToManyField(
         Address, blank=True, related_name="user_addresses"
@@ -327,6 +327,15 @@ class User(
             or not site_settings.enable_account_confirmation_by_email
             or self.is_confirmed
         )
+
+
+class Invitation(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    user = models.ForeignKey(
+        User, related_name="invitations", on_delete=models.CASCADE, null=True
+    )
+    created_at = models.DateTimeField(db_index=True, auto_now_add=True)
+    expired_at = models.DateTimeField(null=True, blank=True)
 
 
 class CustomerNote(models.Model):

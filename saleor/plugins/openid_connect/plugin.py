@@ -20,8 +20,8 @@ from ...core.jwt import (
     get_user_from_payload,
     jwt_decode,
 )
-from ...site.models import Site, SiteStatistics
 from ...permission.enums import get_permissions_codename, get_permissions_from_names
+from ...site.models import Site, SiteStatistics
 from ..base_plugin import BasePlugin, ConfigurationTypeField, ExternalAccessTokens
 from ..error_codes import PluginErrorCode
 from ..models import PluginConfiguration
@@ -43,8 +43,8 @@ from .utils import (
     get_staff_user_domains,
     get_user_from_token,
     is_owner_of_token_valid,
-    validate_refresh_token,
     update_continuous_days,
+    validate_refresh_token,
 )
 
 logger = logging.getLogger(__name__)
@@ -307,6 +307,7 @@ class OpenIDConnectPlugin(BasePlugin):
             parsed_id_token,
             self.config.email_domain,
             self.config.authorization_url,
+            invitation_code=data.get("invitation_code"),
         )
 
         user_permissions = []

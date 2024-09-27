@@ -8,14 +8,19 @@ from graphene import relay
 from graphql import GraphQLError
 from promise import Promise
 
+from saleor.graphql.account.sorters import InvitationsSortingInput
+from saleor.graphql.core.filters import MetadataFilterBase, ObjectTypeFilter
+from saleor.graphql.core.types.common import DateTimeRangeInput
+from saleor.graphql.core.types.filter_input import FilterInputObjectType
+from saleor.graphql.utils.filters import filter_range_field
+
 from ...account import models
 from ...checkout.utils import get_user_checkout
 from ...core.exceptions import PermissionDenied
 from ...graphql.meta.inputs import MetadataInput
-from ...order import OrderStatus
 from ...payment.interface import ListStoredPaymentMethodsRequestData
 from ...permission.auth_filters import AuthorizationFilters
-from ...permission.enums import AccountPermissions, AppPermission, OrderPermissions
+from ...permission.enums import AccountPermissions, AppPermission
 from ...thumbnail.utils import (
     get_image_or_proxy_url,
     get_thumbnail_format,
@@ -29,7 +34,11 @@ from ..channel.types import Channel
 from ..checkout.dataloaders import CheckoutByUserAndChannelLoader, CheckoutByUserLoader
 from ..checkout.types import Checkout, CheckoutCountableConnection
 from ..core import ResolveInfo
-from ..core.connection import CountableConnection, create_connection_slice
+from ..core.connection import (
+    CountableConnection,
+    create_connection_slice,
+    filter_connection_queryset,
+)
 from ..core.context import get_database_connection_name
 from ..core.descriptions import (
     ADDED_IN_38,
@@ -58,7 +67,8 @@ from ..core.types import (
 from ..core.utils import from_global_id_or_error, str_to_enum, to_global_id_or_none
 from ..giftcard.dataloaders import GiftCardsByUserLoader
 from ..meta.types import ObjectWithMetadata
-from ..order.dataloaders import OrderLineByIdLoader, OrdersByUserLoader
+from ..order.dataloaders import OrderLineByIdLoader
+from ..order.resolvers import resolve_invitations, resolve_orders
 from ..payment.types import StoredPaymentMethod
 from ..plugins.dataloaders import get_plugin_manager_promise
 from ..utils import format_permissions_for_display, get_user_or_app_from_context
@@ -71,6 +81,33 @@ from .dataloaders import (
 )
 from .enums import CountryCodeEnum, CustomerEventsEnum
 from .utils import can_user_manage_group, get_groups_which_user_can_manage
+
+
+def filter_created_at(qs, _, value):
+    if value:
+        return filter_range_field(qs, "invitations__created_at", value)
+    return qs
+
+
+def filter_expired_at(qs, _, value):
+    if value:
+        return filter_range_field(qs, "invitations__expired_at", value)
+    return qs
+
+
+class InvitationFilter(MetadataFilterBase):
+    created_at = ObjectTypeFilter(
+        input_class=DateTimeRangeInput, method=filter_created_at
+    )
+    expired_at = ObjectTypeFilter(
+        input_class=DateTimeRangeInput, method=filter_expired_at
+    )
+
+
+class InvitationFilterInput(FilterInputObjectType):
+    class Meta:
+        doc_category = DOC_CATEGORY_USERS
+        filterset_class = InvitationFilter
 
 
 class AddressInput(BaseInputObjectType):
@@ -298,6 +335,25 @@ class UserPermission(Permission):
 
 
 @federated_entity("id")
+class Invitation(ModelObjectType[models.Invitation]):
+    id = graphene.GlobalID(required=True, description="The Id of the invitation")
+    created_at = graphene.DateTime(description="Creation of the current invitation")
+    expired_at = graphene.DateTime(description="Expiration of the current invitation")
+
+    class Meta:
+        description = "Represents invitation data."
+        interfaces = [relay.Node]
+        model = models.Invitation
+        doc_category = DOC_CATEGORY_USERS
+
+
+class InvitationCountableConnection(CountableConnection):
+    class Meta:
+        doc_category = DOC_CATEGORY_USERS
+        node = Invitation
+
+
+@federated_entity("id")
 @federated_entity("email")
 class User(ModelObjectType[models.User]):
     from ..order.filters import OrderFilterInput
@@ -420,6 +476,15 @@ class User(ModelObjectType[models.User]):
         NonNullList(CustomerEvent),
         description="List of events associated with the user.",
         permissions=[AccountPermissions.MANAGE_USERS, AccountPermissions.MANAGE_STAFF],
+    )
+    invitations = FilterConnectionField(
+        InvitationCountableConnection,
+        sort_by=InvitationsSortingInput(description="Sort invitations."),
+        filter=InvitationFilterInput(description="Filtering options for invitations."),
+        description=(
+            "List of user's invitations. Requires one of the following permissions: "
+            f"{AuthorizationFilters.AUTHENTICATED_USER}."
+        ),
     )
     stored_payment_sources = NonNullList(
         "saleor.graphql.payment.types.PaymentSource",
@@ -557,6 +622,12 @@ class User(ModelObjectType[models.User]):
         )
 
     @staticmethod
+    def resolve_invitations(root: models.User, info: ResolveInfo, **kwargs):
+        qs = resolve_invitations(info)
+        qs = filter_connection_queryset(qs, kwargs)
+        return create_connection_slice(qs, info, kwargs, InvitationCountableConnection)
+
+    @staticmethod
     def resolve_user_permissions(root: models.User, _info: ResolveInfo):
         from .resolvers import resolve_permissions
 
@@ -601,6 +672,7 @@ class User(ModelObjectType[models.User]):
     @staticmethod
     def resolve_orders(root: models.User, info: ResolveInfo, *, channel=None, **kwargs):
         from ..order.types import OrderCountableConnection
+
         user_or_app = get_user_or_app_from_context(info.context)
         if not user_or_app or (
             root != user_or_app
@@ -613,7 +685,7 @@ class User(ModelObjectType[models.User]):
                 ]
             )
         requester = user_or_app
-    
+
         from ..core.connection import filter_connection_queryset
         from ..order.schema import (
             OrderCountableConnection,

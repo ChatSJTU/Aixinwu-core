@@ -10673,6 +10673,33 @@ type User implements Node & ObjectWithMetadata @doc(category: "Users") {
   events: [CustomerEvent!]
 
   """
+  List of user's invitations. Requires one of the following permissions: AuthorizationFilters.AUTHENTICATED_USER.
+  """
+  invitations(
+    """Sort invitations."""
+    sortBy: InvitationsSortingInput
+
+    """Filtering options for invitations."""
+    filter: InvitationFilterInput
+
+    """Return the elements in the list that come before the specified cursor."""
+    before: String
+
+    """Return the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
+    """
+    first: Int
+
+    """
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
+    """
+    last: Int
+  ): InvitationCountableConnection
+
+  """
   List of stored payment sources. The field returns a list of payment sources stored for payment plugins.
   """
   storedPaymentSources(
@@ -13418,6 +13445,54 @@ enum CustomerEventsEnum @doc(category: "Users") {
   NAME_ASSIGNED
   EMAIL_ASSIGNED
   NOTE_ADDED
+}
+
+type InvitationCountableConnection @doc(category: "Users") {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+  edges: [InvitationCountableEdge!]!
+
+  """A total count of items in the collection."""
+  totalCount: Int
+}
+
+type InvitationCountableEdge @doc(category: "Users") {
+  """The item at the end of the edge."""
+  node: Invitation!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""Represents invitation data."""
+type Invitation implements Node @doc(category: "Users") {
+  """The Id of the invitation"""
+  id: ID!
+
+  """Creation of the current invitation"""
+  createdAt: DateTime
+
+  """Expiration of the current invitation"""
+  expiredAt: DateTime
+}
+
+input InvitationsSortingInput @doc(category: "Users") {
+  """Specifies the direction in which to sort invitations."""
+  direction: OrderDirection!
+
+  """Sort invitations by the selected field."""
+  field: InvitationSortField!
+}
+
+enum InvitationSortField @doc(category: "Users") {
+  """Sort invitations by created at."""
+  CREATED_AT
+}
+
+input InvitationFilterInput @doc(category: "Users") {
+  metadata: [MetadataFilter!]
+  createdAt: DateTimeRangeInput
+  expiredAt: DateTimeRangeInput
 }
 
 """
@@ -20699,6 +20774,23 @@ type Mutation {
     """ID of the group to delete."""
     id: ID!
   ): PermissionGroupDelete @doc(category: "Users") @webhookEventsInfo(asyncEvents: [PERMISSION_GROUP_DELETED], syncEvents: [])
+
+  """
+  Create a new invitation for the customer. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
+  """
+  invitationCreate: AccountInvitationCreate @doc(category: "Users")
+
+  """
+  Create a new address for the customer. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
+  """
+  invitationDelete(
+    """ID of the invitation code to delete."""
+    id: ID!
+  ): AccountInvitationDelete @doc(category: "Users")
 }
 
 """
@@ -32474,6 +32566,28 @@ type PermissionGroupDelete @doc(category: "Users") @webhookEventsInfo(asyncEvent
   permissionGroupErrors: [PermissionGroupError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
   errors: [PermissionGroupError!]!
   group: Group
+}
+
+"""
+Create a new invitation for the customer. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
+"""
+type AccountInvitationCreate @doc(category: "Users") {
+  invitation: Invitation
+  accountErrors: [AccountError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
+  errors: [AccountError!]!
+}
+
+"""
+Create a new address for the customer. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
+"""
+type AccountInvitationDelete @doc(category: "Users") {
+  accountErrors: [AccountError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
+  errors: [AccountError!]!
+  invitation: Invitation
 }
 
 type Subscription @doc(category: "Miscellaneous") {
