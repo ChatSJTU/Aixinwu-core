@@ -117,9 +117,6 @@ def _expire_orders(manager, now):
     )
     ids_batch = list(qs.values_list("pk", flat=True)[:EXPIRE_ORDER_BATCH_SIZE])
 
-    from django.db import connection
-    print(connection.queries)
-
     logger.warning(f"expired order (unpaid): {len(ids_batch)}")
     with traced_atomic_transaction():
         _bulk_release_voucher_usage(ids_batch)
