@@ -337,6 +337,7 @@ class UserPermission(Permission):
 @federated_entity("id")
 class Invitation(ModelObjectType[models.Invitation]):
     id = graphene.GlobalID(required=True, description="The Id of the invitation")
+    code = graphene.String(required=True, description="Invitation code")
     created_at = graphene.DateTime(description="Creation of the current invitation")
     expired_at = graphene.DateTime(description="Expiration of the current invitation")
 
@@ -363,6 +364,9 @@ class User(ModelObjectType[models.User]):
     email = graphene.String(required=True, description="The email address of the user.")
     account = graphene.String(
         required=True, description="The name of the user IODC account."
+    )
+    invited_by = graphene.String(
+        required=True, description="Whom the user is invited by"
     )
     user_type = graphene.String(
         required=True, description="The type of the user. Defined by the OIDC provider"

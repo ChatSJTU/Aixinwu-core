@@ -166,6 +166,7 @@ class User(
     first_name = models.CharField(max_length=256, blank=True)
     last_name = models.CharField(max_length=256, blank=True)
     account = models.CharField(max_length=256, blank=True, default="")
+    invited_by = models.CharField(max_length=256, blank=True, default="")
     balance = models.DecimalField(
         blank=True,
         max_digits=settings.DEFAULT_MAX_DIGITS,
@@ -329,10 +330,31 @@ class User(
         )
 
 
+s = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+
+def generate_invitation_code():
+    import random
+
+    code = ""
+    while True:
+        code = "".join(random.choices(s, k=10))
+        if not Invitation.objects.filter(code=code).exists():
+            break
+    return code
+
+
 class Invitation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     user = models.ForeignKey(
         User, related_name="invitations", on_delete=models.CASCADE, null=True
+    )
+    code = models.CharField(
+        max_length=128,
+        db_index=True,
+        null=True,
+        unique=True,
+        default=generate_invitation_code,
     )
     created_at = models.DateTimeField(db_index=True, auto_now_add=True)
     expired_at = models.DateTimeField(null=True, blank=True)

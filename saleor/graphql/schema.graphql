@@ -10492,6 +10492,9 @@ type User implements Node & ObjectWithMetadata @doc(category: "Users") {
   """The name of the user IODC account."""
   account: String!
 
+  """Whom the user is invited by"""
+  invitedBy: String!
+
   """The type of the user. Defined by the OIDC provider"""
   userType: String!
 
@@ -13469,6 +13472,9 @@ type Invitation implements Node @doc(category: "Users") {
   """The Id of the invitation"""
   id: ID!
 
+  """Invitation code"""
+  code: String!
+
   """Creation of the current invitation"""
   createdAt: DateTime
 
@@ -14364,6 +14370,7 @@ enum BalanceEventsEnum @doc(category: "Events") {
   BONUS
   POOR_SIGN
   OTHER
+  INVITATION_ACCEPTED
 }
 
 input BalanceEventSortingInput @doc(category: "Events") {
@@ -36751,7 +36758,7 @@ type PaymentMethodProcessTokenizationSession implements Event @doc(category: "Pa
 scalar _Any
 
 """_Entity union as defined by Federation spec."""
-union _Entity = App | Address | User | Group | ProductVariant | Product | ProductType | ProductMedia | Category | Collection | Order | PageType
+union _Entity = App | Address | Invitation | User | Group | ProductVariant | Product | ProductType | ProductMedia | Category | Collection | Order | PageType
 
 """_Service manifest as defined by Federation spec."""
 type _Service {
