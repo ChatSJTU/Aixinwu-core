@@ -20,7 +20,7 @@ from ...core.exceptions import PermissionDenied
 from ...graphql.meta.inputs import MetadataInput
 from ...payment.interface import ListStoredPaymentMethodsRequestData
 from ...permission.auth_filters import AuthorizationFilters
-from ...permission.enums import AccountPermissions, AppPermission
+from ...permission.enums import AccountPermissions, AppPermission, OrderPermissions
 from ...thumbnail.utils import (
     get_image_or_proxy_url,
     get_thumbnail_format,
