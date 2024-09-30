@@ -61,7 +61,7 @@ def public_user_permissions(
         return []
     if user.is_staff:
         return [AccountPermissions.MANAGE_STAFF]
-    return [AccountPermissions.MANAGE_USERS]
+    return [AccountPermissions.MANAGE_USERS, AccountPermissions.READ_USERS]
 
 
 def private_user_permissions(
@@ -72,7 +72,7 @@ def private_user_permissions(
         raise PermissionDenied()
     if user.is_staff:
         return [AccountPermissions.MANAGE_STAFF]
-    return [AccountPermissions.MANAGE_USERS]
+    return [AccountPermissions.MANAGE_USERS, AccountPermissions.READ_USERS]
 
 
 def public_address_permissions(

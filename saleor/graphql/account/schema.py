@@ -194,6 +194,7 @@ class AccountQueries(graphene.ObjectType):
         permissions=[
             AccountPermissions.MANAGE_STAFF,
             AccountPermissions.MANAGE_USERS,
+            AccountPermissions.READ_USERS,
             OrderPermissions.MANAGE_ORDERS,
         ],
         description="Look up a user by ID or email address.",

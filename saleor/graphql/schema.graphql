@@ -1824,7 +1824,7 @@ type Query {
   """
   Look up a user by ID or email address.
   
-  Requires one of the following permissions: MANAGE_STAFF, MANAGE_USERS, MANAGE_ORDERS.
+  Requires one of the following permissions: MANAGE_STAFF, MANAGE_USERS, READ_USERS, MANAGE_ORDERS.
   """
   user(
     """ID of the user."""
@@ -3394,6 +3394,7 @@ enum PermissionEnum @doc(category: "Users") {
   MANAGE_USERS
   MANAGE_STAFF
   IMPERSONATE_USER
+  READ_USERS
   MANAGE_APPS
   MANAGE_OBSERVABILITY
   MANAGE_CHECKOUTS
@@ -10592,7 +10593,7 @@ type User implements Node & ObjectWithMetadata @doc(category: "Users") {
   """
   A note about the customer.
   
-  Requires one of the following permissions: MANAGE_USERS, MANAGE_STAFF.
+  Requires one of the following permissions: MANAGE_USERS, MANAGE_STAFF, READ_USERS.
   """
   note: String
 
@@ -10671,7 +10672,7 @@ type User implements Node & ObjectWithMetadata @doc(category: "Users") {
   """
   List of events associated with the user.
   
-  Requires one of the following permissions: MANAGE_USERS, MANAGE_STAFF.
+  Requires one of the following permissions: MANAGE_USERS, MANAGE_STAFF, READ_USERS.
   """
   events: [CustomerEvent!]
 
@@ -14471,7 +14472,7 @@ type Donation implements Node @doc(category: "Donations") {
   title: String
 
   """
-  The user who made the donation. Requires one of permissions: MANAGE_USERS, MANAGE_DONATIONS, fOWNER
+  The user who made the donation. Requires one of permissions: MANAGE_USERS, MANAGE_DONATIONS, OWNER, READ_USERS
   """
   donator: User
 

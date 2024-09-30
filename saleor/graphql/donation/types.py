@@ -27,7 +27,7 @@ class Donation(ModelObjectType[models.Donation]):
     title = graphene.String(required=False, description="The title of the donation.")
     donator = graphene.Field(
         "saleor.graphql.account.types.User",
-        description=f"The user who made the donation. Requires one of permissions: {AccountPermissions.MANAGE_USERS.name}, {DonationPermissions.MANAGE_DONATIONS.name}, f{AuthorizationFilters.OWNER.name}",
+        description=f"The user who made the donation. Requires one of permissions: {AccountPermissions.MANAGE_USERS.name}, {DonationPermissions.MANAGE_DONATIONS.name}, {AuthorizationFilters.OWNER.name}, {AccountPermissions.READ_USERS.name}",
     )
     description = graphene.String(
         required=False, description="The description of the donation."
@@ -85,6 +85,7 @@ class Donation(ModelObjectType[models.Donation]):
             requestor,
             donator,
             AccountPermissions.MANAGE_USERS,
+            AccountPermissions.READ_USERS,
             DonationPermissions.ADD_DONATIONS,
         )
         return donator

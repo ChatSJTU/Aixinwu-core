@@ -214,6 +214,7 @@ class User(
             (AccountPermissions.MANAGE_USERS.codename, "Manage customers."),
             (AccountPermissions.MANAGE_STAFF.codename, "Manage staff."),
             (AccountPermissions.IMPERSONATE_USER.codename, "Impersonate user."),
+            (AccountPermissions.READ_USERS.codename, "Read user info only."),
         )
         indexes = [
             *ModelWithMetadata.Meta.indexes,

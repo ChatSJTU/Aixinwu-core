@@ -432,7 +432,7 @@ class User(ModelObjectType[models.User]):
     note = PermissionsField(
         graphene.String,
         description="A note about the customer.",
-        permissions=[AccountPermissions.MANAGE_USERS, AccountPermissions.MANAGE_STAFF],
+        permissions=[AccountPermissions.MANAGE_USERS, AccountPermissions.MANAGE_STAFF, AccountPermissions.READ_USERS],
     )
     orders = FilterConnectionField(
         "saleor.graphql.order.types.OrderCountableConnection",
@@ -479,7 +479,7 @@ class User(ModelObjectType[models.User]):
     events = PermissionsField(
         NonNullList(CustomerEvent),
         description="List of events associated with the user.",
-        permissions=[AccountPermissions.MANAGE_USERS, AccountPermissions.MANAGE_STAFF],
+        permissions=[AccountPermissions.MANAGE_USERS, AccountPermissions.MANAGE_STAFF, AccountPermissions.READ_USERS],
     )
     invitations = FilterConnectionField(
         InvitationCountableConnection,

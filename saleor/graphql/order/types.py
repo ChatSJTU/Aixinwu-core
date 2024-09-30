@@ -424,6 +424,7 @@ class OrderEvent(ModelObjectType[models.OrderEvent]):
                 requester == event_user
                 or requester.has_perm(AccountPermissions.MANAGE_USERS)
                 or requester.has_perm(AccountPermissions.MANAGE_STAFF)
+                or requester.has_perm(AccountPermissions.READ_USERS)
             ):
                 return event_user
             return None
@@ -1859,6 +1860,7 @@ class Order(ModelObjectType[models.Order]):
                 requester,
                 user,
                 AccountPermissions.MANAGE_USERS,
+                AccountPermissions.READ_USERS,
                 OrderPermissions.MANAGE_ORDERS,
                 PaymentPermissions.HANDLE_PAYMENTS,
             )
