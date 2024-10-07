@@ -853,6 +853,10 @@ class DonationError(Error):
     code = DonationErrorCode(description="The error code.", required=True)
 
 
+class DonationBulkError(BulkError):
+    code = DonationErrorCode(description="The error code.", required=True)
+
+
 class Weight(graphene.ObjectType):
     unit = WeightUnitsEnum(description="Weight unit.", required=True)
     value = graphene.Float(

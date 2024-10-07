@@ -4,6 +4,10 @@ from ..core import ResolveInfo
 from ..core.connection import create_connection_slice, filter_connection_queryset
 from ..core.doc_category import DOC_CATEGORY_ORDERS
 from ..core.fields import BaseField, FilterConnectionField
+from ..donation.bulk_mutations.donation_bulk_complete import (
+    DonationBulkComplete,
+)
+from ..donation.bulk_mutations.donation_bulk_update import DonationBulkUpdate
 from .filters import DonationFilterInput
 from .mutations import DonationComplete, DonationCreate, DonationDelete, DonationUpdate
 from .resolvers import resolve_donation_by_id, resolve_donations
@@ -45,3 +49,4 @@ class DonationMutations(graphene.ObjectType):
     donation_update = DonationUpdate.Field()
     donation_delete = DonationDelete.Field()
     donation_complete = DonationComplete.Field()
+    donation_bulk_complete = DonationBulkComplete.Field()
