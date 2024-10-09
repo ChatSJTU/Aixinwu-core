@@ -3,6 +3,8 @@ from typing import cast
 
 from django.db.models import Q
 
+from saleor.webhook.event_types import WebhookEventSyncType
+
 from ..core.utils.events import call_event
 from ..payment.models import TransactionItem
 from ..plugins.manager import PluginsManager
@@ -12,6 +14,12 @@ from .fetch import fetch_checkout_info, fetch_checkout_lines
 from .models import Checkout
 from .payment_utils import update_refundable_for_checkout
 
+def call_checkout_event(
+    manager: "PluginsManager",
+    event_name: str,
+    checkout: "Checkout",
+):
+    pass
 
 def get_checkout_refundable(transaction: TransactionItem, checkout: Checkout):
     """Get refundable status for checkout.

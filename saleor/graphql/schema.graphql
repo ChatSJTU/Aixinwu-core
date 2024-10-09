@@ -18486,9 +18486,7 @@ type Mutation {
   ): ExternalNotificationTrigger @deprecated(reason: "\\n\\nDEPRECATED: this mutation will be removed in Saleor 4.0.")
 
   """
-  Create a new donation. 
-  
-  Requires one of the following permissions: MANAGE_DONATIONS.
+  Create a new donation.
   
   Triggers the following webhook events:
   - DONATION_CREATED (sync): A donation has been created.
@@ -18499,9 +18497,7 @@ type Mutation {
   ): DonationCreate @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: [])
 
   """
-  Update a new donation. 
-  
-  Requires one of the following permissions: MANAGE_DONATIONS.
+  Update a new donation.
   
   Triggers the following webhook events:
   - DONATION_UPDATED (sync): A donation has been updated.
@@ -18515,9 +18511,7 @@ type Mutation {
   ): DonationUpdate @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: [])
 
   """
-  Delete an old donation. 
-  
-  Requires one of the following permissions: MANAGE_DONATIONS.
+  Delete an old donation.
   
   Triggers the following webhook events:
   - DONATION_DELETED (sync): A donation has been deleted.
@@ -18525,9 +18519,7 @@ type Mutation {
   donationDelete(id: ID!): DonationDelete @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: [])
 
   """
-  Complete a new donation. 
-  
-  Requires one of the following permissions: MANAGE_DONATIONS.
+  Complete a new donation.
   
   Triggers the following webhook events:
   - DONATION_COMPLETED (sync): A donation has been created.
@@ -18539,16 +18531,6 @@ type Mutation {
     """The input required to complete a donation."""
     input: DonationCompleteInput!
   ): DonationComplete @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: [])
-
-  """
-  Update donations 
-  
-  Requires one of the following permissions: MANAGE_DONATIONS.
-  """
-  donationBulkUpdate(
-    """Input list of donations to be updated"""
-    donations: [DonationBulkUpdateInput!]!
-  ): DonationBulkUpdate @doc(category: "Donations")
 
   """
   Complete donations 
@@ -19266,6 +19248,22 @@ type Mutation {
     """
     token: UUID
   ): CheckoutCustomerDetach @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [])
+
+  """
+  Updates customer note in the existing checkout object.
+  
+  Added in Saleor 3.21.
+  
+  Triggers the following webhook events:
+  - CHECKOUT_UPDATED (async): A checkout was updated.
+  """
+  checkoutCustomerNoteUpdate(
+    """New customer note content."""
+    customerNote: String!
+
+    """The checkout's ID."""
+    id: ID!
+  ): CheckoutCustomerNoteUpdate @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [])
 
   """
   Updates email address in the existing checkout object.
@@ -28141,9 +28139,7 @@ input ExternalNotificationTriggerInput {
 }
 
 """
-Create a new donation. 
-
-Requires one of the following permissions: MANAGE_DONATIONS.
+Create a new donation.
 
 Triggers the following webhook events:
 - DONATION_CREATED (sync): A donation has been created.
@@ -28200,9 +28196,7 @@ input DonationCreateInput @doc(category: "Donations") {
 }
 
 """
-Update a new donation. 
-
-Requires one of the following permissions: MANAGE_DONATIONS.
+Update a new donation.
 
 Triggers the following webhook events:
 - DONATION_UPDATED (sync): A donation has been updated.
@@ -28233,9 +28227,7 @@ input DonationUpdateInput @doc(category: "Donations") {
 }
 
 """
-Delete an old donation. 
-
-Requires one of the following permissions: MANAGE_DONATIONS.
+Delete an old donation.
 
 Triggers the following webhook events:
 - DONATION_DELETED (sync): A donation has been deleted.
@@ -28246,9 +28238,7 @@ type DonationDelete @doc(category: "Donations") @webhookEventsInfo(asyncEvents: 
 }
 
 """
-Complete a new donation. 
-
-Requires one of the following permissions: MANAGE_DONATIONS.
+Complete a new donation.
 
 Triggers the following webhook events:
 - DONATION_COMPLETED (sync): A donation has been created.
@@ -28264,11 +28254,11 @@ input DonationCompleteInput @doc(category: "Donations") {
 }
 
 """
-Update donations 
+Complete donations 
 
 Requires one of the following permissions: MANAGE_DONATIONS.
 """
-type DonationBulkUpdate @doc(category: "Donations") {
+type DonationBulkComplete @doc(category: "Donations") {
   """Input list of donations"""
   donations: [Donation!]!
 
@@ -28289,29 +28279,6 @@ type DonationBulkError {
 
   """The error code."""
   code: DonationErrorCode!
-}
-
-input DonationBulkUpdateInput {
-  """ID of the donation."""
-  id: ID!
-
-  """Fields required to update a donation."""
-  input: DonationUpdateInput!
-}
-
-"""
-Complete donations 
-
-Requires one of the following permissions: MANAGE_DONATIONS.
-"""
-type DonationBulkComplete @doc(category: "Donations") {
-  """Input list of donations"""
-  donations: [Donation!]!
-
-  """Returns how many objects were updated."""
-  count: Int!
-  donationErrors: [DonationBulkError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
-  errors: [DonationBulkError!]!
 }
 
 input DonationBulkCompleteInput {
@@ -29729,6 +29696,21 @@ Triggers the following webhook events:
 - CHECKOUT_UPDATED (async): A checkout was updated.
 """
 type CheckoutCustomerDetach @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: []) {
+  """An updated checkout."""
+  checkout: Checkout
+  checkoutErrors: [CheckoutError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
+  errors: [CheckoutError!]!
+}
+
+"""
+Updates customer note in the existing checkout object.
+
+Added in Saleor 3.21.
+
+Triggers the following webhook events:
+- CHECKOUT_UPDATED (async): A checkout was updated.
+"""
+type CheckoutCustomerNoteUpdate @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: []) {
   """An updated checkout."""
   checkout: Checkout
   checkoutErrors: [CheckoutError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
