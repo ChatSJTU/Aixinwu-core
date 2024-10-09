@@ -7,7 +7,6 @@ from ..core.fields import BaseField, FilterConnectionField
 from ..donation.bulk_mutations.donation_bulk_complete import (
     DonationBulkComplete,
 )
-from ..donation.bulk_mutations.donation_bulk_update import DonationBulkUpdate
 from .filters import DonationFilterInput
 from .mutations import DonationComplete, DonationCreate, DonationDelete, DonationUpdate
 from .resolvers import resolve_donation_by_id, resolve_donations
