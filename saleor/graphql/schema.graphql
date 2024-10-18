@@ -18538,8 +18538,10 @@ type Mutation {
   Requires one of the following permissions: MANAGE_DONATIONS.
   """
   donationBulkComplete(
-    """Input list of donations to be updated"""
-    donations: [DonationBulkCompleteInput!]!
+    accepted: Boolean!
+
+    """List of donations to be updated."""
+    ids: [ID!]!
   ): DonationBulkComplete @doc(category: "Donations")
 
   """
@@ -28259,9 +28261,6 @@ Complete donations
 Requires one of the following permissions: MANAGE_DONATIONS.
 """
 type DonationBulkComplete @doc(category: "Donations") {
-  """Input list of donations"""
-  donations: [Donation!]!
-
   """Returns how many objects were updated."""
   count: Int!
   donationErrors: [DonationBulkError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
@@ -28279,12 +28278,6 @@ type DonationBulkError {
 
   """The error code."""
   code: DonationErrorCode!
-}
-
-input DonationBulkCompleteInput {
-  """ID of the donation."""
-  id: ID!
-  accepted: Boolean!
 }
 
 """
