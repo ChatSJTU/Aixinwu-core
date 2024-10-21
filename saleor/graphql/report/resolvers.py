@@ -43,20 +43,16 @@ def _split_date_input(
 def resolve_order_reports(
     info: ResolveInfo, date: DateRangeInput, granularity: Granularity
 ) -> list[BaseReport]:
-    qs = Order.objects.using(get_database_connection_name(info.context)).exclude(
-        Q(status=OrderStatus.CANCELED)
-        | Q(status=OrderStatus.UNCONFIRMED)
-        | Q(status=OrderStatus.EXPIRED)
-    )
+    qs = Order.objects.using(get_database_connection_name(info.context)).filter(status=OrderStatus.FULFILLED)
     try:
-        date = _revise_date_input(qs, "created_at", date)
+        date = _revise_date_input(qs, "updated_at", date)
     except ValidationError:
         return list()
 
     results = []
     for dt in _split_date_input(date, granularity):
         qss = qs.all()
-        qss = filter_range_field(qss, "created_at", dt)
+        qss = filter_range_field(qss, "updated_at", dt)
         qss = qss.annotate(quantity_ordered=Sum("lines__quantity"))
         collectionTotal = qss.count()
         agg = qss.aggregate(
