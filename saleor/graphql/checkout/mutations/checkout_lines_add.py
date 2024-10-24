@@ -192,8 +192,8 @@ class CheckoutLinesAdd(BaseMutation):
     ):
         app = get_app_promise(info.context).get()
         check_permissions_for_custom_prices(app, lines)
-
         checkout = get_checkout(cls, info, checkout_id=checkout_id, token=token, id=id)
+        cls.check_channel_permissions(info, [checkout.channel_id])
         manager = get_plugin_manager_promise(info.context).get()
         variants = cls._get_variants_from_lines_input(lines)
         shipping_channel_listings = checkout.channel.shipping_method_listings.all()
