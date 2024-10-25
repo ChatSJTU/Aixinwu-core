@@ -27,7 +27,7 @@ def filter_number(qs, _, value):
 
 
 def filter_user(qs, _, value):
-    qs = qs.filter(donator=value)
+    qs = qs.filter(donator__contains=value)
     return qs
 
 
