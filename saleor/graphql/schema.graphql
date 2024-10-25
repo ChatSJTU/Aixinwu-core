@@ -1189,6 +1189,56 @@ type Query {
     last: Int
   ): CustomerEventCountableConnection @doc(category: "Events")
 
+  """Product events"""
+  productEvents(
+    """Filter the product events"""
+    filter: ProductEventFilterInput
+
+    """Sorting the product events"""
+    sortBy: ProductEventSortingInput
+
+    """Return the elements in the list that come before the specified cursor."""
+    before: String
+
+    """Return the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
+    """
+    first: Int
+
+    """
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
+    """
+    last: Int
+  ): ProductEventCountableConnection @doc(category: "Events")
+
+  """Product variant events"""
+  productVariantEvents(
+    """Filter the product events"""
+    filter: ProductVariantEventFilterInput
+
+    """Sorting the product events"""
+    sortBy: ProductVariantEventSortingInput
+
+    """Return the elements in the list that come before the specified cursor."""
+    before: String
+
+    """Return the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Retrieve the first n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
+    """
+    first: Int
+
+    """
+    Retrieve the last n elements from the list. Note that the system only allows fetching a maximum of 10000 objects in a single query.
+    """
+    last: Int
+  ): ProductVariantEventCountableConnection @doc(category: "Events")
+
   """
   Donations made by the user or collected by users if requested by staff.
   """
@@ -14431,6 +14481,122 @@ input CustomerEventSortingInput @doc(category: "Events") {
   direction: OrderDirection!
 
   """Sort customers by the selected field."""
+  field: EventSortField!
+}
+
+type ProductEventCountableConnection @doc(category: "Events") {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+  edges: [ProductEventCountableEdge!]!
+
+  """A total count of items in the collection."""
+  totalCount: Int
+}
+
+type ProductEventCountableEdge @doc(category: "Events") {
+  """The item at the end of the edge."""
+  node: ProductEvent!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""Represents product events"""
+type ProductEvent {
+  """The ID of the product event."""
+  id: ID!
+
+  """Datetime of the event."""
+  date: DateTime
+
+  """The product of the event."""
+  product: Product
+
+  """The product name of the event"""
+  productName: String
+
+  """The type of the product event."""
+  type: String
+}
+
+input ProductEventFilterInput @doc(category: "Events") {
+  user: String
+  date: DateRangeInput
+  type: ProductEventsEnum
+  metadata: [MetadataFilter!]
+}
+
+"""An enumeration."""
+enum ProductEventsEnum @doc(category: "Events") {
+  PRODUCT_CREATED
+  PRODUCT_DELETED
+}
+
+input ProductEventSortingInput @doc(category: "Events") {
+  """Specifies the direction in which to sort product_events."""
+  direction: OrderDirection!
+
+  """Sort product_events by the selected field."""
+  field: EventSortField!
+}
+
+type ProductVariantEventCountableConnection @doc(category: "Events") {
+  """Pagination data for this connection."""
+  pageInfo: PageInfo!
+  edges: [ProductVariantEventCountableEdge!]!
+
+  """A total count of items in the collection."""
+  totalCount: Int
+}
+
+type ProductVariantEventCountableEdge @doc(category: "Events") {
+  """The item at the end of the edge."""
+  node: ProductVariantEvent!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+"""Represents product events"""
+type ProductVariantEvent {
+  """The ID of the product event."""
+  id: ID!
+
+  """Datetime of the event."""
+  date: DateTime
+
+  """The product of the event."""
+  productVariant: ProductVariant
+
+  """The product name of the event"""
+  productVariantName: String
+
+  """The changed stock."""
+  stockChanged: Int
+
+  """The type of the product event."""
+  type: String
+}
+
+input ProductVariantEventFilterInput @doc(category: "Events") {
+  user: String
+  date: DateRangeInput
+  type: ProductVariantEventsEnum
+  metadata: [MetadataFilter!]
+}
+
+"""An enumeration."""
+enum ProductVariantEventsEnum @doc(category: "Events") {
+  PRODUCT_VARIANT_CREATED
+  PRODUCT_VARIANT_UPDATED
+  PRODUCT_VARIANT_DELETED
+}
+
+input ProductVariantEventSortingInput @doc(category: "Events") {
+  """Specifies the direction in which to sort product_variant_events."""
+  direction: OrderDirection!
+
+  """Sort product_variant_events by the selected field."""
   field: EventSortField!
 }
 

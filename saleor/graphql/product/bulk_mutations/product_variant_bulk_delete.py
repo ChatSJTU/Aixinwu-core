@@ -6,6 +6,9 @@ from django.db.models import Exists, OuterRef, Subquery
 from django.db.models.fields import IntegerField
 from django.db.models.functions import Coalesce
 
+from saleor.graphql.utils import get_user_or_app_from_context
+from saleor.product.events import product_variant_bulk_delete_events
+
 from ....attribute import AttributeInputType
 from ....attribute import models as attribute_models
 from ....core.postgres import FlatConcatSearchVector
@@ -87,6 +90,9 @@ class ProductVariantBulkDelete(ModelBulkDeleteMutation):
         cls.delete_assigned_attribute_values(pks)
         cls.delete_product_channel_listings_without_available_variants(product_pks, pks)
         response = super().perform_mutation(_root, info, ids=ids, **data)
+        product_variant_bulk_delete_events(
+            get_user_or_app_from_context(info.context), variants
+        )
         manager = get_plugin_manager_promise(info.context).get()
         webhooks = get_webhooks_for_event(WebhookEventAsyncType.PRODUCT_VARIANT_DELETED)
         for variant in variants:

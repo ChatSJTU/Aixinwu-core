@@ -3,6 +3,7 @@ from django.db.models import Q
 
 from ...account.models import BalanceEvent, CustomerEvent
 from ...order.models import OrderEvent
+from ...product.models import ProductEvent, ProductVariantEvent
 from ..account.enums import BalanceEventsEnum, CustomerEventsEnum
 from ..core.doc_category import DOC_CATEGORY_EVENTS
 from ..core.filters import (
@@ -14,6 +15,7 @@ from ..core.filters import (
 from ..core.types.common import DateRangeInput
 from ..core.types.filter_input import FilterInputObjectType
 from ..order.enums import OrderEventsEnum
+from ..product.enums import ProductEventsEnum, ProductVariantEventsEnum
 from ..utils.filters import filter_range_field
 
 
@@ -87,3 +89,35 @@ class OrderEventFilterInput(FilterInputObjectType):
     class Meta:
         doc_category = DOC_CATEGORY_EVENTS
         filterset_class = OrderEventFilter
+
+
+class ProductEventFilter(MetadataFilterBase):
+    user = django_filters.CharFilter(method=filter_user)
+    type = EnumFilter(input_class=ProductEventsEnum, method=filter_type)
+    date = ObjectTypeFilter(input_class=DateRangeInput, method=filter_date_range)
+
+    class Meta:
+        model = ProductEvent
+        fields = ["user", "date", "type"]
+
+
+class ProductEventFilterInput(FilterInputObjectType):
+    class Meta:
+        doc_category = DOC_CATEGORY_EVENTS
+        filterset_class = ProductEventFilter
+
+
+class ProductVariantEventFilter(MetadataFilterBase):
+    user = django_filters.CharFilter(method=filter_user)
+    type = EnumFilter(input_class=ProductVariantEventsEnum, method=filter_type)
+    date = ObjectTypeFilter(input_class=DateRangeInput, method=filter_date_range)
+
+    class Meta:
+        model = ProductVariantEvent
+        fields = ["user", "date", "type"]
+
+
+class ProductVariantEventFilterInput(FilterInputObjectType):
+    class Meta:
+        doc_category = DOC_CATEGORY_EVENTS
+        filterset_class = ProductVariantEventFilter

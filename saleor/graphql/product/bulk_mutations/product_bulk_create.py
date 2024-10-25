@@ -10,6 +10,9 @@ from django.utils.text import slugify
 from graphene.utils.str_converters import to_camel_case
 from text_unidecode import unidecode
 
+from saleor.graphql.utils import get_user_or_app_from_context
+from saleor.product.events import product_bulk_create_events
+
 from ....core.http_client import HTTPClient
 from ....core.tracing import traced_atomic_transaction
 from ....core.utils import prepare_unique_slug
@@ -765,7 +768,8 @@ class ProductBulkCreate(BaseMutation):
             if variants_data := cleaned_input.pop("variants", None):
                 variants_input_data.extend(variants_data)
 
-        models.Product.objects.bulk_create(products_to_create)
+        products = models.Product.objects.bulk_create(products_to_create)
+        product_bulk_create_events(get_user_or_app_from_context(info.context), products)
         models.ProductMedia.objects.bulk_create(media_to_create)
         models.ProductChannelListing.objects.bulk_create(listings_to_create)
 

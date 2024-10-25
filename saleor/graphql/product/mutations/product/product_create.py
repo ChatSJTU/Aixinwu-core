@@ -1,3 +1,5 @@
+from typing import cast
+
 import graphene
 from django.core.exceptions import ValidationError
 
@@ -7,6 +9,7 @@ from .....core.utils.editorjs import clean_editor_js
 from .....permission.enums import ProductPermissions
 from .....product import models
 from .....product.error_codes import ProductErrorCode
+from .....product.events import product_create_event
 from .....product.tasks import update_products_discounted_prices_for_promotion_task
 from ....attribute.types import AttributeValueInput
 from ....attribute.utils import AttrValuesInput, ProductAttributeAssignmentMixin
@@ -26,6 +29,7 @@ from ....core.types import BaseInputObjectType, NonNullList, ProductError, SeoIn
 from ....core.validators import clean_seo_fields, validate_slug_and_generate_if_needed
 from ....meta.inputs import MetadataInput
 from ....plugins.dataloaders import get_plugin_manager_promise
+from ....utils import get_user_or_app_from_context
 from ...types import Product
 from ..utils import clean_tax_code
 
@@ -205,9 +209,12 @@ class ProductCreate(ModelMutation):
 
     @classmethod
     def save(cls, info: ResolveInfo, instance, cleaned_input):
+        requestor = get_user_or_app_from_context(info.context)
+
         with traced_atomic_transaction():
             instance.search_index_dirty = True
             instance.save()
+            product_create_event(requestor, instance)
             attributes = cleaned_input.get("attributes")
             if attributes:
                 ProductAttributeAssignmentMixin.save(instance, attributes)
@@ -228,7 +235,6 @@ class ProductCreate(ModelMutation):
     @classmethod
     def perform_mutation(cls, _root, info: ResolveInfo, /, **data):
         response = super().perform_mutation(_root, info, **data)
-        product = getattr(response, cls._meta.return_field_name)
 
         # Wrap product instance with ChannelContext in response
         setattr(

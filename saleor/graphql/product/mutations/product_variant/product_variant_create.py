@@ -4,6 +4,12 @@ import graphene
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 
+from saleor.graphql.utils import get_user_or_app_from_context
+from saleor.product.events import (
+    product_variant_create_event,
+    product_variant_update_event,
+)
+
 from .....attribute import AttributeInputType
 from .....attribute import models as attribute_models
 from .....core.tracing import traced_atomic_transaction
@@ -319,6 +325,9 @@ class ProductVariantCreate(ModelMutation):
             if not instance.product.default_variant:
                 instance.product.default_variant = instance
                 instance.product.save(update_fields=["default_variant", "updated_at"])
+                product_variant_create_event(
+                    get_user_or_app_from_context(info.context), instance
+                )
             # Recalculate the "discounted price" for the parent product
             cls.call_event(
                 update_products_discounted_prices_for_promotion_task.delay,
@@ -326,7 +335,11 @@ class ProductVariantCreate(ModelMutation):
             )
             stocks = cleaned_input.get("stocks")
             if stocks:
-                cls.create_variant_stocks(instance, stocks)
+                product_variant_update_event(
+                    get_user_or_app_from_context(info.context),
+                    instance,
+                    cls.create_variant_stocks(instance, stocks),
+                )
             attributes = cleaned_input.get("attributes")
             if attributes:
                 AttributeAssignmentMixin.save(instance, attributes)
@@ -345,12 +358,13 @@ class ProductVariantCreate(ModelMutation):
             cls.call_event(event_to_call, instance)
 
     @classmethod
-    def create_variant_stocks(cls, variant, stocks):
+    def create_variant_stocks(cls, variant, stocks) -> int:
         warehouse_ids = [stock["warehouse"] for stock in stocks]
         warehouses = cls.get_nodes_or_error(
             warehouse_ids, "warehouse", only_type=Warehouse
         )
         create_stocks(variant, stocks, warehouses)
+        return sum([stock["quantity"] for stock in stocks])
 
     @classmethod
     def success_response(cls, instance):

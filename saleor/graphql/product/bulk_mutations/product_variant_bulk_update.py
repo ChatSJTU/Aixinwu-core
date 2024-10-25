@@ -6,6 +6,9 @@ from django.core.exceptions import ValidationError
 from django.db.models import F
 from graphene.utils.str_converters import to_camel_case
 
+from saleor.graphql.utils import get_user_or_app_from_context
+from saleor.product.events import product_variant_bulk_update_events
+
 from ....core.tracing import traced_atomic_transaction
 from ....permission.enums import ProductPermissions
 from ....product import models
@@ -583,6 +586,7 @@ class ProductVariantBulkUpdate(BaseMutation):
 
     @classmethod
     def prepare_stocks(cls, variant, stocks_input, stocks_to_create, stocks_to_update):
+        stocks_total = 0
         if stocks_data := stocks_input.get("create"):
             stocks_to_create += [
                 warehouse_models.Stock(
@@ -592,8 +596,13 @@ class ProductVariantBulkUpdate(BaseMutation):
                 )
                 for stock_data in stocks_data
             ]
+            stocks_total += sum([stock["quantity"] for stock in stocks_data])
         if stocks_data := stocks_input.get("update"):
             stocks_to_update += [stock_data["stock"] for stock_data in stocks_data]
+            stocks_total += sum(
+                [stock["quantity"] - stock["stock"].quantity for stock in stocks_data]
+            )
+        return stocks_total
 
     @classmethod
     def prepare_channel_listings(
@@ -633,7 +642,7 @@ class ProductVariantBulkUpdate(BaseMutation):
 
     @classmethod
     @traced_atomic_transaction()
-    def save_variants(cls, variants_data_with_errors_list):
+    def save_variants(cls, info, variants_data_with_errors_list):
         variants_to_update: list = []
         stocks_to_create: list = []
         stocks_to_update: list = []
@@ -641,6 +650,8 @@ class ProductVariantBulkUpdate(BaseMutation):
         listings_to_create: list = []
         listings_to_update: list = []
         listings_to_remove: list = []
+        variants_stocks_changed: list = []
+        stocks_changed: list = []
 
         # prepare instances
         for variant_data in variants_data_with_errors_list:
@@ -651,13 +662,15 @@ class ProductVariantBulkUpdate(BaseMutation):
 
             cleaned_input = variant_data.pop("cleaned_input")
             variants_to_update.append(variant)
-
             if stocks_input := cleaned_input.get("stocks"):
-                cls.prepare_stocks(
+                stocks_totals = cls.prepare_stocks(
                     variant, stocks_input, stocks_to_create, stocks_to_update
                 )
                 if to_remove := stocks_input.get("remove"):
                     stocks_to_remove += to_remove
+                    stocks_totals -= sum([stock["quantity"] for stock in to_remove])
+                variants_stocks_changed.append(variant)
+                stocks_changed.append(stocks_totals)
 
             if listings_input := cleaned_input.get("channel_listings"):
                 cls.prepare_channel_listings(
@@ -694,6 +707,11 @@ class ProductVariantBulkUpdate(BaseMutation):
         models.ProductVariantChannelListing.objects.filter(
             id__in=listings_to_remove
         ).delete()
+        product_variant_bulk_update_events(
+            get_user_or_app_from_context(info.context),
+            variants_stocks_changed,
+            stocks_changed,
+        )
 
     @classmethod
     def post_save_actions(cls, info, instances, product):
@@ -751,7 +769,7 @@ class ProductVariantBulkUpdate(BaseMutation):
                         data["instance"] = None
 
         # save all objects
-        cls.save_variants(instances_data_with_errors_list)
+        cls.save_variants(info, instances_data_with_errors_list)
 
         # prepare and return data
         results = get_results(instances_data_with_errors_list)

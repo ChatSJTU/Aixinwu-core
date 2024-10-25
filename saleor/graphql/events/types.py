@@ -1,14 +1,14 @@
 import graphene
 
-from saleor.graphql.app.enums import description
-
 from ...account import models as account_models
 from ...order import models as order_models
+from ...product import models as product_models
 from ..account.types import CustomerEvent
 from ..core import ResolveInfo
 from ..core.connection import CountableConnection
 from ..core.doc_category import DOC_CATEGORY_EVENTS
 from ..core.types.model import ModelObjectType
+from ..product.types import Product, ProductVariant
 
 
 class BalanceEvent(ModelObjectType[account_models.BalanceEvent]):
@@ -75,13 +75,34 @@ class OrderEvent(ModelObjectType[order_models.OrderEvent]):
         interfaces = [graphene.relay.Node]
         model = order_models.OrderEvent
 
-    @staticmethod
-    def resolve_id(root, info: ResolveInfo):
-        return root.id
 
-    @staticmethod
-    def resolve_date(root, info: ResolveInfo):
-        return root.date
+class ProductEvent(ModelObjectType[product_models.ProductEvent]):
+    id = graphene.ID(required=True, description="The ID of the product event.")
+    date = graphene.DateTime(description="Datetime of the event.")
+    product = graphene.Field(Product, description="The product of the event.")
+    product_name = graphene.String(description="The product name of the event")
+    type = graphene.String(description="The type of the product event.")
+
+    class Meta:
+        description = "Represents product events"
+        intefaces = [graphene.relay.Node]
+        model = product_models.ProductEvent
+
+
+class ProductVariantEvent(ModelObjectType[product_models.ProductVariantEvent]):
+    id = graphene.ID(required=True, description="The ID of the product event.")
+    date = graphene.DateTime(description="Datetime of the event.")
+    product_variant = graphene.Field(
+        ProductVariant, description="The product of the event."
+    )
+    product_variant_name = graphene.String(description="The product name of the event")
+    stock_changed = graphene.Int(description="The changed stock.")
+    type = graphene.String(description="The type of the product event.")
+
+    class Meta:
+        description = "Represents product events"
+        intefaces = [graphene.relay.Node]
+        model = product_models.ProductVariantEvent
 
 
 class BalanceEventCountableConnection(CountableConnection):
@@ -94,3 +115,15 @@ class CustomerEventCountableConnection(CountableConnection):
     class Meta:
         doc_category = DOC_CATEGORY_EVENTS
         node = CustomerEvent
+
+
+class ProductEventCountableConnection(CountableConnection):
+    class Meta:
+        doc_category = DOC_CATEGORY_EVENTS
+        node = ProductEvent
+
+
+class ProductVariantEventCountableConnection(CountableConnection):
+    class Meta:
+        doc_category = DOC_CATEGORY_EVENTS
+        node = ProductVariantEvent

@@ -1,5 +1,10 @@
-from ...product import ProductMediaTypes, ProductTypeKind
-from ..core.doc_category import DOC_CATEGORY_PRODUCTS
+from ...product import (
+    ProductEvents,
+    ProductMediaTypes,
+    ProductTypeKind,
+    ProductVariantEvents,
+)
+from ..core.doc_category import DOC_CATEGORY_EVENTS, DOC_CATEGORY_PRODUCTS
 from ..core.enums import to_enum
 from ..core.types import BaseEnum
 
@@ -8,6 +13,12 @@ ProductTypeKindEnum.doc_category = DOC_CATEGORY_PRODUCTS
 
 ProductMediaType = to_enum(ProductMediaTypes, type_name="ProductMediaType")
 ProductMediaType.doc_category = DOC_CATEGORY_PRODUCTS
+
+ProductEventsEnum = to_enum(ProductEvents)
+ProductEventsEnum.doc_category = DOC_CATEGORY_EVENTS
+
+ProductVariantEventsEnum = to_enum(ProductVariantEvents)
+ProductVariantEventsEnum.doc_category = DOC_CATEGORY_EVENTS
 
 
 class ProductAttributeType(BaseEnum):
