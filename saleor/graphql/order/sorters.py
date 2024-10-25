@@ -1,5 +1,7 @@
 from django.db.models import CharField, ExpressionWrapper, OuterRef, QuerySet, Subquery
 
+from saleor.order import OrderStatus
+
 from ...payment.models import Payment
 from ..core.descriptions import DEPRECATED_IN_3X_INPUT
 from ..core.doc_category import DOC_CATEGORY_ORDERS
@@ -11,7 +13,8 @@ class OrderSortField(BaseEnum):
     RANK = ["search_rank", "id"]
     CREATION_DATE = ["created_at", "status", "pk"]
     CREATED_AT = ["created_at", "status", "pk"]
-    LAST_MODIFIED_AT = ["updated_at", "status", "pk"]
+    COMPLETED_AT = ["updated_at", "pk"]
+    LAST_MODIFIED_AT = ["updated_at", "status", "pk"]_
     CUSTOMER = ["billing_address__last_name", "billing_address__first_name", "pk"]
     PAYMENT = ["last_charge_status", "status", "pk"]
     FULFILLMENT_STATUS = ["status", "user_email", "pk"]
@@ -48,6 +51,12 @@ class OrderSortField(BaseEnum):
         )
         return queryset.annotate(
             last_charge_status=ExpressionWrapper(subquery, output_field=CharField())
+        )
+
+    @staticmethod
+    def qs_with_completed_at(queryset:QuerySet, **_kwargs) -> QuerySet:
+        return queryset.filter(
+            status__in = [OrderStatus.UNFULFILLED, OrderStatus.FULFILLED]
         )
 
 
