@@ -388,6 +388,7 @@ class CheckoutCreate(ModelMutation, I18nMixin):
         channel = clean_channel(channel_input, error_class=CheckoutErrorCode)
         if channel:
             input["channel"] = channel
+        cls.check_channel_permissions(info, [channel.id])
         response = super().perform_mutation(_root, info, input=input)
         manager = get_plugin_manager_promise(info.context).get()
         cls.call_event(manager.checkout_created, response.checkout)

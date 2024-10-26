@@ -7,6 +7,13 @@ from django.core.exceptions import ValidationError
 from django.db.models import F
 from graphene.utils.str_converters import to_camel_case
 
+from saleor.graphql.utils import get_user_or_app_from_context
+from saleor.product.events import (
+    product_variant_bulk_create_events,
+    product_variant_bulk_update_events,
+    product_variant_update_event,
+)
+
 from ....attribute import AttributeType
 from ....core.tracing import traced_atomic_transaction
 from ....permission.enums import ProductPermissions
@@ -860,7 +867,7 @@ class ProductVariantBulkCreate(BaseMutation):
         stocks_to_create: list = []
         listings_to_create: list = []
         attributes_to_save: list = []
-
+        stocks_total: list = []
         for variant_data in variants_data_with_errors_list:
             variant = variant_data["instance"]
 
@@ -878,7 +885,9 @@ class ProductVariantBulkCreate(BaseMutation):
             cleaned_input = variant_data["cleaned_input"]
 
             if stocks_input := cleaned_input.get("stocks"):
-                cls.prepare_stocks(variant, stocks_input, stocks_to_create)
+                stocks_total.append(
+                    cls.prepare_stocks(variant, stocks_input, stocks_to_create)
+                )
 
             if listings_input := cleaned_input.get("channel_listings"):
                 cls.prepare_channel_listings(
@@ -890,7 +899,13 @@ class ProductVariantBulkCreate(BaseMutation):
 
             if not variant.name:
                 cls.set_variant_name(variant, cleaned_input)
-        models.ProductVariant.objects.bulk_create(variants_to_create)
+        variants = models.ProductVariant.objects.bulk_create(variants_to_create)
+        product_variant_bulk_create_events(
+            get_user_or_app_from_context(info.context), variants
+        )
+        product_variant_bulk_update_events(
+            get_user_or_app_from_context(info.context), variants, stocks_total
+        )
 
         for variant, attributes in attributes_to_save:
             AttributeAssignmentMixin.save(variant, attributes)
@@ -905,7 +920,7 @@ class ProductVariantBulkCreate(BaseMutation):
         return variants_to_create
 
     @classmethod
-    def prepare_stocks(cls, variant, stocks_input, stocks_to_create):
+    def prepare_stocks(cls, variant, stocks_input, stocks_to_create) -> int:
         stocks_to_create += [
             warehouse_models.Stock(
                 product_variant=variant,
@@ -914,6 +929,7 @@ class ProductVariantBulkCreate(BaseMutation):
             )
             for stock_data in stocks_input
         ]
+        return sum([stock["quantity"] for stock in stocks_input])
 
     @classmethod
     def post_save_actions(cls, info, instances, product):

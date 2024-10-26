@@ -1,5 +1,10 @@
 import graphene
 
+from saleor.graphql.product.types.products import (
+    ProductCountableConnection,
+    ProductVariantCountableConnection,
+)
+
 from ..core import ResolveInfo
 from ..core.connection import create_connection_slice, filter_connection_queryset
 from ..core.doc_category import DOC_CATEGORY_EVENTS
@@ -9,6 +14,8 @@ from .filters import (
     BalanceEventFilterInput,
     CustomerEventFilterInput,
     OrderEventFilterInput,
+    ProductEventFilterInput,
+    ProductVariantEventFilterInput,
 )
 from .resolvers import (
     resolve_balance_events,
@@ -19,10 +26,14 @@ from .sorters import (
     BalanceEventSortingInput,
     CustomerEventSortingInput,
     OrderEventSortingInput,
+    ProductEventSortingInput,
+    ProductVariantEventSortingInput,
 )
 from .types import (
     BalanceEventCountableConnection,
     CustomerEventCountableConnection,
+    ProductEventCountableConnection,
+    ProductVariantEventCountableConnection,
 )
 
 
@@ -51,6 +62,24 @@ class EventQueries(graphene.ObjectType):
         doc_category=DOC_CATEGORY_EVENTS,
     )
 
+    productEvents = FilterConnectionField(
+        ProductEventCountableConnection,
+        description="Product events",
+        filter=ProductEventFilterInput(description="Filter the product events"),
+        sort_by=ProductEventSortingInput(description="Sorting the product events"),
+        doc_category=DOC_CATEGORY_EVENTS,
+    )
+
+    productVariantEvents = FilterConnectionField(
+        ProductVariantEventCountableConnection,
+        description="Product variant events",
+        filter=ProductVariantEventFilterInput(description="Filter the product events"),
+        sort_by=ProductVariantEventSortingInput(
+            description="Sorting the product events"
+        ),
+        doc_category=DOC_CATEGORY_EVENTS,
+    )
+
     @staticmethod
     def resolve_balanceEvents(_root, info: ResolveInfo, **kwargs):
         qs = resolve_balance_events(info)
@@ -73,4 +102,18 @@ class EventQueries(graphene.ObjectType):
         qs = filter_connection_queryset(qs, kwargs, info.context)
         return create_connection_slice(
             qs, info, kwargs, BalanceEventCountableConnection
+        )
+
+    @staticmethod
+    def resolve_productEvents(_root, info: ResolveInfo, **kwargs):
+        qs = resolve_customer_events(info)
+        qs = filter_connection_queryset(qs, kwargs, info.context)
+        return create_connection_slice(qs, info, kwargs, ProductCountableConnection)
+
+    @staticmethod
+    def resolve_productVariantEvents(_root, info: ResolveInfo, **kwargs):
+        qs = resolve_customer_events(info)
+        qs = filter_connection_queryset(qs, kwargs, info.context)
+        return create_connection_slice(
+            qs, info, kwargs, ProductVariantCountableConnection
         )

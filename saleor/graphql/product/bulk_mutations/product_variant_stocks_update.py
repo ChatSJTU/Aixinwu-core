@@ -3,6 +3,9 @@ from collections import defaultdict
 import graphene
 from django.core.exceptions import ValidationError
 
+from saleor.graphql.utils import get_user_or_app_from_context
+from saleor.product.events import product_variant_update_event
+
 from ....core.tracing import traced_atomic_transaction
 from ....permission.enums import ProductPermissions
 from ....product import models
@@ -79,7 +82,12 @@ class ProductVariantStocksUpdate(ProductVariantStocksCreate):
             )
 
             manager = get_plugin_manager_promise(info.context).get()
-            cls.update_or_create_variant_stocks(variant, stocks, warehouses, manager)
+            stock_changed = cls.update_or_create_variant_stocks(
+                variant, stocks, warehouses, manager
+            )
+            product_variant_update_event(
+                get_user_or_app_from_context(info.context), variant, stock_changed
+            )
 
         StocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(
             info.context
@@ -90,7 +98,9 @@ class ProductVariantStocksUpdate(ProductVariantStocksCreate):
 
     @classmethod
     @traced_atomic_transaction()
-    def update_or_create_variant_stocks(cls, variant, stocks_data, warehouses, manager):
+    def update_or_create_variant_stocks(
+        cls, variant, stocks_data, warehouses, manager
+    ) -> int:
         stocks = []
         webhooks_stock_in = get_webhooks_for_event(
             WebhookEventAsyncType.PRODUCT_VARIANT_BACK_IN_STOCK
@@ -101,6 +111,7 @@ class ProductVariantStocksUpdate(ProductVariantStocksCreate):
         webhooks_stock_update = get_webhooks_for_event(
             WebhookEventAsyncType.PRODUCT_VARIANT_STOCK_UPDATED
         )
+        stock_changed = 0
         for stock_data, warehouse in zip(stocks_data, warehouses):
             stock, is_created = warehouse_models.Stock.objects.get_or_create(
                 product_variant=variant, warehouse=warehouse
@@ -126,6 +137,7 @@ class ProductVariantStocksUpdate(ProductVariantStocksCreate):
                 )
 
             stock.quantity = stock_data["quantity"]
+            stock_changed = stock_data["quantity"] - stock.quantity
             stocks.append(stock)
             cls.call_event(
                 manager.product_variant_stock_updated,
@@ -134,3 +146,4 @@ class ProductVariantStocksUpdate(ProductVariantStocksCreate):
             )
 
         warehouse_models.Stock.objects.bulk_update(stocks, ["quantity"])
+        return stock_changed

@@ -3,6 +3,12 @@ from collections import defaultdict
 import graphene
 from django.core.exceptions import ValidationError
 
+from saleor.graphql.utils import get_user_or_app_from_context
+from saleor.product.events import (
+    product_variant_bulk_update_events,
+    product_variant_update_event,
+)
+
 from ....core.tracing import traced_atomic_transaction
 from ....permission.enums import ProductPermissions
 from ....warehouse.error_codes import StockErrorCode
@@ -60,6 +66,11 @@ class ProductVariantStocksCreate(BaseMutation):
             if errors:
                 raise ValidationError(errors)
             new_stocks = create_stocks(variant, stocks, warehouses)
+            product_variant_update_event(
+                get_user_or_app_from_context(info.context),
+                variant,
+                sum([stock_data["quantity"] for stock_data in stocks]),
+            )
 
             webhooks = get_webhooks_for_event(
                 WebhookEventAsyncType.PRODUCT_VARIANT_BACK_IN_STOCK

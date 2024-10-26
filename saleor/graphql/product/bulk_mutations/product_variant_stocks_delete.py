@@ -1,6 +1,9 @@
 import graphene
 from django.core.exceptions import ValidationError
 
+from saleor.graphql.utils import get_user_or_app_from_context
+from saleor.product.events import product_variant_update_event
+
 from ....core.tracing import traced_atomic_transaction
 from ....permission.enums import ProductPermissions
 from ....product import models
@@ -78,12 +81,17 @@ class ProductVariantStocksDelete(BaseMutation):
         webhooks = get_webhooks_for_event(
             WebhookEventAsyncType.PRODUCT_VARIANT_OUT_OF_STOCK
         )
+        stock_deleted = 0
         for stock in stocks_to_delete:
             cls.call_event(
                 manager.product_variant_out_of_stock, stock, webhooks=webhooks
             )
+            stock_deleted -= stock.quantity
 
         stocks_to_delete.delete()
+        product_variant_update_event(
+            get_user_or_app_from_context(info.context), variant, stock_deleted
+        )
 
         StocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(
             info.context

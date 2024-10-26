@@ -25,7 +25,8 @@ from ...account.events import (
     consecutive_login_balance_event,
     first_login_balance_event,
 )
-from ...account.models import Group, User, Invitation as InvitationModel
+from ...account.models import Group, User
+from ...account.models import Invitation as InvitationModel
 from ...account.search import prepare_user_search_document_value
 from ...account.utils import get_user_groups_permissions
 from ...core.http_client import HTTPClient
@@ -276,6 +277,8 @@ def get_or_create_user_from_payload(
                 email=user_email,
                 defaults=defaults_create,
             )
+            group, _ = Group.objects.get_or_create(name=payload.get("type", "student"))
+            user.groups.add(group)
             first_login_balance_event(user=user)
             consecutive_login_balance_event(
                 user=user, delta=Decimal(settings.CONTINUOUS_BALANCE_ADD[0])
@@ -296,13 +299,16 @@ def get_or_create_user_from_payload(
             match_orders_with_new_user(user)
 
             if invitation_code:
-                invitation = InvitationModel.objects.get(code=invitation_code)
-                invitation.user.balance += Decimal(25.0)
-                invitation.user.updated_at = timezone.now()
-                invitation.user.save(update_fields=["balance", "updated_at"])
-                accept_invitation_balance_event(user=invitation.user)
-                user.invited_by = invitation.user.account
-                user.save(update_fields=["invited_by"])
+                try:
+                    invitation = InvitationModel.objects.get(code=invitation_code)
+                    invitation.user.balance += Decimal(30.0)
+                    invitation.user.updated_at = timezone.now()
+                    invitation.user.save(update_fields=["balance", "updated_at"])
+                    accept_invitation_balance_event(user=invitation.user)
+                    user.invited_by = invitation.user.account
+                    user.save(update_fields=["invited_by"])
+                except InvitationModel.DoesNotExist:
+                    pass
 
         except User.MultipleObjectsReturned:
             logger.warning("Multiple users returned for single OIDC sub ID")

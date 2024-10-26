@@ -29,6 +29,8 @@ from ..core.models import (
     PublishableModel,
     SortableModel,
 )
+from . import ProductEvents, ProductVariantEvents
+from ..account.models import User
 from ..core.units import WeightUnits
 from ..core.utils import build_absolute_uri
 from ..core.utils.editorjs import clean_editor_js
@@ -735,3 +737,82 @@ class CollectionTranslation(SeoModelTranslation):
             }
         )
         return translated_keys
+
+
+from datetime import datetime
+
+
+def get_balance_event_number():
+    now = timezone.now()
+    current_year_month = datetime(now.year, now.month, 1, tzinfo=now.tzinfo)
+    return ProductEvent.objects.filter(date__gte=current_year_month).count() + 1
+
+
+class ProductEvent(models.Model):
+    user = models.ForeignKey(
+        User, related_name="product_events", on_delete=models.CASCADE, null=True
+    )
+    product = models.ForeignKey(
+        Product, related_name="product_events", on_delete=models.CASCADE, null=True
+    )
+    order = models.ForeignKey(
+        "order.Order",
+        related_name="product_events",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    product_name = models.CharField(max_length=255)
+    type = models.CharField(
+        max_length=255,
+        choices=[
+            (type_name.upper(), type_name) for type_name, _ in ProductEvents.CHOICES
+        ],
+    )
+    number = models.IntegerField(
+        null=True, blank=True, default=get_balance_event_number
+    )
+
+    date = models.DateTimeField(default=timezone.now, editable=False)
+
+    class Meta:
+        ordering = ("date",)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(type={self.type!r}, user={self.user!r})"
+
+
+class ProductVariantEvent(models.Model):
+    user = models.ForeignKey(
+        User, related_name="product_variant_events", on_delete=models.CASCADE, null=True
+    )
+    product_variant = models.ForeignKey(
+        ProductVariant,
+        related_name="product_variant_events",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    order = models.ForeignKey(
+        "order.Order",
+        related_name="product_variant_events",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    product_variant_name = models.CharField(max_length=255)
+    type = models.CharField(
+        max_length=255,
+        choices=[
+            (type_name.upper(), type_name)
+            for type_name, _ in ProductVariantEvents.CHOICES
+        ],
+    )
+    number = models.IntegerField(
+        null=True, blank=True, default=get_balance_event_number
+    )
+    stock_changed = models.IntegerField(null=True, blank=True)
+    date = models.DateTimeField(default=timezone.now, editable=False)
+
+    class Meta:
+        ordering = ("date",)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(type={self.type!r}, user={self.user!r})"

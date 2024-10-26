@@ -9,6 +9,7 @@ from .....order import models as order_models
 from .....order.tasks import recalculate_orders_task
 from .....permission.enums import ProductPermissions
 from .....product import models
+from .....product.events import product_delete_event, product_variant_bulk_delete_events
 from ....app.dataloaders import get_app_promise
 from ....channel import ChannelContext
 from ....core import ResolveInfo
@@ -16,6 +17,7 @@ from ....core.descriptions import ADDED_IN_310
 from ....core.mutations import ModelDeleteMutation, ModelWithExtRefMutation
 from ....core.types import ProductError
 from ....plugins.dataloaders import get_plugin_manager_promise
+from ....utils import get_user_or_app_from_context
 from ...types import Product
 from ...utils import get_draft_order_lines_data_for_variants
 
@@ -54,6 +56,9 @@ class ProductDelete(ModelDeleteMutation, ModelWithExtRefMutation):
                 variants_id
             )
 
+            user = get_user_or_app_from_context(info.context)
+            product_delete_event(user, instance)
+            product_variant_bulk_delete_events(user, list(instance.variants.all()))
             response = super().perform_mutation(
                 _root, info, external_reference=external_reference, id=id
             )
@@ -64,6 +69,7 @@ class ProductDelete(ModelDeleteMutation, ModelWithExtRefMutation):
             ).delete()
 
             app = get_app_promise(info.context).get()
+
             # run order event for deleted lines
             for (
                 order,

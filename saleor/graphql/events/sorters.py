@@ -36,3 +36,17 @@ class CustomerEventSortingInput(SortInputObjectType):
         doc_category = DOC_CATEGORY_EVENTS
         sort_enum = EventSortField
         type_name = "customers"
+
+
+class ProductEventSortingInput(SortInputObjectType):
+    class Meta:
+        doc_category = DOC_CATEGORY_EVENTS
+        sort_enum = EventSortField
+        type_name = "product_events"
+
+
+class ProductVariantEventSortingInput(SortInputObjectType):
+    class Meta:
+        doc_category = DOC_CATEGORY_EVENTS
+        sort_enum = EventSortField
+        type_name = "product_variant_events"

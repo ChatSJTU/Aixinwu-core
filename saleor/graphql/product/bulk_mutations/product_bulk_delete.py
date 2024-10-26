@@ -4,6 +4,12 @@ import graphene
 from django.core.exceptions import ValidationError
 from django.db.models.expressions import Exists, OuterRef
 
+from saleor.graphql.utils import get_user_or_app_from_context
+from saleor.product.events import (
+    product_bulk_delete_events,
+    product_variant_bulk_delete_events,
+)
+
 from ....attribute import AttributeInputType
 from ....attribute import models as attribute_models
 from ....core.tracing import traced_atomic_transaction
@@ -102,11 +108,15 @@ class ProductBulkDelete(ModelBulkDeleteMutation):
             product_variant_map[product].append(variant)
 
         products = [product for product in queryset]
+        product_bulk_delete_events(get_user_or_app_from_context(info.context), products)
         queryset.delete()
         webhooks = get_webhooks_for_event(WebhookEventAsyncType.PRODUCT_DELETED)
         manager = get_plugin_manager_promise(info.context).get()
         for product in products:
             variants = product_variant_map.get(product.id, [])
+            product_variant_bulk_delete_events(
+                get_user_or_app_from_context(info.context), variants
+            )
             cls.call_event(
                 manager.product_deleted, product, variants, webhooks=webhooks
             )

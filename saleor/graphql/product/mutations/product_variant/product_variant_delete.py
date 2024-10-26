@@ -4,6 +4,9 @@ import graphene
 from django.core.exceptions import ValidationError
 from django.db.models import Exists, OuterRef
 
+from saleor.graphql.utils import get_user_or_app_from_context
+from saleor.product.events import product_variant_delete_event
+
 from .....attribute import AttributeInputType
 from .....attribute import models as attribute_models
 from .....core.tracing import traced_atomic_transaction
@@ -116,6 +119,9 @@ class ProductVariantDelete(ModelDeleteMutation, ModelWithExtRefMutation):
         with traced_atomic_transaction():
             cls.delete_assigned_attribute_values(variant)
             cls.delete_product_channel_listings_without_available_variants(variant)
+            product_variant_delete_event(
+                get_user_or_app_from_context(info.context), variant
+            )
             response = super().perform_mutation(_root, info, id=node_id)
 
             # delete order lines for deleted variant
