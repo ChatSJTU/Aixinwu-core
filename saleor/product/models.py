@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from collections.abc import Iterable
 from decimal import Decimal
 from typing import Optional
@@ -328,7 +328,7 @@ class ProductChannelListing(PublishableModel):
     def is_available_for_purchase(self):
         return (
             self.available_for_purchase_at is not None
-            and datetime.datetime.now(pytz.UTC) >= self.available_for_purchase_at
+            and datetime.now(pytz.UTC) >= self.available_for_purchase_at
         )
 
 
@@ -737,10 +737,6 @@ class CollectionTranslation(SeoModelTranslation):
             }
         )
         return translated_keys
-
-
-from datetime import datetime
-
 
 def get_balance_event_number():
     now = timezone.now()
