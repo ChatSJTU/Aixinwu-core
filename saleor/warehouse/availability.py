@@ -218,6 +218,7 @@ def variant_quantity_allowed(
                     OrderStatus.CANCELED,
                     OrderStatus.REFUNDED,
                     OrderStatus.EXPIRED,
+                    OrderStatus.RETURNED,
                 ]
             )
             .filter(order__user=user)
