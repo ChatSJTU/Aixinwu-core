@@ -235,7 +235,7 @@ class ProductCreate(ModelMutation):
     @classmethod
     def perform_mutation(cls, _root, info: ResolveInfo, /, **data):
         response = super().perform_mutation(_root, info, **data)
-
+        product = getattr(response, cls._meta.return_field_name)
         # Wrap product instance with ChannelContext in response
         setattr(
             response,

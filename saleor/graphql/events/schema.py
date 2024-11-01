@@ -21,6 +21,8 @@ from .resolvers import (
     resolve_balance_events,
     resolve_customer_events,
     resolve_order_events,
+    resolve_product_events,
+    resolve_product_variant_events,
 )
 from .sorters import (
     BalanceEventSortingInput,
@@ -101,19 +103,19 @@ class EventQueries(graphene.ObjectType):
         qs = resolve_customer_events(info)
         qs = filter_connection_queryset(qs, kwargs, info.context)
         return create_connection_slice(
-            qs, info, kwargs, BalanceEventCountableConnection
+            qs, info, kwargs, CustomerEventCountableConnection
         )
 
     @staticmethod
     def resolve_productEvents(_root, info: ResolveInfo, **kwargs):
-        qs = resolve_customer_events(info)
+        qs = resolve_product_events(info)
         qs = filter_connection_queryset(qs, kwargs, info.context)
-        return create_connection_slice(qs, info, kwargs, ProductCountableConnection)
+        return create_connection_slice(qs, info, kwargs, ProductEventCountableConnection)
 
     @staticmethod
     def resolve_productVariantEvents(_root, info: ResolveInfo, **kwargs):
-        qs = resolve_customer_events(info)
+        qs = resolve_product_variant_events(info)
         qs = filter_connection_queryset(qs, kwargs, info.context)
         return create_connection_slice(
-            qs, info, kwargs, ProductVariantCountableConnection
+            qs, info, kwargs, ProductVariantEventCountableConnection
         )
