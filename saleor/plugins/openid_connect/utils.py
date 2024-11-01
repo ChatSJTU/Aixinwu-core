@@ -301,7 +301,7 @@ def get_or_create_user_from_payload(
             if invitation_code:
                 try:
                     invitation = InvitationModel.objects.get(code=invitation_code)
-                    invitation.user.balance += Decimal(30.0)
+                    invitation.user.balance += Decimal(20.0)
                     invitation.user.updated_at = timezone.now()
                     invitation.user.save(update_fields=["balance", "updated_at"])
                     accept_invitation_balance_event(user=invitation.user)

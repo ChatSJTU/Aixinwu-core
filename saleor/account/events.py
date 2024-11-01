@@ -143,9 +143,9 @@ def first_login_balance_event(*, user: User) -> BalanceEvent:
 def accept_invitation_balance_event(*, user: User) -> BalanceEvent:
     return BalanceEvent.objects.create(
         user=user,
-        type=BalanceEvents.INVITATION_ACCEPTED,
-        balance=Decimal(0.0),
-        delta=Decimal(25.0),
+        type=BalanceEvents.INVITE_NEW_USER,
+        balance=user.balance,
+        delta=Decimal(20.0),
     )
 
 

@@ -60,7 +60,6 @@ class BalanceEvents:
     CONSUMED = "consumed"
     REFUNDED = "refunded"
     OTHER = "other"
-    INVITATION_ACCEPTED = "invitation_accepted"
     CHOICES = [
         (
             DONATION_GRANTED,
@@ -86,5 +85,4 @@ class BalanceEvents:
         (BONUS, "Sytem bonus"),
         (POOR_SIGN, "The user is in special class."),
         (OTHER, "Other reasons."),
-        (INVITATION_ACCEPTED, "Your invitation is accepted."),
     ]
