@@ -14,6 +14,7 @@ from ...core.types.common import DonationBulkError, NonNullList
 from django.db.models.manager import BaseManager
 from ..types import Donation
 
+
 class DonationBulkComplete(BaseBulkMutation):
     count = graphene.Int(
         required=True,
@@ -28,6 +29,7 @@ class DonationBulkComplete(BaseBulkMutation):
         accepted = graphene.Boolean(
             required=True,
         )
+
     class Meta:
         description = "Complete donations"
         doc_category = DOC_CATEGORY_DONATIONS
@@ -38,10 +40,12 @@ class DonationBulkComplete(BaseBulkMutation):
         error_type_field = "donation_errors"
 
     @classmethod
-    def bulk_action(cls, info: ResolveInfo, queryset: BaseManager[Donation], accepted: bool, **data):
+    def bulk_action(
+        cls, info: ResolveInfo, queryset: BaseManager[Donation], accepted: bool, **data
+    ):
         donations = list(queryset)
         updates = []
-        updated_users = []
+        updated_users = dict()
         events = []
         for donation in donations:
             donation.updated_at = timezone.now()
@@ -51,9 +55,13 @@ class DonationBulkComplete(BaseBulkMutation):
                 and donation.donator
             ):
                 try:
-                    user = account_models.User.objects.get(code=donation.donator)
+                    if updated_users.get(donation.donator):
+                        user = updated_users.get(donation.donator)
+                    else:
+                        user = account_models.User.objects.get(code=donation.donator)
+
                     user.balance += donation.price_amount or 0
-                    updated_users.append(user)
+                    updated_users[donation.donator] = user
                     events.append(
                         account_models.BalanceEvent(
                             user=user,
@@ -73,9 +81,12 @@ class DonationBulkComplete(BaseBulkMutation):
                 and donation.donator
             ):
                 try:
-                    user = account_models.User.objects.get(code=donation.donator)
+                    if updated_users.get(donation.donator):
+                        user = updated_users.get(donation.donator)
+                    else:
+                        user = account_models.User.objects.get(code=donation.donator)
                     user.balance -= donation.price_amount or 0
-                    updated_users.append(user)
+                    updated_users[donation.donator] = user
                     events.append(
                         account_models.BalanceEvent(
                             user=user,
@@ -104,6 +115,8 @@ class DonationBulkComplete(BaseBulkMutation):
                 "updated_at",
             ],
         )
-        account_models.User.objects.bulk_update(updated_users, fields=["balance"])
+        account_models.User.objects.bulk_update(
+            list(updated_users.values()), fields=["balance"]
+        )
         account_models.BalanceEvent.objects.bulk_create(events)
         return DonationBulkComplete(count=len(updates))
