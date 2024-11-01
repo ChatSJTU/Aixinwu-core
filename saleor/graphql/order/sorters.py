@@ -14,7 +14,7 @@ class OrderSortField(BaseEnum):
     CREATION_DATE = ["created_at", "status", "pk"]
     CREATED_AT = ["created_at", "status", "pk"]
     COMPLETED_AT = ["updated_at", "pk"]
-    LAST_MODIFIED_AT = ["updated_at", "status", "pk"]_
+    LAST_MODIFIED_AT = ["updated_at", "status", "pk"]
     CUSTOMER = ["billing_address__last_name", "billing_address__first_name", "pk"]
     PAYMENT = ["last_charge_status", "status", "pk"]
     FULFILLMENT_STATUS = ["status", "user_email", "pk"]
