@@ -42,6 +42,7 @@ from .utils import (
     get_saleor_permissions_qs_from_scope,
     get_staff_user_domains,
     get_user_from_token,
+    get_user_positions,
     is_owner_of_token_valid,
     update_continuous_days,
     validate_refresh_token,
@@ -61,6 +62,7 @@ class OpenIDConnectPlugin(BasePlugin):
         {"name": "json_web_key_set_url", "value": None},
         {"name": "oauth_logout_url", "value": None},
         {"name": "user_info_url", "value": None},
+        {"name": "user_positions_url", "value": None},
         {"name": "audience", "value": None},
         {"name": "use_oauth_scope_permissions", "value": False},
         {"name": "staff_user_domains", "value": None},
@@ -133,6 +135,14 @@ class OpenIDConnectPlugin(BasePlugin):
             ),
             "label": "User info URL",
         },
+        "user_positions_url": {
+            "type": ConfigurationTypeField.STRING,
+            "help_text": (
+                "The URL which can be used to fetch user positions by using an access "
+                "token."
+            ),
+            "label": "User position URL",
+        },
         "audience": {
             "type": ConfigurationTypeField.STRING,
             "help_text": (
@@ -195,6 +205,7 @@ class OpenIDConnectPlugin(BasePlugin):
             audience=configuration["audience"],
             use_scope_permissions=configuration["use_oauth_scope_permissions"],
             user_info_url=configuration["user_info_url"],
+            user_positions_url=configuration["user_positions_url"],
             staff_user_domains=configuration["staff_user_domains"],
             default_group_name=configuration["default_group_name_for_new_staff_users"],
             email_domain=configuration["email_domain"],
@@ -299,15 +310,29 @@ class OpenIDConnectPlugin(BasePlugin):
                 }
             )
 
+        access_token = token_data.get("access_token")
+        if not access_token:
+            msg = "The access token is missing"
+            raise ValidationError(
+                {
+                    "accessToken": ValidationError(
+                        msg, code=PluginErrorCode.NOT_FOUND.value
+                    )
+                }
+            )
+
         parsed_id_token = get_parsed_id_token(
             token_data.get("id_token"), self.config.client_secret
         )
+
+        positions = get_user_positions(self.config.user_positions_url, access_token)
 
         user = get_or_create_user_from_payload(
             parsed_id_token,
             self.config.email_domain,
             self.config.authorization_url,
             invitation_code=data.get("invitation_code"),
+            positions=positions,
         )
 
         user_permissions = []

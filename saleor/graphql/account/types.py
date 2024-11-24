@@ -371,6 +371,9 @@ class User(ModelObjectType[models.User]):
     user_type = graphene.String(
         required=True, description="The type of the user. Defined by the OIDC provider"
     )
+    positions = graphene.List(
+        of_type=graphene.String, required=True, description="The positions of the user. Defined by the OIDC provider"
+    )
     balance = graphene.Float(required=True, description="The balance of the user.")
     code = graphene.String(required=True, description="The code of a user.")
     continuous = graphene.Int(

@@ -786,6 +786,10 @@ OPENID_PROVIDER_SETTINGS = {
             "name": "user_info_url",
             "value": "http://example.com",
         },
+        {
+            "name": "user_positions_url",
+            "value": "https://api.sjtu.edu.cn/v1/enterprise/user/positions",
+        },
         {"name": "email_domain", "value": "@sjtu.edu.cn"},
         {"name": "staff_user_accounts", "value": os.getenv("STAFF_USER_ACCOUNTS", "")},
     ]

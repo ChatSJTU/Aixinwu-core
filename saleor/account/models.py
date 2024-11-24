@@ -178,6 +178,7 @@ class User(
     )
     code = models.CharField(max_length=256, blank=True, default="")
     user_type = models.CharField(max_length=256, blank=True, default="")
+    positions = models.JSONField(blank=True, default=list)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_confirmed = models.BooleanField(default=True)
