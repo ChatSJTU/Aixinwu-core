@@ -28,6 +28,8 @@ from .checkout_create import CheckoutLineInput
 from .utils import (
     check_lines_quantity,
     check_permissions_for_custom_prices,
+    check_poor_requirement,
+    check_postion_requirement,
     get_checkout,
     get_variants_and_total_quantities,
     group_lines_input_on_add,
@@ -90,6 +92,8 @@ class CheckoutLinesAdd(BaseMutation):
         delivery_method_info,
         lines=None,
     ):
+        check_postion_requirement(get_user_or_app_from_context(info.context), variants)
+        check_poor_requirement(get_user_or_app_from_context(info.context), variants)
         variants, quantities = get_variants_and_total_quantities(
             variants, checkout_lines_data
         )

@@ -128,6 +128,45 @@ def get_variants_and_total_quantities(
     return variants_total_quantity_map.keys(), variants_total_quantity_map.values()
 
 
+def check_postion_requirement(
+    user,
+    variants,
+):
+    for variant in variants:
+        allow_positions = variant.product.metadata.get("allow_positions", "")
+        allow_positions = set(allow_positions.split(",")) if allow_positions else set()
+        user_positions = set(user.positions)
+        if (
+            len(allow_positions) > 0
+            and len(allow_positions.intersection(user_positions)) == 0
+        ):
+            raise ValidationError(
+                {
+                    "quantity": ValidationError(
+                        "You are not allowed to buy this product.",
+                        code=CheckoutErrorCode.INVALID.value,
+                    )
+                }
+            )
+
+
+def check_poor_requirement(
+    user,
+    variants,
+):
+    for variant in variants:
+        only_poor = variant.product.metadata.get("only_poor", "")
+        if only_poor == "true" and user.private_metadata.get("is_poor", "") != "true":
+            raise ValidationError(
+                {
+                    "quantity": ValidationError(
+                        "You are not allowed to buy this product.",
+                        code=CheckoutErrorCode.INVALID.value,
+                    )
+                }
+            )
+
+
 def check_lines_quantity(
     user,
     variants,
