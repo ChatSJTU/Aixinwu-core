@@ -128,7 +128,7 @@ def get_variants_and_total_quantities(
     return variants_total_quantity_map.keys(), variants_total_quantity_map.values()
 
 
-def check_postion_requirement(
+def check_position_requirement(
     user,
     variants,
 ):
