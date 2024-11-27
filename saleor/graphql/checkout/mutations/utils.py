@@ -144,7 +144,7 @@ def check_postion_requirement(
                 {
                     "quantity": ValidationError(
                         "You are not allowed to buy this product.",
-                        code=CheckoutErrorCode.INVALID.value,
+                        code=CheckoutErrorCode.REQUIREMENT_NOT_MEET.value,
                     )
                 }
             )
@@ -161,7 +161,7 @@ def check_poor_requirement(
                 {
                     "quantity": ValidationError(
                         "You are not allowed to buy this product.",
-                        code=CheckoutErrorCode.INVALID.value,
+                        code=CheckoutErrorCode.REQUIREMENT_NOT_MEET.value,
                     )
                 }
             )

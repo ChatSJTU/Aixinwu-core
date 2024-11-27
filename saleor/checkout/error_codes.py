@@ -30,6 +30,7 @@ class CheckoutErrorCode(Enum):
     EMAIL_NOT_SET = "email_not_set"
     NO_LINES = "no_lines"
     INACTIVE_PAYMENT = "inactive_payment"
+    REQUIREMENT_NOT_MEET = "requirement_not_meet"
 
 
 class OrderCreateFromCheckoutErrorCode(Enum):

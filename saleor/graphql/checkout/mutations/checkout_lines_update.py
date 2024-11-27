@@ -27,6 +27,8 @@ from ..types import Checkout
 from .checkout_lines_add import CheckoutLinesAdd
 from .utils import (
     check_lines_quantity,
+    check_poor_requirement,
+    check_postion_requirement,
     get_variants_and_total_quantities,
     group_lines_input_data_on_update,
 )
@@ -114,6 +116,8 @@ class CheckoutLinesUpdate(CheckoutLinesAdd):
         delivery_method_info,
         lines=None,
     ):
+        check_postion_requirement(get_user_or_app_from_context(info.context), variants)
+        check_poor_requirement(get_user_or_app_from_context(info.context), variants)
         variants, quantities = get_variants_and_total_quantities(
             variants, checkout_lines_data, quantity_to_update_check=True
         )
