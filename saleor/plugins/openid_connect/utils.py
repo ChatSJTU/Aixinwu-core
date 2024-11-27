@@ -298,6 +298,7 @@ def get_or_create_user_from_payload(
         "code": code,
         "private_metadata": {oidc_metadata_key: account},
         "password": make_password(None),
+        "search_document": "",
     }
 
     cache_key = oidc_metadata_key + ":" + str(account)
@@ -316,6 +317,11 @@ def get_or_create_user_from_payload(
                 email=user_email,
                 defaults=defaults_create,
             )
+            user.search_document = prepare_user_search_document_value(
+                user, attach_addresses_data=False
+            )
+            user.save(update_fields=['search_document'])
+            
             group, _ = Group.objects.get_or_create(name=payload.get("type", "student"))
             user.groups.add(group)
             first_login_balance_event(user=user)
