@@ -1,6 +1,8 @@
 import logging
+from datetime import datetime
 from typing import Optional
 
+import pytz
 from authlib.common.errors import AuthlibBaseError
 from django.conf import settings
 from django.core import signing
@@ -42,6 +44,7 @@ from .utils import (
     get_saleor_permissions_qs_from_scope,
     get_staff_user_domains,
     get_user_from_token,
+    get_user_identities,
     get_user_positions,
     is_owner_of_token_valid,
     update_continuous_days,
@@ -62,6 +65,7 @@ class OpenIDConnectPlugin(BasePlugin):
         {"name": "json_web_key_set_url", "value": None},
         {"name": "oauth_logout_url", "value": None},
         {"name": "user_info_url", "value": None},
+        {"name": "user_profile_url", "value": None},
         {"name": "user_positions_url", "value": None},
         {"name": "audience", "value": None},
         {"name": "use_oauth_scope_permissions", "value": False},
@@ -135,6 +139,14 @@ class OpenIDConnectPlugin(BasePlugin):
             ),
             "label": "User info URL",
         },
+        "user_profile_url": {
+            "type": ConfigurationTypeField.STRING,
+            "help_text": (
+                "The URL which can be used to fetch user profile by using an access "
+                "token."
+            ),
+            "label": "User profile URL",
+        },
         "user_positions_url": {
             "type": ConfigurationTypeField.STRING,
             "help_text": (
@@ -205,6 +217,7 @@ class OpenIDConnectPlugin(BasePlugin):
             audience=configuration["audience"],
             use_scope_permissions=configuration["use_oauth_scope_permissions"],
             user_info_url=configuration["user_info_url"],
+            user_profile_url=configuration["user_profile_url"],
             user_positions_url=configuration["user_positions_url"],
             staff_user_domains=configuration["staff_user_domains"],
             default_group_name=configuration["default_group_name_for_new_staff_users"],
@@ -325,6 +338,20 @@ class OpenIDConnectPlugin(BasePlugin):
             token_data.get("id_token"), self.config.client_secret
         )
 
+        identities = get_user_identities(self.config.user_profile_url, access_token)
+        admission_date = next(
+            (
+                identity.get("createDate")
+                for identity in identities
+                if identity.get("userType") == "student" and identity.get("isDefault")
+            ),
+            None,
+        )
+        if admission_date:
+            admission_date = datetime.fromtimestamp(admission_date).replace(
+                tzinfo=pytz.utc
+            )
+
         positions = get_user_positions(self.config.user_positions_url, access_token)
 
         user = get_or_create_user_from_payload(
@@ -332,7 +359,7 @@ class OpenIDConnectPlugin(BasePlugin):
             self.config.email_domain,
             self.config.authorization_url,
             invitation_code=data.get("invitation_code"),
-            positions=positions,
+            extra_info={"admission_date": admission_date, "positions": positions},
         )
 
         user_permissions = []

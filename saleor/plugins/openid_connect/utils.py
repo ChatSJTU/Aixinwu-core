@@ -154,6 +154,41 @@ def get_user_info(user_info_url, access_token) -> Optional[dict]:
         return None
 
 
+def get_user_profile(user_profile_url, access_token) -> list:
+    try:
+        response = HTTPClient.send_request(
+            "GET",
+            user_profile_url,
+            params={"access_token": access_token},
+            allow_redirects=False,
+        )
+        response.raise_for_status()
+        return response.json().get("entities", [])
+    except requests.exceptions.HTTPError as e:
+        logger.warning(
+            "Fetching OIDC user profile failed. HTTP error occurred",
+            extra={"user_profile_url": user_profile_url, "error": e},
+        )
+        return []
+    except requests.exceptions.RequestException as e:
+        logger.warning(
+            "Fetching OIDC user profile failed",
+            extra={"user_profile_url": user_profile_url, "error": e},
+        )
+        return []
+    except json.JSONDecodeError as e:
+        logger.warning(
+            "Invalid OIDC user profile response",
+            extra={"user_profile_url": user_profile_url, "error": e},
+        )
+        return []
+
+
+def get_user_identities(user_identities_url, access_token) -> list[dict]:
+    profile = get_user_profile(user_identities_url, access_token)
+    return next(iter(profile), {}).get("identities", [])
+
+
 def get_user_positions(user_positions_url, access_token) -> list[str]:
     try:
         response = HTTPClient.send_request(
@@ -275,7 +310,7 @@ def get_or_create_user_from_payload(
     email_domain: str,
     oauth_url: str,
     invitation_code: Optional[str] = None,
-    positions: list[str] = [],
+    extra_info: dict = {},
 ) -> User:
     oidc_metadata_key = f"oidc:{oauth_url}"
 
@@ -286,12 +321,16 @@ def get_or_create_user_from_payload(
     user_email = account + email_domain
     get_kwargs = {"private_metadata__contains": {oidc_metadata_key: account}}
 
+    positions = extra_info.get("positions", [])
+    admission_date = extra_info.get("admission_date", None)
+
     defaults_create = {
         "is_active": True,
         "is_confirmed": True,
         "email": user_email,
         "account": account,
         "user_type": payload.get("type", "student"),
+        "admission_date": admission_date,
         "positions": positions,
         "first_name": payload.get("name", ""),
         "last_name": payload.get("family_name", ""),
@@ -376,6 +415,7 @@ def get_or_create_user_from_payload(
             user_last_name=defaults_create["last_name"],
             user_code=defaults_create["code"],
             user_type=defaults_create["user_type"],
+            user_adminssion_date=defaults_create["admission_date"],
             user_positions=defaults_create["positions"],
             sub=account,  # type: ignore
             login_time=timezone.now(),
@@ -430,6 +470,7 @@ def _update_user_details(
     user_last_name: str,
     user_code: str,
     user_type: str,
+    user_adminssion_date: datetime,
     user_positions: list[str],
     sub: str,
     login_time: datetime,
@@ -469,7 +510,11 @@ def _update_user_details(
         user.user_type = user_type
         fields_to_save.update({"user_type", "search_document"})
 
-    if user_positions and user.positions != user_positions:
+    if user.admission_date != user_adminssion_date:
+        user.admission_date = user_adminssion_date
+        fields_to_save.update({"admission_date", "search_document"})
+
+    if user.positions != user_positions:
         user.positions = user_positions
         fields_to_save.update({"positions", "search_document"})
 

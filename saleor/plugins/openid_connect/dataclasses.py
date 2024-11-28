@@ -11,6 +11,7 @@ class OpenIDConnectConfig:
     logout_url: str
     token_url: str
     user_info_url: str
+    user_profile_url: str
     user_positions_url: str
     audience: str
     use_scope_permissions: bool

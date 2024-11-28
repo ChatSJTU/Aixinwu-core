@@ -787,6 +787,10 @@ OPENID_PROVIDER_SETTINGS = {
             "value": "http://example.com",
         },
         {
+            "name": "user_profile_url",
+            "value": "https://api.sjtu.edu.cn/v1/me/profile",
+        },
+        {
             "name": "user_positions_url",
             "value": "https://api.sjtu.edu.cn/v1/enterprise/user/positions",
         },
