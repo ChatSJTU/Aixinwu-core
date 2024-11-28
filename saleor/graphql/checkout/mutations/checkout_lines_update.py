@@ -1,4 +1,5 @@
 from typing import cast
+
 import graphene
 from django.forms import ValidationError
 
@@ -26,6 +27,7 @@ from ...site.dataloaders import get_site_promise
 from ..types import Checkout
 from .checkout_lines_add import CheckoutLinesAdd
 from .utils import (
+    check_admission_date_requirement,
     check_lines_quantity,
     check_poor_requirement,
     check_position_requirement,
@@ -116,6 +118,7 @@ class CheckoutLinesUpdate(CheckoutLinesAdd):
         delivery_method_info,
         lines=None,
     ):
+        check_admission_date_requirement(get_user_or_app_from_context(info.context), variants)
         check_position_requirement(get_user_or_app_from_context(info.context), variants)
         check_poor_requirement(get_user_or_app_from_context(info.context), variants)
         variants, quantities = get_variants_and_total_quantities(

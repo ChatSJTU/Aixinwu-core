@@ -16,6 +16,7 @@ import graphene
 import pytz
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Q, QuerySet
+from django.utils import timezone
 
 from ....checkout import models
 from ....checkout.error_codes import CheckoutErrorCode
@@ -126,6 +127,29 @@ def get_variants_and_total_quantities(
             variants_total_quantity_map[variant] += quantity
 
     return variants_total_quantity_map.keys(), variants_total_quantity_map.values()
+
+
+def check_admission_date_requirement(
+    user,
+    variants,
+):
+    for variant in variants:
+        delta = variant.product.metadata.get("allow_admission_date", "")
+        try:
+            delta = int(delta)
+        except ValueError:
+            continue
+        if not user.admission_date or (
+            user.admission_date + datetime.timedelta(days=delta) < timezone.now()
+        ):
+            raise ValidationError(
+                {
+                    "quantity": ValidationError(
+                        "You are not allowed to buy this product.",
+                        code=CheckoutErrorCode.REQUIREMENT_NOT_MEET.value,
+                    )
+                }
+            )
 
 
 def check_position_requirement(
