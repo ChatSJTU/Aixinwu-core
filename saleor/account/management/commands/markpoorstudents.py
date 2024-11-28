@@ -41,6 +41,14 @@ class Command(BaseCommand):
         # 查询待导入的用户列表
         file_user_set = set([user["jaccount"] for user in users])
 
+        # 准备导入
+        configuration = {
+            item["name"]: item["value"]
+            for item in settings.OPENID_PROVIDER_SETTINGS.get(settings.OPENID_PROVIDER)
+        }
+        oauth_url = configuration.get("oauth_authorization_url")
+        oidc_metadata_key = f"oidc:{oauth_url}"
+
         # 构建差集
         inexistent_user_set = file_user_set - db_user_set
         if (len(inexistent_user_set) > 0):
@@ -58,6 +66,7 @@ class Command(BaseCommand):
             )
             user_object.private_metadata = user_object.private_metadata if user_object.private_metadata != None else {}
             user_object.private_metadata['is_poor'] = 'true'
+            user_object.private_metadata[oidc_metadata_key] = userInfo.get("jaccount")
             user_object.save(update_fields=["private_metadata", "search_document"])
 
         self.stdout.write(
