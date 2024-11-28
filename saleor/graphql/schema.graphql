@@ -15746,6 +15746,9 @@ enum UserSortField @doc(category: "Users") {
 
   """Sort users by last modified at."""
   LAST_MODIFIED_AT
+
+  """Sort users by last login."""
+  LAST_LOGIN
 }
 
 type GroupCountableConnection @doc(category: "Users") {
@@ -29624,6 +29627,7 @@ enum CheckoutErrorCode @doc(category: "Checkout") {
   EMAIL_NOT_SET
   NO_LINES
   INACTIVE_PAYMENT
+  REQUIREMENT_NOT_MEET
 }
 
 """

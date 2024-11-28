@@ -11,6 +11,7 @@ class UserSortField(BaseEnum):
     ORDER_COUNT = ["order_count", "email"]
     CREATED_AT = ["date_joined", "pk"]
     LAST_MODIFIED_AT = ["updated_at", "pk"]
+    LAST_LOGIN = ["last_login", "pk"]
 
     class Meta:
         doc_category = DOC_CATEGORY_USERS
