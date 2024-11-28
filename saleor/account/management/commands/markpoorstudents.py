@@ -56,7 +56,7 @@ class Command(BaseCommand):
             user_object = User.objects.get(
                 account=userInfo.get("jaccount"),
             )
-            user_object.private_metadata = user_object.metadata if user_object.metadata != None else {}
+            user_object.private_metadata = user_object.private_metadata if user_object.private_metadata != None else {}
             user_object.private_metadata['is_poor'] = 'true'
             user_object.save(update_fields=["private_metadata", "search_document"])
 
