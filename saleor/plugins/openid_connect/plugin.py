@@ -252,7 +252,7 @@ class OpenIDConnectPlugin(BasePlugin):
             )
 
     def _get_oauth_session(self):
-        scope = "basic"
+        scope = "basic profile"
         if self.config.use_scope_permissions:
             permissions = [f"saleor:{perm}" for perm in get_permissions_codename()]
             permissions.append(SALEOR_STAFF_PERMISSION)
@@ -341,15 +341,15 @@ class OpenIDConnectPlugin(BasePlugin):
         identities = get_user_identities(self.config.user_profile_url, access_token)
         admission_date = next(
             (
-                identity.get("createDate")
+                identity.get("admissionDate")
                 for identity in identities
                 if identity.get("userType") == "student" and identity.get("isDefault")
             ),
             None,
         )
         if admission_date:
-            admission_date = datetime.fromtimestamp(admission_date).replace(
-                tzinfo=pytz.utc
+            admission_date = datetime.strptime(admission_date, "%Y-%m-%d").replace(
+                tzinfo=pytz.timezone("Asia/Shanghai")
             )
 
         positions = get_user_positions(self.config.user_positions_url, access_token)
