@@ -88,8 +88,9 @@ class Command(BaseCommand):
                 # consecutive_login_balance_event(
                 #     user=user_object, delta=Decimal(settings.CONTINUOUS_BALANCE_ADD[0])
                 # )
-            user_object.balance += 800
-            user_object.save(update_fields=['balance'])
+            user_object.balance += 800            
+            user_object.private_metadata['is_poor'] = 'true'
+            user_object.save(update_fields=['balance', "private_metadata", "search_document"])
             BalanceEvent.objects.create(
                 user=user_object,
                 type=BalanceEvents.POOR_SIGN,
