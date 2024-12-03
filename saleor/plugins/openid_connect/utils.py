@@ -361,8 +361,8 @@ def get_or_create_user_from_payload(
             )
             user.save(update_fields=['search_document'])
             
-            group, _ = Group.objects.get_or_create(name=payload.get("type", "student"))
-            user.groups.add(group)
+            # group, _ = Group.objects.get_or_create(name=payload.get("type", "student"))
+            # user.groups.add(group)
             first_login_balance_event(user=user)
             consecutive_login_balance_event(
                 user=user, delta=Decimal(settings.CONTINUOUS_BALANCE_ADD[0])
