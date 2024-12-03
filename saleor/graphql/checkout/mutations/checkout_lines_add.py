@@ -30,6 +30,7 @@ from .utils import (
     check_lines_quantity,
     check_permissions_for_custom_prices,
     check_poor_requirement,
+    check_code_requirement,
     check_position_requirement,
     get_checkout,
     get_variants_and_total_quantities,
@@ -96,6 +97,7 @@ class CheckoutLinesAdd(BaseMutation):
         check_admission_date_requirement(get_user_or_app_from_context(info.context), variants)
         check_position_requirement(get_user_or_app_from_context(info.context), variants)
         check_poor_requirement(get_user_or_app_from_context(info.context), variants)
+        check_code_requirement(get_user_or_app_from_context(info.context), variants)
         variants, quantities = get_variants_and_total_quantities(
             variants, checkout_lines_data
         )

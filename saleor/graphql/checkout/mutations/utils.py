@@ -1,4 +1,5 @@
 import datetime
+import re
 import uuid
 from collections import defaultdict
 from collections.abc import Iterable
@@ -181,6 +182,22 @@ def check_poor_requirement(
     for variant in variants:
         only_poor = variant.product.metadata.get("only_poor", "")
         if only_poor == "true" and user.private_metadata.get("is_poor", "") != "true":
+            raise ValidationError(
+                {
+                    "quantity": ValidationError(
+                        "You are not allowed to buy this product.",
+                        code=CheckoutErrorCode.REQUIREMENT_NOT_MEET.value,
+                    )
+                }
+            )
+        
+def check_code_requirement(
+    user,
+    variants,
+):
+    for variant in variants:
+        code_regex = variant.product.metadata.get("code_regex", "")
+        if code_regex and not re.match(code_regex, user.code):
             raise ValidationError(
                 {
                     "quantity": ValidationError(
