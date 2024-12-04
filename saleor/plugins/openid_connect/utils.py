@@ -338,7 +338,7 @@ def get_or_create_user_from_payload(
         "private_metadata": {oidc_metadata_key: account},
         "password": make_password(None),
         "search_document": "",
-        "last_login": datetime(1970, 1, 1),
+        "last_login": datetime(1970, 1, 1, tzinfo=pytz.timezone("Asia/Shanghai")),
     }
 
     cache_key = oidc_metadata_key + ":" + str(account)
@@ -369,7 +369,7 @@ def get_or_create_user_from_payload(
                 defaults=defaults_create,
             )
         
-        if (user.last_login < datetime(2000, 1, 1)):
+        if (user.last_login < datetime(2000, 1, 1, tzinfo=pytz.timezone("Asia/Shanghai"))):
             first_login_balance_event(user=user)
             site = Site.objects.get_current()
 
