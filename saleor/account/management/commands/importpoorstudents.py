@@ -72,6 +72,7 @@ class Command(BaseCommand):
                     "password": make_password(None),
                     "balance": Decimal(0),
                     "continuous": 0,
+                    "last_login": datetime.datetime(1970, 1, 1),
                 }
                 with transaction.atomic():
                     user_object, _ = User.objects.get_or_create(

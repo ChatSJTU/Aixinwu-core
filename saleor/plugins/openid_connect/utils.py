@@ -338,6 +338,7 @@ def get_or_create_user_from_payload(
         "private_metadata": {oidc_metadata_key: account},
         "password": make_password(None),
         "search_document": "",
+        "last_login": datetime(1970, 1, 1),
     }
 
     cache_key = oidc_metadata_key + ":" + str(account)
@@ -360,14 +361,17 @@ def get_or_create_user_from_payload(
                 user, attach_addresses_data=False
             )
             user.save(update_fields=['search_document'])
-            
-            # group, _ = Group.objects.get_or_create(name=payload.get("type", "student"))
-            # user.groups.add(group)
-            first_login_balance_event(user=user)
-            consecutive_login_balance_event(
-                user=user, delta=Decimal(settings.CONTINUOUS_BALANCE_ADD[0])
+            match_orders_with_new_user(user)
+        except User.MultipleObjectsReturned:
+            logger.warning("Multiple users returned for single OIDC sub ID")
+            user, _ = User.objects.get_or_create(
+                email=user_email,
+                defaults=defaults_create,
             )
-            site, _ = Site.objects.get_or_create(id=settings.SITE_ID)
+        
+        if (user.last_login < datetime(2000, 1, 1)):
+            first_login_balance_event(user=user)
+            site = Site.objects.get_current()
 
             if not site.domain or not site.name:
                 site.name = settings.SITE_NAME
@@ -380,7 +384,6 @@ def get_or_create_user_from_payload(
                 stat, _ = SiteStatistics.objects.get_or_create(site=site)
 
             SiteStatistics.objects.filter(id=stat.id).update(users=F("users") + 1)
-            match_orders_with_new_user(user)
 
             if invitation_code:
                 try:
@@ -393,13 +396,6 @@ def get_or_create_user_from_payload(
                     user.save(update_fields=["invited_by"])
                 except InvitationModel.DoesNotExist:
                     pass
-
-        except User.MultipleObjectsReturned:
-            logger.warning("Multiple users returned for single OIDC sub ID")
-            user, _ = User.objects.get_or_create(
-                email=user_email,
-                defaults=defaults_create,
-            )
 
         site_settings = Site.objects.get_current().settings
         if not user.can_login(
