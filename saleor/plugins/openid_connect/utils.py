@@ -370,6 +370,8 @@ def get_or_create_user_from_payload(
             )
         
         if (user.last_login < datetime(2000, 1, 1, tzinfo=pytz.timezone("Asia/Shanghai"))):
+            user.balance += 50
+            user.save(update_fields=['balance'])
             first_login_balance_event(user=user)
             site = Site.objects.get_current()
 

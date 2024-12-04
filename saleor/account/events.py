@@ -135,7 +135,7 @@ def first_login_balance_event(*, user: User) -> BalanceEvent:
     return BalanceEvent.objects.create(
         user=user,
         type=BalanceEvents.FIRST_LOGIN,
-        balance=Decimal(0.0),
+        balance=user.balance,
         delta=Decimal(50.0),
     )
 
