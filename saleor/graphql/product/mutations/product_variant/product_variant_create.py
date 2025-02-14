@@ -4,10 +4,11 @@ import graphene
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 
+from saleor.account.models import User
 from saleor.graphql.utils import get_user_or_app_from_context
 from saleor.product.events import (
     product_variant_create_event,
-    product_variant_update_event,
+    product_variant_stock_changed_event,
 )
 
 from .....attribute import AttributeInputType
@@ -333,12 +334,14 @@ class ProductVariantCreate(ModelMutation):
                 update_products_discounted_prices_for_promotion_task.delay,
                 [instance.product_id],
             )
+            user: User = get_user_or_app_from_context(info.context)
             stocks = cleaned_input.get("stocks")
             if stocks:
-                product_variant_update_event(
-                    get_user_or_app_from_context(info.context),
+                product_variant_stock_changed_event(
+                    user,
                     instance,
                     cls.create_variant_stocks(instance, stocks),
+                    reason=f"用户 {user.account or user.first_name} 正在新建商品品种"
                 )
             attributes = cleaned_input.get("attributes")
             if attributes:

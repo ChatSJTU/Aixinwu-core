@@ -209,12 +209,10 @@ class ProductCreate(ModelMutation):
 
     @classmethod
     def save(cls, info: ResolveInfo, instance, cleaned_input):
-        requestor = get_user_or_app_from_context(info.context)
 
         with traced_atomic_transaction():
             instance.search_index_dirty = True
             instance.save()
-            product_create_event(requestor, instance)
             attributes = cleaned_input.get("attributes")
             if attributes:
                 ProductAttributeAssignmentMixin.save(instance, attributes)
@@ -229,6 +227,8 @@ class ProductCreate(ModelMutation):
     def post_save_action(cls, info: ResolveInfo, instance, _cleaned_input):
         product = models.Product.objects.prefetched_for_webhook().get(pk=instance.pk)
         update_products_discounted_prices_for_promotion_task.delay([instance.id])
+        user = get_user_or_app_from_context(info.context)
+        product_create_event(user, instance)
         manager = get_plugin_manager_promise(info.context).get()
         cls.call_event(manager.product_created, product)
 

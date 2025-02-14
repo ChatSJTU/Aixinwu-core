@@ -3,10 +3,11 @@ from collections import defaultdict
 import graphene
 from django.core.exceptions import ValidationError
 
+from saleor.account.models import User
 from saleor.graphql.utils import get_user_or_app_from_context
 from saleor.product.events import (
-    product_variant_bulk_update_events,
-    product_variant_update_event,
+    product_variant_stock_bulk_update_events,
+    product_variant_stock_changed_event,
 )
 
 from ....core.tracing import traced_atomic_transaction
@@ -66,10 +67,12 @@ class ProductVariantStocksCreate(BaseMutation):
             if errors:
                 raise ValidationError(errors)
             new_stocks = create_stocks(variant, stocks, warehouses)
-            product_variant_update_event(
-                get_user_or_app_from_context(info.context),
+            user: User = get_user_or_app_from_context(info.context)
+            product_variant_stock_changed_event(
+                user,
                 variant,
                 sum([stock_data["quantity"] for stock_data in stocks]),
+                reason=f"用户 {user.account or user.first_name} 新增了商品库存"
             )
 
             webhooks = get_webhooks_for_event(

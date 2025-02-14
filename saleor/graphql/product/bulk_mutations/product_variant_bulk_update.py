@@ -2,12 +2,13 @@ from collections import defaultdict
 from typing import cast
 
 import graphene
+from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.db.models import F
 from graphene.utils.str_converters import to_camel_case
 
 from saleor.graphql.utils import get_user_or_app_from_context
-from saleor.product.events import product_variant_bulk_update_events
+from saleor.product.events import product_variant_price_bulk_update_events, product_variant_stock_bulk_update_events
 
 from ....core.tracing import traced_atomic_transaction
 from ....permission.enums import ProductPermissions
@@ -288,7 +289,7 @@ class ProductVariantBulkUpdate(BaseMutation):
         cls,
         cleaned_input,
         warehouse_global_id_to_instance_map,
-        stock_global_id_to_instance_map,
+        stock_global_id_to_instance_map: dict[str, warehouse_models.Stock],
         variant_index,
         index_error_map,
     ):
@@ -326,7 +327,7 @@ class ProductVariantBulkUpdate(BaseMutation):
         if stocks_data := cleaned_input["stocks"].get("update"):
             stocks_to_update = []
             for stock_index, stock_data in enumerate(stocks_data):
-                stock_id = stock_data["stock"]
+                stock_id: str = stock_data["stock"]
                 if stock_id not in stock_global_id_to_instance_map.keys():
                     index_error_map[variant_index].append(
                         ProductVariantBulkError(
@@ -340,7 +341,7 @@ class ProductVariantBulkUpdate(BaseMutation):
                     continue
 
                 stock_data["stock"] = stock_global_id_to_instance_map[stock_id]
-                stock_data["stock"].quantity = stock_data["quantity"]
+                # stock_data["stock"].quantity = stock_data["quantity"]
                 stocks_to_update.append(stock_data)
 
             cleaned_input["stocks"]["update"] = stocks_to_update
@@ -359,7 +360,10 @@ class ProductVariantBulkUpdate(BaseMutation):
                         )
                     )
                     continue
-                stocks_to_remove.append(graphene.Node.from_global_id(stock_id)[1])
+                stocks_to_remove.append({
+                    "db_id": graphene.Node.from_global_id(stock_id)[1],
+                    "quantity": stock_global_id_to_instance_map[stock_id].quantity
+                })
             cleaned_input["stocks"]["remove"] = stocks_to_remove
 
     @classmethod
@@ -602,11 +606,13 @@ class ProductVariantBulkUpdate(BaseMutation):
             stocks_total += sum(
                 [stock["quantity"] - stock["stock"].quantity for stock in stocks_data]
             )
+            for stock in stocks_data:
+                stock["stock"].quantity = stock["quantity"]
         return stocks_total
 
     @classmethod
     def prepare_channel_listings(
-        cls, variant, listings_input, listings_to_create, listings_to_update
+        cls, variant, listings_input, listings_to_create, listings_to_update, price_changed
     ):
         if listings_data := listings_input.get("create"):
             listings_to_create += [
@@ -636,6 +642,7 @@ class ProductVariantBulkUpdate(BaseMutation):
                     # set the discounted price the same as price for now, the discounted
                     # value will be calculated asynchronously in the celery task
                     listing.discounted_price_amount = listing_data["price"]
+                    price_changed.append(listing)
                 if "cost_price" in listing_data:
                     listing.cost_price_amount = listing_data["cost_price"]
                 listings_to_update.append(listing)
@@ -652,6 +659,7 @@ class ProductVariantBulkUpdate(BaseMutation):
         listings_to_remove: list = []
         variants_stocks_changed: list = []
         stocks_changed: list = []
+        price_changed: list = []
 
         # prepare instances
         for variant_data in variants_data_with_errors_list:
@@ -667,14 +675,15 @@ class ProductVariantBulkUpdate(BaseMutation):
                     variant, stocks_input, stocks_to_create, stocks_to_update
                 )
                 if to_remove := stocks_input.get("remove"):
-                    stocks_to_remove += to_remove
+                    stocks_to_remove += [stock["db_id"] for stock in to_remove]
                     stocks_totals -= sum([stock["quantity"] for stock in to_remove])
-                variants_stocks_changed.append(variant)
-                stocks_changed.append(stocks_totals)
+                if (stocks_changed != 0):
+                    variants_stocks_changed.append(variant)
+                    stocks_changed.append(stocks_totals)
 
             if listings_input := cleaned_input.get("channel_listings"):
                 cls.prepare_channel_listings(
-                    variant, listings_input, listings_to_create, listings_to_update
+                    variant, listings_input, listings_to_create, listings_to_update, price_changed
                 )
                 if to_remove := listings_input.get("remove"):
                     listings_to_remove += to_remove
@@ -707,10 +716,17 @@ class ProductVariantBulkUpdate(BaseMutation):
         models.ProductVariantChannelListing.objects.filter(
             id__in=listings_to_remove
         ).delete()
-        product_variant_bulk_update_events(
-            get_user_or_app_from_context(info.context),
+        user = get_user_or_app_from_context(info.context)
+        product_variant_stock_bulk_update_events(
+            user,
             variants_stocks_changed,
             stocks_changed,
+            reason=f"用户 {user.account or user.first_name} 更新了商品库存"
+        )
+        product_variant_price_bulk_update_events(
+            user,
+            price_changed,
+            reason=f"用户 {user.account or user.first_name} 更新了商品价格"
         )
 
     @classmethod

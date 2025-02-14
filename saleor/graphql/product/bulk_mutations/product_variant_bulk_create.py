@@ -10,8 +10,8 @@ from graphene.utils.str_converters import to_camel_case
 from saleor.graphql.utils import get_user_or_app_from_context
 from saleor.product.events import (
     product_variant_bulk_create_events,
-    product_variant_bulk_update_events,
-    product_variant_update_event,
+    product_variant_stock_bulk_update_events,
+    product_variant_stock_changed_event,
 )
 
 from ....attribute import AttributeType
@@ -900,11 +900,14 @@ class ProductVariantBulkCreate(BaseMutation):
             if not variant.name:
                 cls.set_variant_name(variant, cleaned_input)
         variants = models.ProductVariant.objects.bulk_create(variants_to_create)
+
+        user = get_user_or_app_from_context(info.context)
         product_variant_bulk_create_events(
-            get_user_or_app_from_context(info.context), variants
+            user, variants
         )
-        product_variant_bulk_update_events(
-            get_user_or_app_from_context(info.context), variants, stocks_total
+        product_variant_stock_bulk_update_events(
+            user, variants, stocks_total,
+            reason=f"用户 {user.account or user.first_name} 正在新建商品品种"
         )
 
         for variant, attributes in attributes_to_save:

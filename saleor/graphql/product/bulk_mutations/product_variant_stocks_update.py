@@ -3,8 +3,9 @@ from collections import defaultdict
 import graphene
 from django.core.exceptions import ValidationError
 
+from saleor.account.models import User
 from saleor.graphql.utils import get_user_or_app_from_context
-from saleor.product.events import product_variant_update_event
+from saleor.product.events import product_variant_stock_changed_event
 
 from ....core.tracing import traced_atomic_transaction
 from ....permission.enums import ProductPermissions
@@ -85,8 +86,12 @@ class ProductVariantStocksUpdate(ProductVariantStocksCreate):
             stock_changed = cls.update_or_create_variant_stocks(
                 variant, stocks, warehouses, manager
             )
-            product_variant_update_event(
-                get_user_or_app_from_context(info.context), variant, stock_changed
+            user: User = get_user_or_app_from_context(info.context)
+            product_variant_stock_changed_event(
+                user, 
+                variant, 
+                stock_changed,
+                reason=f"用户 {user.account or user.first_name} 更新了商品库存"
             )
 
         StocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(
@@ -136,8 +141,8 @@ class ProductVariantStocksUpdate(ProductVariantStocksCreate):
                     webhooks=webhooks_stock_out,
                 )
 
-            stock.quantity = stock_data["quantity"]
             stock_changed = stock_data["quantity"] - stock.quantity
+            stock.quantity = stock_data["quantity"]
             stocks.append(stock)
             cls.call_event(
                 manager.product_variant_stock_updated,
