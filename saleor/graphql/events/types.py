@@ -9,6 +9,7 @@ from ..core.connection import CountableConnection
 from ..core.doc_category import DOC_CATEGORY_EVENTS
 from ..core.types.model import ModelObjectType
 from ..product.types import Product, ProductVariant
+from ..account.types import User
 
 
 class BalanceEvent(ModelObjectType[account_models.BalanceEvent]):
@@ -79,9 +80,11 @@ class OrderEvent(ModelObjectType[order_models.OrderEvent]):
 class ProductEvent(ModelObjectType[product_models.ProductEvent]):
     id = graphene.ID(required=True, description="The ID of the product event.")
     date = graphene.DateTime(description="Datetime of the event.")
+    user = graphene.Field(User, description="The user of the event.")
     product = graphene.Field(Product, description="The product of the event.")
     product_name = graphene.String(description="The product name of the event")
     type = graphene.String(description="The type of the product event.")
+    message = graphene.String(description="The message of the product event.")
 
     class Meta:
         description = "Represents product events"
@@ -92,12 +95,14 @@ class ProductEvent(ModelObjectType[product_models.ProductEvent]):
 class ProductVariantEvent(ModelObjectType[product_models.ProductVariantEvent]):
     id = graphene.ID(required=True, description="The ID of the product event.")
     date = graphene.DateTime(description="Datetime of the event.")
+    user = graphene.Field(User, description="The user of the event.")
     product_variant = graphene.Field(
         ProductVariant, description="The product of the event."
     )
     product_variant_name = graphene.String(description="The product name of the event")
     stock_changed = graphene.Int(description="The changed stock.")
     type = graphene.String(description="The type of the product event.")
+    message = graphene.String(description="The message of the product event.")
 
     class Meta:
         description = "Represents product events"

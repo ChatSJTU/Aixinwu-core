@@ -746,24 +746,25 @@ def get_balance_event_number():
 
 class ProductEvent(models.Model):
     user = models.ForeignKey(
-        User, related_name="product_events", on_delete=models.CASCADE, null=True
+        User, related_name="product_events", on_delete=models.SET_NULL, null=True
     )
     product = models.ForeignKey(
-        Product, related_name="product_events", on_delete=models.CASCADE, null=True
+        Product, related_name="product_events", on_delete=models.SET_NULL, null=True
     )
     order = models.ForeignKey(
         "order.Order",
         related_name="product_events",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
     )
-    product_name = models.CharField(max_length=255)
+    product_name = models.CharField(max_length=255, blank=True)
     type = models.CharField(
         max_length=255,
         choices=[
             (type_name.upper(), type_name) for type_name, _ in ProductEvents.CHOICES
         ],
     )
+    message = models.CharField(max_length=255, blank=True)
     number = models.IntegerField(
         null=True, blank=True, default=get_balance_event_number
     )
@@ -779,21 +780,22 @@ class ProductEvent(models.Model):
 
 class ProductVariantEvent(models.Model):
     user = models.ForeignKey(
-        User, related_name="product_variant_events", on_delete=models.CASCADE, null=True
+        User, related_name="product_variant_events", on_delete=models.SET_NULL, null=True
     )
     product_variant = models.ForeignKey(
         ProductVariant,
         related_name="product_variant_events",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
     )
     order = models.ForeignKey(
         "order.Order",
         related_name="product_variant_events",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
     )
-    product_variant_name = models.CharField(max_length=255)
+    product_variant_name = models.CharField(max_length=255, blank=True)
+    message = models.CharField(max_length=255, blank=True)
     type = models.CharField(
         max_length=255,
         choices=[
