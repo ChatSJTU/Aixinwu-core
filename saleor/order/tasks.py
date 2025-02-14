@@ -1,6 +1,7 @@
 import logging
-from datetime import timedelta
 
+import pytz
+from django.db import connection
 from django.db.models import Exists, F, Func, OuterRef, Subquery, Value
 from django.utils import timezone
 
@@ -12,11 +13,11 @@ from ..channel.models import Channel
 from ..core.tracing import traced_atomic_transaction
 from ..core.utils.events import call_event
 from ..discount.models import Voucher, VoucherCode, VoucherCustomer
-from ..payment.gateway import _fetch_gateway_response
-from ..payment.models import Payment, TransactionItem
-from ..payment.utils import create_payment_information
 from ..plugins.manager import get_plugins_manager
-from ..warehouse.management import deallocate_stock_for_orders, remove_reservations_for_order
+from ..warehouse.management import (
+    deallocate_stock_for_orders,
+    remove_reservations_for_order,
+)
 from . import OrderChargeStatus, OrderEvents, OrderStatus
 from .models import Order, OrderEvent
 from .utils import invalidate_order_prices
@@ -99,7 +100,8 @@ def _expire_orders(manager, now):
         (
             Func(Value("day"), now - OuterRef("created_at"), function="DATE_PART") * 24
             + Func(Value("hour"), now - OuterRef("created_at"), function="DATE_PART")
-        ) * 60
+        )
+        * 60
     ) + Func(Value("minute"), now - OuterRef("created_at"), function="DATE_PART")
 
     channels = Channel.objects.filter(
@@ -130,7 +132,11 @@ def _expire_orders(manager, now):
     # 已支付未交付订单
     qs = Order.objects.filter(
         Exists(channels),
-        status__in=[OrderStatus.UNCONFIRMED, OrderStatus.UNFULFILLED, OrderStatus.PARTIALLY_FULFILLED],
+        status__in=[
+            OrderStatus.UNCONFIRMED,
+            OrderStatus.UNFULFILLED,
+            OrderStatus.PARTIALLY_FULFILLED,
+        ],
     )
     orders = list(qs.all())
     logger.warning(f"expired order count: {len(orders)}")
@@ -159,7 +165,7 @@ def _expire_orders(manager, now):
 
 @app.task
 def expire_orders_task():
-    logger.warning(f"===expire_orders_task===")
+    logger.warning("===expire_orders_task===")
     now = timezone.now()
     manager = get_plugins_manager(allow_replica=False)
     _expire_orders(manager, now)
@@ -190,3 +196,20 @@ def expire_orders_task():
 #         return
 #     Order.objects.filter(id__in=ids_batch).delete()
 #     delete_expired_orders_task.delay()
+
+
+@app.task
+def reset_order_number_task():
+    now = timezone.now().astimezone(tz=pytz.timezone("Asia/Shanghai"))
+    if now.day == 1 and now.hour == 0 and now.minute < 5:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                ALTER SEQUENCE order_order_number_seq RESTART WITH 1;
+                """
+            )
+            logger.info("Order number has been reset successfully.")
+    else:
+        logger.info(
+            f"Order number has already been reset this month. Next reset date: {now.replace(month=now.month + 1, day=1, hour=0, minute=0, second=0, microsecond=0)}"
+        )

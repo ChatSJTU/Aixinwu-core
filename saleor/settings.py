@@ -631,6 +631,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "saleor.payment.tasks.transaction_release_funds_for_checkout_task",
         "schedule": timedelta(minutes=10),
     },
+    "reset-order-number": {
+        "task": "saleor.order.tasks.reset_order_number_task",
+        "schedule": crontab(minute=0),
+    },
 }
 
 # The maximum wait time between each is_due() call on schedulers

@@ -1,4 +1,3 @@
-from datetime import datetime
 from decimal import Decimal
 from operator import attrgetter
 from re import match
@@ -99,11 +98,13 @@ OrderManager = models.Manager.from_queryset(OrderQueryset)
 
 
 def get_order_number():
-    time_now = now()
-    current_year_month = datetime(
-        time_now.year, time_now.month, 1, tzinfo=time_now.tzinfo
-    )
-    return Order.objects.filter(created_at__gte=current_year_month).count() + 1
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT nextval('order_order_number_seq')")
+        result = cursor.fetchone()
+        if result:
+            return result[0]
+        else:
+            raise ValueError("Could not retrieve the next order number")
 
 
 class Order(ModelWithMetadata, ModelWithExternalReference):

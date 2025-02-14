@@ -5,6 +5,7 @@ from uuid import UUID
 
 import graphene
 import prices
+import pytz
 from django.core.exceptions import ValidationError
 from graphene import relay
 from promise import Promise
@@ -1743,7 +1744,9 @@ class Order(ModelObjectType[models.Order]):
     def resolve_number(root: models.Order, _info):
         if not root.created_at or not root.number:
             return None
-        return root.created_at.strftime("%Y%m%d") + str(root.number).zfill(4)
+        return root.created_at.astimezone(tz=pytz.timezone("Asia/Shanghai")).strftime(
+            "%Y%m%d"
+        ) + str(root.number).zfill(4)
 
     @staticmethod
     @traced_resolver
