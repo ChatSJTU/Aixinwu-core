@@ -738,11 +738,12 @@ class CollectionTranslation(SeoModelTranslation):
         )
         return translated_keys
 
+# DEPRACATED
 def get_balance_event_number():
-    now = timezone.now()
-    current_year_month = datetime(now.year, now.month, 1, tzinfo=now.tzinfo)
-    return ProductEvent.objects.filter(date__gte=current_year_month).count() + 1
-
+    # now = timezone.now()
+    # current_year_month = datetime(now.year, now.month, 1, tzinfo=now.tzinfo)
+    # return ProductEvent.objects.filter(date__gte=current_year_month).count() + 1
+    return None
 
 class ProductEvent(models.Model):
     user = models.ForeignKey(
@@ -765,9 +766,9 @@ class ProductEvent(models.Model):
         ],
     )
     message = models.CharField(max_length=255, blank=True)
-    number = models.IntegerField(
-        null=True, blank=True, default=get_balance_event_number
-    )
+    # number = models.IntegerField(
+    #     null=True, blank=True, default=get_balance_event_number
+    # )
 
     date = models.DateTimeField(default=timezone.now, editable=False)
 
@@ -803,9 +804,9 @@ class ProductVariantEvent(models.Model):
             for type_name, _ in ProductVariantEvents.CHOICES
         ],
     )
-    number = models.IntegerField(
-        null=True, blank=True, default=get_balance_event_number
-    )
+    # number = models.IntegerField(
+    #     null=True, blank=True, default=get_balance_event_number
+    # )
     stock_changed = models.IntegerField(null=True, blank=True)
     date = models.DateTimeField(default=timezone.now, editable=False)
 
