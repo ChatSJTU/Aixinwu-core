@@ -14514,6 +14514,9 @@ type ProductEvent {
   """Datetime of the event."""
   date: DateTime
 
+  """The user of the event."""
+  user: User
+
   """The product of the event."""
   product: Product
 
@@ -14522,6 +14525,9 @@ type ProductEvent {
 
   """The type of the product event."""
   type: String
+
+  """The message of the product event."""
+  message: String
 }
 
 input ProductEventFilterInput @doc(category: "Events") {
@@ -14535,6 +14541,7 @@ input ProductEventFilterInput @doc(category: "Events") {
 enum ProductEventsEnum @doc(category: "Events") {
   PRODUCT_CREATED
   PRODUCT_DELETED
+  PRODUCT_UPDATED
 }
 
 input ProductEventSortingInput @doc(category: "Events") {
@@ -14570,6 +14577,9 @@ type ProductVariantEvent {
   """Datetime of the event."""
   date: DateTime
 
+  """The user of the event."""
+  user: User
+
   """The product of the event."""
   productVariant: ProductVariant
 
@@ -14581,6 +14591,9 @@ type ProductVariantEvent {
 
   """The type of the product event."""
   type: String
+
+  """The message of the product event."""
+  message: String
 }
 
 input ProductVariantEventFilterInput @doc(category: "Events") {
@@ -14595,6 +14608,8 @@ enum ProductVariantEventsEnum @doc(category: "Events") {
   PRODUCT_VARIANT_CREATED
   PRODUCT_VARIANT_UPDATED
   PRODUCT_VARIANT_DELETED
+  PRODUCT_VARIANT_PRICE_UPDATED
+  PRODUCT_VARIANT_STOCK_CHANGED
 }
 
 input ProductVariantEventSortingInput @doc(category: "Events") {
