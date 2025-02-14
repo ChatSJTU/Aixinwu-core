@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Optional, cast
 from django.db.models import QuerySet, Sum
 from django.utils import timezone
 from prices import Money, TaxedMoney
+import pytz
 
 from ..account.models import User
 from ..core.prices import quantize_price
@@ -69,6 +70,10 @@ if TYPE_CHECKING:
     from ..payment.models import Payment, TransactionItem
     from ..plugins.manager import PluginsManager
 
+def get_order_display_number(order: Order) -> str:
+    return order.created_at.astimezone(tz=pytz.timezone("Asia/Shanghai")).strftime(
+        "%Y%m%d"
+    ) + str(order.number).zfill(4)
 
 def get_order_country(order: Order) -> str:
     """Return country to which order will be shipped."""

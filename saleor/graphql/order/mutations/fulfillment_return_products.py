@@ -1,6 +1,9 @@
-from typing import Any
+from typing import Any, cast
 
 import graphene
+
+from saleor.account.models import User
+from saleor.graphql.utils import get_user_or_app_from_context
 
 from ....order import FulfillmentStatus
 from ....order import models as order_models
@@ -165,9 +168,11 @@ class FulfillmentReturnProducts(FulfillmentRefundAndReturnProductBase):
         order = cleaned_input["order"]
         cls.check_channel_permissions(info, [order.channel_id])
         manager = get_plugin_manager_promise(info.context).get()
+        requestor = cast(User, get_user_or_app_from_context(info.context))
         try:
             app = get_app_promise(info.context).get()
             response = create_fulfillments_for_returned_products(
+                requestor,
                 order.user,
                 app,
                 order,

@@ -91,6 +91,7 @@ class ProductVariantStocksUpdate(ProductVariantStocksCreate):
                 user, 
                 variant, 
                 stock_changed,
+                None,
                 reason=f"用户 {user.account or user.first_name} 更新了商品库存"
             )
 

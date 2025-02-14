@@ -55,9 +55,13 @@ class Command(BaseCommand):
 
         for userInfo in users:
             if (userInfo.get("jaccount") not in new_user_set): # 已存在
-                user_object = User.objects.get(
-                    email=userInfo.get("email"),
-                )
+                try:
+                    user_object = User.objects.get(
+                        email=userInfo.get("email"),
+                    )
+                except:
+                    print(f"jac: {userInfo.get('jaccount')}, email: {userInfo.get('email')} inconsistent!")
+                    continue
             else:
                 defaults_create = {
                     "is_active": True,

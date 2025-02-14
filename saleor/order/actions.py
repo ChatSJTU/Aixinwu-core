@@ -11,6 +11,8 @@ from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
 
+from saleor.product.events import product_variant_stock_changed_event
+
 from ..account.events import refunded_balance_event
 from ..account.models import User
 from ..core.exceptions import AllocationError, InsufficientStock, InsufficientStockData
@@ -64,6 +66,7 @@ from .notifications import (
     send_payment_confirmation,
 )
 from .utils import (
+    get_order_display_number,
     order_line_needs_automatic_fulfillment,
     restock_fulfillment_lines,
     update_order_authorize_data,
@@ -260,11 +263,20 @@ def order_voided(
 
 
 def order_returned(
+    requestor: Optional[User],
     order: "Order",
     user: Optional[User],
     app: Optional["App"],
     returned_lines: list[tuple[QuantityType, OrderLine]],
 ):
+    for (quantity, order_line) in returned_lines:
+        product_variant_stock_changed_event(
+            user=requestor,
+            variant=order_line.variant,
+            stock=quantity,
+            order=order,
+            reason=f"用户 {user.account or user.first_name} 的订单 #{get_order_display_number(order)} 退货"
+        )
     order_returned_event(order=order, user=user, app=app, returned_lines=returned_lines)
     update_order_status(order)
 
@@ -306,6 +318,15 @@ def order_fulfilled(
             call_event(manager.order_fulfilled, order)
             for fulfillment in fulfillments:
                 call_event(manager.fulfillment_approved, fulfillment)
+
+    for line in fulfillment_lines:
+        product_variant_stock_changed_event(
+            user=user,
+            variant=line.order_line.variant,
+            stock=-line.quantity,
+            order=order,
+            reason=f"用户 {order.user.account or order.user.first_name} 的订单 #{get_order_display_number(order)} 交付"
+        )
 
     if notify_customer:
         for fulfillment in fulfillments:
@@ -1438,6 +1459,7 @@ def _move_lines_to_replace_fulfillment(
 
 
 def create_return_fulfillment(
+    requestor: Optional[User],
     user: Optional[User],
     app: Optional["App"],
     order: "Order",
@@ -1486,7 +1508,8 @@ def create_return_fulfillment(
 
         transaction.on_commit(
             lambda: order_returned(
-                order,
+                requestor=requestor,
+                order=order,
                 user=user,
                 app=app,
                 returned_lines=returned_lines_list,
@@ -1541,6 +1564,7 @@ def process_replace(
 
 
 def create_fulfillments_for_returned_products(
+    requestor: Optional[User],
     user: Optional[User],
     app: Optional["App"],
     order: "Order",
@@ -1608,6 +1632,7 @@ def create_fulfillments_for_returned_products(
                 manager=manager,
             )
         return_fulfillment = create_return_fulfillment(
+            requestor=requestor,
             user=user,
             app=app,
             order=order,

@@ -341,6 +341,7 @@ class ProductVariantCreate(ModelMutation):
                     user,
                     instance,
                     cls.create_variant_stocks(instance, stocks),
+                    None,
                     reason=f"用户 {user.account or user.first_name} 正在新建商品品种"
                 )
             attributes = cleaned_input.get("attributes")

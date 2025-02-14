@@ -72,6 +72,7 @@ class ProductVariantStocksCreate(BaseMutation):
                 user,
                 variant,
                 sum([stock_data["quantity"] for stock_data in stocks]),
+                None,
                 reason=f"用户 {user.account or user.first_name} 新增了商品库存"
             )
 

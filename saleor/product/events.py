@@ -70,12 +70,13 @@ def product_variant_delete_event(user, variant):
     )
 
 
-def product_variant_stock_changed_event(user, variant, stock, reason):
+def product_variant_stock_changed_event(user, variant, stock, order, reason):
     ProductVariantEvent.objects.create(
         user=user,
         product_variant=variant,
         product_variant_name=variant.name,
         stock_changed=stock,
+        order=order,
         type=ProductVariantEvents.PRODUCT_VARIANT_STOCK_CHANGED,
         message=f"{variant.product.name} {variant.name} 库存变动 {stock:+}（原因：{reason}）",
     )

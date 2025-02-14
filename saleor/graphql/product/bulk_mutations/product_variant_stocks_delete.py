@@ -95,6 +95,7 @@ class ProductVariantStocksDelete(BaseMutation):
             user, 
             variant, 
             stock_deleted,
+            None,
             reason=f"用户 {user.account or user.first_name} 删除了商品库存"
         )
 
