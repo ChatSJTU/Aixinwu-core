@@ -72,11 +72,23 @@ class ChannelContextTypeForObjectType(ModelObjectType[T]):
         attname, default_value, root: ChannelContext, info: ResolveInfo, **args
     ):
         resolver = get_default_resolver()
-        return resolver(attname, default_value, root.node, info, **args)
+        try:
+            return resolver(attname, default_value, root.node, info, **args)
+        except AttributeError:
+            return resolver(
+                attname,
+                default_value,
+                root,
+                info,
+                **args,
+            )
 
     @staticmethod
     def resolve_id(root: ChannelContext[T], _info: ResolveInfo):
-        return root.node.pk
+        try:
+            return root.node.pk
+        except AttributeError:
+            return root.pk
 
     @staticmethod
     def resolve_translation(

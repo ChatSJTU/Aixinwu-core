@@ -14517,7 +14517,7 @@ type ProductEvent {
   """The user of the event."""
   user: User
 
-  """The product of the event."""
+  """The product to which the event belongs."""
   product: Product
 
   """The product name of the event"""

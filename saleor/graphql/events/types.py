@@ -81,7 +81,11 @@ class ProductEvent(ModelObjectType[product_models.ProductEvent]):
     id = graphene.ID(required=True, description="The ID of the product event.")
     date = graphene.DateTime(description="Datetime of the event.")
     user = graphene.Field(User, description="The user of the event.")
-    product = graphene.Field(Product, description="The product of the event.")
+    # FIXME: Add Channel Context to fix resolving issues.
+    product = graphene.Field(
+        Product,
+        description="The product to which the event belongs.",
+    )
     product_name = graphene.String(description="The product name of the event")
     type = graphene.String(description="The type of the product event.")
     message = graphene.String(description="The message of the product event.")
