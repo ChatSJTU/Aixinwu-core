@@ -262,12 +262,23 @@ def queryset_in_batches(queryset):
 
 
 def append_to_file(
-    export_data: list[dict[str, Union[str, bool]]],
+    export_data: list[dict[str, Union[str, bool, datetime]]],
     headers: list[str],
     temporary_file: Any,
     file_type: str,
     delimiter: str,
 ):
+    if len(export_data) > 0:
+        datetime_fields = []
+        for k, v in export_data[0].items():
+            if isinstance(v, datetime):
+                datetime_fields.append(k)
+        for data in export_data:
+            for k in datetime_fields:
+                v = data[k]
+                if k in data and isinstance(v, datetime):
+                    data[k] = v.replace(tzinfo=None)
+
     table = etl.fromdicts(export_data, header=headers, missing="")
 
     if file_type == FileTypes.CSV:
