@@ -12,6 +12,7 @@ import dj_email_url
 import django_cache_url
 import django_stubs_ext
 import jaeger_client.config
+import openpyxl.cell._writer
 import pkg_resources
 import sentry_sdk
 import sentry_sdk.utils
@@ -26,7 +27,11 @@ from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
-from . import PatchedSubscriberExecutionContext, __version__
+from . import (
+    PatchedSubscriberExecutionContext,
+    __version__,
+    patched_openpyxl_set_attributes,
+)
 from .core.languages import LANGUAGES as CORE_LANGUAGES
 from .core.schedules import initiated_promotion_webhook_schedule
 
@@ -945,3 +950,6 @@ COMMON_REQUESTS_TIMEOUT = (REQUESTS_CONN_EST_TIMEOUT, 18)
 
 WEBHOOK_TIMEOUT = (REQUESTS_CONN_EST_TIMEOUT, 18)
 WEBHOOK_SYNC_TIMEOUT = (REQUESTS_CONN_EST_TIMEOUT, 18)
+
+# Patch openpyxl excel writer to remove timezone from datetime
+openpyxl.cell._writer._set_attributes = patched_openpyxl_set_attributes
