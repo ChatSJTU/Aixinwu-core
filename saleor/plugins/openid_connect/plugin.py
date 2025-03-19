@@ -347,8 +347,21 @@ class OpenIDConnectPlugin(BasePlugin):
             ),
             None,
         )
+        graduate_date = next(
+            (
+                identity.get("graduateDate")
+                for identity in identities
+                if identity.get("userType") == "student" and identity.get("isDefault")
+            ),
+            None,
+        )
         if admission_date:
             admission_date = datetime.strptime(admission_date, "%Y-%m-%d").replace(
+                tzinfo=pytz.timezone("Asia/Shanghai")
+            )
+
+        if graduate_date:
+            admission_date = datetime.strptime(graduate_date, "%Y-%m-%d").replace(
                 tzinfo=pytz.timezone("Asia/Shanghai")
             )
 
@@ -359,7 +372,11 @@ class OpenIDConnectPlugin(BasePlugin):
             self.config.email_domain,
             self.config.authorization_url,
             invitation_code=data.get("invitation_code"),
-            extra_info={"admission_date": admission_date, "positions": positions},
+            extra_info={
+                "admission_date": admission_date,
+                "graduate_date": graduate_date,
+                "positions": positions,
+            },
         )
 
         user_permissions = []

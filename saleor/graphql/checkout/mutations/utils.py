@@ -152,6 +152,23 @@ def check_admission_date_requirement(
                 }
             )
 
+        delta = variant.product.metadata.get("allow_graduate_date", "")
+        try:
+            delta = int(delta)
+        except ValueError:
+            continue
+        if not user.graduate_date or (
+            user.graduate_date + datetime.timedelta(days=delta) < timezone.now()
+        ):
+            raise ValidationError(
+                {
+                    "quantity": ValidationError(
+                        "You are not allowed to buy this product.",
+                        code=CheckoutErrorCode.REQUIREMENT_NOT_MEET.value,
+                    )
+                }
+            )
+
 
 def check_position_requirement(
     user,
@@ -190,7 +207,8 @@ def check_poor_requirement(
                     )
                 }
             )
-        
+
+
 def check_code_requirement(
     user,
     variants,

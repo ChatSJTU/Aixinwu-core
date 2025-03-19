@@ -179,6 +179,7 @@ class User(
     code = models.CharField(max_length=256, blank=True, default="")
     user_type = models.CharField(max_length=256, blank=True, default="")
     admission_date = models.DateTimeField(null=True, blank=True)
+    graduate_date = models.DateTimeField(null=True, blank=True)
     positions = models.JSONField(blank=True, default=list)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

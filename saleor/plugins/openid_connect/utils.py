@@ -323,7 +323,7 @@ def get_or_create_user_from_payload(
 
     positions = extra_info.get("positions", [])
     admission_date = extra_info.get("admission_date", None)
-
+    graduate_date = extra_info.get("graduate_date", None)
     defaults_create = {
         "is_active": True,
         "is_confirmed": True,
@@ -331,6 +331,7 @@ def get_or_create_user_from_payload(
         "account": account,
         "user_type": payload.get("type", "student"),
         "admission_date": admission_date,
+        "graduate_date": graduate_date,
         "positions": positions,
         "first_name": payload.get("name", ""),
         "last_name": payload.get("family_name", ""),
@@ -360,7 +361,7 @@ def get_or_create_user_from_payload(
             user.search_document = prepare_user_search_document_value(
                 user, attach_addresses_data=False
             )
-            user.save(update_fields=['search_document'])
+            user.save(update_fields=["search_document"])
             match_orders_with_new_user(user)
         except User.MultipleObjectsReturned:
             logger.warning("Multiple users returned for single OIDC sub ID")
@@ -368,10 +369,12 @@ def get_or_create_user_from_payload(
                 email=user_email,
                 defaults=defaults_create,
             )
-        
-        if (user.last_login < datetime(2000, 1, 1, tzinfo=pytz.timezone("Asia/Shanghai"))):
+
+        if user.last_login < datetime(
+            2000, 1, 1, tzinfo=pytz.timezone("Asia/Shanghai")
+        ):
             user.balance += 50
-            user.save(update_fields=['balance'])
+            user.save(update_fields=["balance"])
             first_login_balance_event(user=user)
             site = Site.objects.get_current()
 
@@ -413,7 +416,8 @@ def get_or_create_user_from_payload(
             user_last_name=defaults_create["last_name"],
             user_code=defaults_create["code"],
             user_type=defaults_create["user_type"],
-            user_adminssion_date=defaults_create["admission_date"],
+            user_admission_date=defaults_create["admission_date"],
+            user_graduate_date=defaults_create["graduate_date"],
             user_positions=defaults_create["positions"],
             sub=account,  # type: ignore
             login_time=timezone.now(),
@@ -468,7 +472,8 @@ def _update_user_details(
     user_last_name: str,
     user_code: str,
     user_type: str,
-    user_adminssion_date: datetime,
+    user_admission_date: datetime,
+    user_graduate_date: datetime,
     user_positions: list[str],
     sub: str,
     login_time: datetime,
@@ -508,9 +513,13 @@ def _update_user_details(
         user.user_type = user_type
         fields_to_save.update({"user_type", "search_document"})
 
-    if user.admission_date != user_adminssion_date:
-        user.admission_date = user_adminssion_date
+    if user.admission_date != user_admission_date:
+        user.admission_date = user_admission_date
         fields_to_save.update({"admission_date", "search_document"})
+
+    if user.graduate_date != user_graduate_date:
+        user.graduate_date = user_graduate_date
+        fields_to_save.update({"graduate_date", "search_document"})
 
     if user.positions != user_positions:
         user.positions = user_positions
