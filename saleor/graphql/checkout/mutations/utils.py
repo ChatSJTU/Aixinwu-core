@@ -135,39 +135,41 @@ def check_admission_date_requirement(
     variants,
 ):
     for variant in variants:
-        delta = variant.product.metadata.get("allow_admission_date", "")
-        try:
-            delta = int(delta)
-        except ValueError:
-            continue
-        if not user.admission_date or (
-            user.admission_date + datetime.timedelta(days=delta) < timezone.now()
-        ):
-            raise ValidationError(
-                {
-                    "quantity": ValidationError(
-                        "You are not allowed to buy this product.",
-                        code=CheckoutErrorCode.REQUIREMENT_NOT_MEET.value,
-                    )
-                }
-            )
+        delta = variant.product.metadata.get("allow_admission_date", None)
+        if delta is not None:
+            try:
+                delta = int(delta)
+            except ValueError:
+                raise ValidationError("系统配置错误，请联系管理人员。")
+            if not user.admission_date or (
+                user.admission_date + datetime.timedelta(days=delta) < timezone.now()
+            ):
+                raise ValidationError(
+                    {
+                        "quantity": ValidationError(
+                            "You are not allowed to buy this product.",
+                            code=CheckoutErrorCode.REQUIREMENT_NOT_MEET.value,
+                        )
+                    }
+                )
 
-        delta = variant.product.metadata.get("allow_graduate_date", "")
-        try:
-            delta = int(delta)
-        except ValueError:
-            continue
-        if not user.graduate_date or (
-            user.graduate_date + datetime.timedelta(days=delta) < timezone.now()
-        ):
-            raise ValidationError(
-                {
-                    "quantity": ValidationError(
-                        "You are not allowed to buy this product.",
-                        code=CheckoutErrorCode.REQUIREMENT_NOT_MEET.value,
-                    )
-                }
-            )
+        allow_graduate_date = variant.product.metadata.get("allow_graduate_date", None)
+        if allow_graduate_date is not None:
+            try:
+                max_graduate_date = datetime.datetime.strptime(
+                    allow_graduate_date, "%Y-%m-%d"
+                ).replace(tzinfo=pytz.timezone("Asia/Shanghai"))
+            except ValueError:
+                raise ValidationError("系统配置错误，请联系管理人员。")
+            if not user.graduate_date or (user.graduate_date > max_graduate_date):
+                raise ValidationError(
+                    {
+                        "quantity": ValidationError(
+                            "You are not allowed to buy this product.",
+                            code=CheckoutErrorCode.REQUIREMENT_NOT_MEET.value,
+                        )
+                    }
+                )
 
 
 def check_position_requirement(

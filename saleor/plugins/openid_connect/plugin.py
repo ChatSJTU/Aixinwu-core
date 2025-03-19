@@ -361,7 +361,7 @@ class OpenIDConnectPlugin(BasePlugin):
             )
 
         if graduate_date:
-            admission_date = datetime.strptime(graduate_date, "%Y-%m-%d").replace(
+            graduate_date = datetime.strptime(graduate_date, "%Y-%m-%d").replace(
                 tzinfo=pytz.timezone("Asia/Shanghai")
             )
 
