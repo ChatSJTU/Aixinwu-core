@@ -44,3 +44,23 @@ class ProductFieldEnum(BaseEnum):
 
     class Meta:
         doc_category = DOC_CATEGORY_PRODUCTS
+
+
+class OrderFieldEnum(BaseEnum):
+    NUMBER = "number"
+    USER_FIRST_NAME = "user first name"
+    USER_ACCOUNT = "user account"
+    USER_EMAIL = "user email"
+    USER_CODE = "user code"
+    USER_TYPE = "user type"
+    ORDERLINE_PRODUCT_NAME = "orderline product name"
+    ORDERLINE_QUANTITY = "orderline quantity"
+    ORDERLINE_TOTAL_PRICE_GROSS_AMOUNT = "orderline total price gross amount"
+    TOTAL_GROSS_AMOUNT = "total gross amount"
+    CREATED_AT = "created at"
+    CUSTOMER_NOTE = "customer note"
+    STATUS = "status"
+    CHARGE_STATUS = "charge status"
+    ADDRESS_FIRST_NAME = "address first name"
+    ADDRESS_PHONE = "address phone"
+    ADDRESS_STREET_ADDRESS_1 = "address street address 1"

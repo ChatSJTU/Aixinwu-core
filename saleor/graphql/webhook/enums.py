@@ -143,6 +143,7 @@ WEBHOOK_EVENT_DESCRIPTION = {
     WebhookEventAsyncType.ORDER_BULK_CREATED: "Orders are imported."
     + ADDED_IN_314
     + PREVIEW_FEATURE,
+    WebhookEventAsyncType.ORDER_EXPORT_COMPLETED: "An order export is completed.",
     WebhookEventAsyncType.DRAFT_ORDER_CREATED: "A draft order is created.",
     WebhookEventAsyncType.DRAFT_ORDER_UPDATED: "A draft order is updated.",
     WebhookEventAsyncType.DRAFT_ORDER_DELETED: "A draft order is deleted.",

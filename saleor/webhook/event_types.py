@@ -84,6 +84,7 @@ class WebhookEventAsyncType:
     ORDER_FULFILLED = "order_fulfilled"
     ORDER_METADATA_UPDATED = "order_metadata_updated"
     ORDER_BULK_CREATED = "order_bulk_created"
+    ORDER_EXPORT_COMPLETED = "order_export_completed"
 
     FULFILLMENT_CREATED = "fulfillment_created"
     FULFILLMENT_CANCELED = "fulfillment_canceled"
@@ -414,6 +415,10 @@ class WebhookEventAsyncType:
         },
         ORDER_BULK_CREATED: {
             "name": "Order bulk created",
+            "permission": OrderPermissions.MANAGE_ORDERS,
+        },
+        ORDER_EXPORT_COMPLETED: {
+            "name": "Order export completed",
             "permission": OrderPermissions.MANAGE_ORDERS,
         },
         FULFILLMENT_CREATED: {

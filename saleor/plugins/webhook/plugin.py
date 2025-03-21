@@ -1281,6 +1281,16 @@ class WebhookPlugin(BasePlugin):
                 legacy_data_generator=generate_bulk_order_payload,
             )
 
+    def order_export_completed(
+        self, export: "ExportFile", previous_value: None
+    ) -> None:
+        if not self.active:
+            return previous_value
+        self._trigger_export_event(
+            WebhookEventAsyncType.ORDER_EXPORT_COMPLETED,
+            export,
+        )
+
     def draft_order_created(self, order: "Order", previous_value: Any) -> Any:
         if not self.active:
             return previous_value

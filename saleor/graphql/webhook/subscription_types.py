@@ -653,6 +653,25 @@ class OrderBulkCreated(SubscriptionObjectType):
         doc_category = DOC_CATEGORY_ORDERS
 
 
+class OrderExportCompleted(SubscriptionObjectType):
+    export = graphene.Field(
+        "saleor.graphql.csv.types.ExportFile",
+        description="The export file for orders.",
+    )
+
+    class Meta:
+        root_type = "ExportFile"
+        enable_dry_run = True
+        interfaces = (Event,)
+        description = "Event sent when order export is completed."
+        doc_category = DOC_CATEGORY_ORDERS
+
+    @staticmethod
+    def resolve_export(root, info: ResolveInfo):
+        _, export_file = root
+        return export_file
+
+
 class DraftOrderCreated(SubscriptionObjectType, OrderBase):
     class Meta:
         root_type = "Order"
@@ -2774,6 +2793,7 @@ WEBHOOK_TYPES_MAP = {
     WebhookEventAsyncType.ORDER_EXPIRED: OrderExpired,
     WebhookEventAsyncType.ORDER_METADATA_UPDATED: OrderMetadataUpdated,
     WebhookEventAsyncType.ORDER_BULK_CREATED: OrderBulkCreated,
+    WebhookEventAsyncType.ORDER_EXPORT_COMPLETED: OrderExportCompleted,
     WebhookEventAsyncType.DRAFT_ORDER_CREATED: DraftOrderCreated,
     WebhookEventAsyncType.DRAFT_ORDER_UPDATED: DraftOrderUpdated,
     WebhookEventAsyncType.DRAFT_ORDER_DELETED: DraftOrderDeleted,

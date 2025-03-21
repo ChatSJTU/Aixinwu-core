@@ -942,6 +942,12 @@ class PluginsManager(PaymentInterface):
         default_value = None
         return self.__run_method_on_plugins("order_bulk_created", default_value, orders)
 
+    def order_export_completed(self, export: "ExportFile"):
+        default_value = None
+        return self.__run_method_on_plugins(
+            "order_export_completed", default_value, export
+        )
+
     def fulfillment_created(
         self, fulfillment: "Fulfillment", notify_customer: Optional[bool] = True
     ):

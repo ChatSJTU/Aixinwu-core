@@ -844,6 +844,12 @@ class BasePlugin:
     # is imported.
     order_bulk_created: Callable[[list["Order"], Any], Any]
 
+    # Trigger when an order export is completed.
+    #
+    # Overwrite this method if you need to trigger specific logic after an order
+    # export is completed.
+    order_export_completed: Callable[["ExportFile", None], None]
+
     # Trigger when page is created.
     #
     # Overwrite this method if you need to trigger specific logic when a page is

@@ -6,7 +6,7 @@ from ..core.connection import create_connection_slice, filter_connection_queryse
 from ..core.fields import FilterConnectionField, PermissionsField
 from ..core.utils import from_global_id_or_error
 from .filters import ExportFileFilterInput
-from .mutations import ExportGiftCards, ExportProducts, ExportVoucherCodes
+from .mutations import ExportGiftCards, ExportOrders, ExportProducts, ExportVoucherCodes
 from .resolvers import resolve_export_file, resolve_export_files
 from .sorters import ExportFileSortingInput
 from .types import ExportFile, ExportFileCountableConnection
@@ -43,3 +43,4 @@ class CsvMutations(graphene.ObjectType):
     export_products = ExportProducts.Field()
     export_gift_cards = ExportGiftCards.Field()
     export_voucher_codes = ExportVoucherCodes.Field()
+    export_orders = ExportOrders.Field()

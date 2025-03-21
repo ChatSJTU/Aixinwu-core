@@ -1,7 +1,9 @@
 from datetime import timedelta
 
 import pillow_avif  # noqa: F401 # imported for side effects
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from openpyxl.utils.datetime import to_excel, to_ISO8601
+from openpyxl.utils.exceptions import IllegalCharacterError
 
 from .celeryconf import app as celery_app
 
@@ -44,10 +46,10 @@ def patched_openpyxl_set_attributes(cell, styled=None):
     if cell.data_type == "d":
         if hasattr(value, "tzinfo") and value.tzinfo is not None:
             # raise TypeError(
-            #     "Excel does not support timezones in datetimes. "
+            #     "Excel does not support timezones in datetimes."
             #     "The tzinfo in the datetime/time object must be set to None."
             # )
-            value = value.replace(tzinfo=None)
+            value = value.replace(tzinfo=None) + timedelta(hours=8)
 
         if cell.parent.parent.iso_dates and not isinstance(value, timedelta):
             value = to_ISO8601(value)
@@ -59,3 +61,19 @@ def patched_openpyxl_set_attributes(cell, styled=None):
         cell.parent._hyperlinks.append(cell.hyperlink)
 
     return value, attrs
+
+
+def patched_check_string(self, value):
+    if value is None:
+        return
+    # convert to str string
+    try:
+        value = str(value, self.encoding)
+    except TypeError:
+        value = str(value)
+    # string must never be longer than 32,767 characters
+    # truncate if necessary
+    value = value[:32767]
+    if next(ILLEGAL_CHARACTERS_RE.finditer(value), None):
+        raise IllegalCharacterError(f"{value} cannot be used in worksheets.")
+    return value

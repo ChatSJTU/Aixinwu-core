@@ -6,6 +6,7 @@ import warnings
 from datetime import timedelta
 from typing import Optional
 from urllib.parse import urlparse
+from uuid import UUID
 
 import dj_database_url
 import dj_email_url
@@ -22,6 +23,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.management.utils import get_random_secret_key
 from django.core.validators import URLValidator
 from graphql.execution import executor
+from phonenumber_field.phonenumber import PhoneNumber
 from pytimeparse import parse
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -30,6 +32,7 @@ from sentry_sdk.integrations.logging import ignore_logger
 from . import (
     PatchedSubscriberExecutionContext,
     __version__,
+    patched_check_string,
     patched_openpyxl_set_attributes,
 )
 from .core.languages import LANGUAGES as CORE_LANGUAGES
@@ -953,3 +956,6 @@ WEBHOOK_SYNC_TIMEOUT = (REQUESTS_CONN_EST_TIMEOUT, 18)
 
 # Patch openpyxl excel writer to remove timezone from datetime
 openpyxl.cell._writer._set_attributes = patched_openpyxl_set_attributes
+# Patch openpyxl excel writer to support uuid field and phone number field
+openpyxl.cell.cell.STRING_TYPES = openpyxl.cell.cell.STRING_TYPES + (UUID, PhoneNumber,)
+openpyxl.cell.cell.Cell.check_string = patched_check_string

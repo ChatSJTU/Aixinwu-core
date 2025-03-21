@@ -4,13 +4,17 @@ from tempfile import NamedTemporaryFile
 from typing import IO, TYPE_CHECKING, Any, Optional, Union
 
 import petl as etl
+from django.db.models import CharField, F, Func, Value
+from django.db.models.functions import Cast, Concat, LPad
 from django.utils import timezone
 
 from ...discount.models import VoucherCode
 from ...giftcard.models import GiftCard
+from ...order.models import Order, OrderLine
 from ...product.models import Product
 from .. import FileTypes
 from ..notifications import send_export_download_link_notification
+from .order_headers import get_order_export_fields_and_headers
 from .product_headers import get_product_export_fields_and_headers_info
 from .products_data import get_products_data
 
@@ -119,6 +123,38 @@ def export_voucher_codes(
     save_csv_file_in_export_file(export_file, temporary_file, file_name)
     temporary_file.close()
     send_export_download_link_notification(export_file, "voucher codes")
+
+
+def export_orders(
+    export_file: "ExportFile",
+    scope: dict[str, Union[str, dict]],
+    fields: list[str],
+    file_type: str,
+    delimiter: str = ",",
+):
+    from ...graphql.order.filters import OrderFilter
+
+    file_name = get_filename("order", file_type)
+    queryset = get_queryset(Order, OrderFilter, scope)
+    queryset = OrderLine.objects.filter(order__in=queryset)
+
+    export_fields, file_headers = get_order_export_fields_and_headers(fields)
+
+    temporary_file = create_file_with_headers(file_headers, delimiter, file_type)
+
+    export_orders_in_batches(
+        queryset,
+        export_fields,
+        export_fields,
+        delimiter,
+        temporary_file,
+        file_type,
+    )
+
+    save_csv_file_in_export_file(export_file, temporary_file, file_name)
+    temporary_file.close()
+
+    send_export_download_link_notification(export_file, "orders")
 
 
 def get_filename(model_name: str, file_type: str) -> str:
@@ -240,6 +276,43 @@ def export_voucher_codes_in_batches(
         export_data = list(voucher_codes_batch.values(*export_fields))
 
         append_to_file(export_data, export_fields, temporary_file, file_type, delimiter)
+
+
+def export_orders_in_batches(
+    queryset: "QuerySet",
+    export_fields: list[str],
+    headers: list[str],
+    delimiter: str,
+    temporary_file: Any,
+    file_type: str,
+):
+    for batch_pks in queryset_in_batches(queryset):
+        orderlines_batch = OrderLine.objects.filter(pk__in=batch_pks)
+
+        export_data = list(
+            orderlines_batch.annotate(
+                order_number=Concat(
+                    Func(
+                        Func(
+                            Value("Asia/Shanghai"),
+                            F("created_at"),
+                            function="timezone",
+                            output_field=CharField(),
+                        ),
+                        Value("YYYYMMDD"),
+                        function="to_char",
+                        output_field=CharField(),
+                    ),
+                    LPad(
+                        Cast(F("order__number"), output_field=CharField()),
+                        4,
+                        Value("0"),
+                    ),
+                )
+            ).values(*export_fields)
+        )
+
+        append_to_file(export_data, headers, temporary_file, file_type, delimiter)
 
 
 def queryset_in_batches(queryset):

@@ -87,3 +87,31 @@ class ProductExportFields:
             "variants__channel_listings__preorder_quantity_threshold"
         ),
     }
+
+
+class OrderExportFields:
+    """Data structure with fields for order export."""
+
+    HEADERS_TO_FIELDS_MAPPING = {
+        "fields": {
+            "id": "order__id",
+            "number": "order_number",
+            "user first name": "order__user__first_name",
+            "user account": "order__user__account",
+            "user email": "order__user__email",
+            "user code": "order__user__code",
+            "user type": "order__user__user_type",
+            "orderline product name": "product_name",
+            "orderline quantity": "quantity",
+            "orderline total price gross amount": "total_price_gross_amount",
+            "total gross amount": "order__total_gross_amount",
+            "created at": "order__created_at",
+            "customer note": "order__customer_note",
+            "status": "order__status",
+            "charge status": "order__charge_status",
+            "address first name": "order__shipping_address__first_name",
+            "address phone": "order__shipping_address__phone",
+            "address street address 1": "order__shipping_address__street_address_1",
+        },
+    }
+
