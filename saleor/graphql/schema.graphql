@@ -2190,6 +2190,9 @@ enum WebhookEventTypeEnum @doc(category: "Webhooks") {
   """
   ORDER_BULK_CREATED
 
+  """An order export is completed."""
+  ORDER_EXPORT_COMPLETED
+
   """A new fulfillment is created."""
   FULFILLMENT_CREATED
 
@@ -2913,6 +2916,9 @@ enum WebhookEventTypeAsyncEnum @doc(category: "Webhooks") {
   Note: this API is currently in Feature Preview and can be subject to changes at later point.
   """
   ORDER_BULK_CREATED
+
+  """An order export is completed."""
+  ORDER_EXPORT_COMPLETED
 
   """A new fulfillment is created."""
   FULFILLMENT_CREATED
@@ -3839,6 +3845,7 @@ enum WebhookSampleEventTypeEnum @doc(category: "Webhooks") {
   ORDER_FULFILLED
   ORDER_METADATA_UPDATED
   ORDER_BULK_CREATED
+  ORDER_EXPORT_COMPLETED
   FULFILLMENT_CREATED
   FULFILLMENT_CANCELED
   FULFILLMENT_APPROVED
@@ -19210,6 +19217,20 @@ type Mutation {
   ): ExportVoucherCodes @doc(category: "Discounts") @webhookEventsInfo(asyncEvents: [VOUCHER_CODE_EXPORT_COMPLETED], syncEvents: [])
 
   """
+  Export orders to csv file. 
+  
+  Requires one of the following permissions: MANAGE_ORDERS.
+  
+  Triggers the following webhook events:
+  - NOTIFY_USER (async): A notification for the exported file.
+  - ORDER_EXPORT_COMPLETED (async): A notification for the exported file.
+  """
+  exportOrders(
+    """Fields required to export orders data."""
+    input: ExportOrdersInput!
+  ): ExportOrders @doc(category: "Orders") @webhookEventsInfo(asyncEvents: [NOTIFY_USER, ORDER_EXPORT_COMPLETED], syncEvents: [])
+
+  """
   Upload a file. This mutation must be sent as a `multipart` request. More detailed specs of the upload format can be found here: https://github.com/jaydenseric/graphql-multipart-request-spec 
   
   Requires one of the following permissions: AUTHENTICATED_APP, AUTHENTICATED_STAFF_USER.
@@ -29549,6 +29570,60 @@ input ExportVoucherCodesInput @doc(category: "Discounts") {
 }
 
 """
+Export orders to csv file. 
+
+Requires one of the following permissions: MANAGE_ORDERS.
+
+Triggers the following webhook events:
+- NOTIFY_USER (async): A notification for the exported file.
+- ORDER_EXPORT_COMPLETED (async): A notification for the exported file.
+"""
+type ExportOrders @doc(category: "Orders") @webhookEventsInfo(asyncEvents: [NOTIFY_USER, ORDER_EXPORT_COMPLETED], syncEvents: []) {
+  """
+  The newly created export file job which is responsible for export data.
+  """
+  exportFile: ExportFile
+  errors: [ExportError!]!
+}
+
+input ExportOrdersInput @doc(category: "Orders") {
+  """Determine which orders should be exported."""
+  scope: ExportScope!
+
+  """Filtering options for orders."""
+  filter: OrderFilterInput
+
+  """List of orders IDs to export."""
+  ids: [ID!]
+
+  """List of order fields witch should be exported."""
+  fields: [OrderFieldEnum!]
+
+  """Type of exported file."""
+  fileType: FileTypesEnum!
+}
+
+enum OrderFieldEnum {
+  NUMBER
+  USER_FIRST_NAME
+  USER_ACCOUNT
+  USER_EMAIL
+  USER_CODE
+  USER_TYPE
+  ORDERLINE_PRODUCT_NAME
+  ORDERLINE_QUANTITY
+  ORDERLINE_TOTAL_PRICE_GROSS_AMOUNT
+  TOTAL_GROSS_AMOUNT
+  CREATED_AT
+  CUSTOMER_NOTE
+  STATUS
+  CHARGE_STATUS
+  ADDRESS_FIRST_NAME
+  ADDRESS_PHONE
+  ADDRESS_STREET_ADDRESS_1
+}
+
+"""
 Upload a file. This mutation must be sent as a `multipart` request. More detailed specs of the upload format can be found here: https://github.com/jaydenseric/graphql-multipart-request-spec 
 
 Requires one of the following permissions: AUTHENTICATED_APP, AUTHENTICATED_STAFF_USER.
@@ -34212,6 +34287,24 @@ type OrderBulkCreated implements Event @doc(category: "Orders") {
 
   """The orders the event relates to."""
   orders: [Order!]
+}
+
+"""Event sent when order export is completed."""
+type OrderExportCompleted implements Event @doc(category: "Orders") {
+  """Time of the event."""
+  issuedAt: DateTime
+
+  """Saleor version that triggered the event."""
+  version: String
+
+  """The user or application that triggered the event."""
+  issuingPrincipal: IssuingPrincipal
+
+  """The application receiving the webhook."""
+  recipient: App
+
+  """The export file for orders."""
+  export: ExportFile
 }
 
 """
