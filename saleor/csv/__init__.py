@@ -32,3 +32,13 @@ class FileTypes:
         (CSV, "Plain CSV file."),
         (XLSX, "Excel XLSX file."),
     ]
+
+class ExportType:
+    USER = "user"
+    ORDER = "order"
+    PRODUCT = "product"
+    CHOICES = [
+        (USER, "Exported User"),
+        (ORDER, "Exported Order"),
+        (PRODUCT, "Exported Product")
+    ]

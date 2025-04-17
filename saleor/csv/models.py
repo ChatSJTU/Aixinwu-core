@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import connection, models
 from django.db.models import JSONField
 from django.utils import timezone
 
@@ -9,6 +9,16 @@ from ..core.utils.json_serializer import CustomJsonEncoder
 from . import ExportEvents
 
 
+def get_export_number():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT nextval('csv_exportfile_seq')")
+        result = cursor.fetchone()
+        if result:
+            return result[0]
+        else:
+            raise ValueError("Could not retrieve the next order number")
+
+
 class ExportFile(Job):
     user = models.ForeignKey(
         User, related_name="export_files", on_delete=models.CASCADE, null=True
@@ -17,6 +27,8 @@ class ExportFile(Job):
         App, related_name="export_files", on_delete=models.CASCADE, null=True
     )
     content_file = models.FileField(upload_to="export_files", null=True)
+    export_type = models.CharField(max_length=255, name="export_type", null=True)
+    number = models.IntegerField(default=get_export_number, null=True, unique=True)
 
 
 class ExportEvent(models.Model):

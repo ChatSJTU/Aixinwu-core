@@ -80,6 +80,8 @@ class ExportFile(ModelObjectType[models.ExportFile]):
     )
     user = graphene.Field(User, description="The user who requests file export.")
     app = graphene.Field(App, description="The app which requests file export.")
+    export_type = graphene.String(description="The type of the file that is exported.")
+    number = graphene.Int(description="The number of the export file.")
 
     class Meta:
         description = "Represents a job data of exported file."

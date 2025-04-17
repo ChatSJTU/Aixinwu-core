@@ -15304,6 +15304,12 @@ type ExportFile implements Node & Job {
 
   """The app which requests file export."""
   app: App
+
+  """The type of the file that is exported."""
+  exportType: String
+
+  """The number of the export file."""
+  number: Int
 }
 
 """History log of export file."""

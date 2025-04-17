@@ -1,5 +1,6 @@
 import graphene
 
+from ....csv import ExportType
 from ....csv import models as csv_models
 from ....csv.events import export_started_event
 from ....csv.tasks import export_products_task
@@ -97,7 +98,7 @@ class ExportProducts(BaseExportMutation):
         app = get_app_promise(info.context).get()
 
         export_file = csv_models.ExportFile.objects.create(
-            app=app, user=info.context.user
+            app=app, user=info.context.user, export_type=ExportType.PRODUCT
         )
         export_started_event(export_file=export_file, app=app, user=info.context.user)
         export_products_task.delay(export_file.pk, scope, export_info, file_type)
