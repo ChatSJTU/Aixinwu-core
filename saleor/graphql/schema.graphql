@@ -10796,6 +10796,9 @@ type User implements Node & ObjectWithMetadata @doc(category: "Users") {
   """The data when the user last update the account information."""
   updatedAt: DateTime!
 
+  """Banned until datetime."""
+  notActiveUntil: DateTime
+
   """
   Returns a list of user's stored payment methods that can be used in provided channel. The field returns a list of stored payment methods by payment apps. When `amount` is not provided, 0 will be used as default value.
   

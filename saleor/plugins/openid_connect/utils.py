@@ -555,6 +555,11 @@ def get_user_from_token(claims: CodeIDToken) -> User:
     user = User.objects.filter(email=user_email).first()
     if not user or not user.can_login(site_settings):
         raise AuthenticationError("User does not exist.")
+
+    if user.not_active_until:
+        user.not_active_until = None
+        user.save()
+
     return user
 
 

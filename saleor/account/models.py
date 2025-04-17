@@ -190,6 +190,7 @@ class User(
     continuous = models.IntegerField(blank=True, default=1)
     updated_at = models.DateTimeField(auto_now=True, db_index=True)
     last_login = models.DateTimeField(default=timezone.now)
+    not_active_until = models.DateTimeField(null=True, blank=True)
     last_password_reset_request = models.DateTimeField(null=True, blank=True)
     default_shipping_address = models.ForeignKey(
         Address, related_name="+", null=True, blank=True, on_delete=models.SET_NULL
@@ -329,6 +330,7 @@ class User(
     def can_login(self, site_settings: SiteSettings):
         return self.is_active and (
             site_settings.allow_login_without_confirmation
+            or (self.not_active_until and (datetime.now() >= self.not_active_until))
             or not site_settings.enable_account_confirmation_by_email
             or self.is_confirmed
         )
