@@ -41,11 +41,16 @@ class Command(BaseCommand):
                     code=userInfo.get("code"),
                 )
             except:
-                print(f"user with code {userInfo.get('code')} not exists!")
-                continue
+                try:
+                    user_object = User.objects.get(
+                        email=userInfo.get("email"),
+                    )
+                except:
+                    print(f"user with code {userInfo.get('code')} and email {userInfo.get('email')} not exists!")
+                    continue
             with transaction.atomic():
-                updated_balance = user_object.balance + Decimal(userInfo.get('coins'))
-                change_balance_event(user=user_object, balance=updated_balance)
+                updated_balance = user_object.balance + Decimal(userInfo.get('bonus'))
+                change_balance_event(user=user_object, balance=updated_balance, type=BalanceEvents.BONUS)
                 user_object.balance = updated_balance
                 user_object.save(update_fields=["balance"])
                 updated_count = updated_count + 1

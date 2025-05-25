@@ -158,10 +158,10 @@ def consecutive_login_balance_event(*, user: User, delta: Decimal) -> BalanceEve
     )
 
 
-def change_balance_event(*, user: User, balance: Decimal) -> BalanceEvent:
+def change_balance_event(*, user: User, balance: Decimal, type: str = BalanceEvents.MANUALLY_UPDATED) -> BalanceEvent:
     return BalanceEvent.objects.create(
         user=user,
-        type=BalanceEvents.MANUALLY_UPDATED,
+        type=type,
         balance=balance,
         delta=(balance - user.balance),
     )
