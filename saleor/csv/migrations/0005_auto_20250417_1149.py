@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="exportfile",
             name="number",
-            field=models.IntegerField(default=0, null=True, unique=True),
+            field=models.IntegerField(default=None, null=True),
         ),
         migrations.RunSQL(
             """
