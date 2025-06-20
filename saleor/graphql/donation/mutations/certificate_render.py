@@ -1,6 +1,8 @@
 import hashlib
 import os
+from decimal import Decimal
 
+import cn2an
 import graphene
 import pymupdf
 
@@ -9,6 +11,7 @@ from ....account.models import User
 from ....core.exceptions import PermissionDenied
 from ....core.utils import build_absolute_uri
 from ....donation.models import Donation
+from ....permission.enums import DonationPermissions
 from ...core import ResolveInfo
 from ...core.utils import from_global_id_or_error
 from ...utils import get_user_or_app_from_context
@@ -25,26 +28,6 @@ class CertificateRender(graphene.Mutation):
         description="The rendered certificate in PNG format."
     )
 
-    @staticmethod
-    def _integer_to_chinese(integer: int):
-        chinese_numerals = {
-            "0": "〇",
-            "1": "一",
-            "2": "二",
-            "3": "三",
-            "4": "四",
-            "5": "五",
-            "6": "六",
-            "7": "七",
-            "8": "八",
-            "9": "九",
-        }
-        return "".join(
-            chinese_numerals[digit]
-            for digit in str(integer)
-            if digit in chinese_numerals
-        )
-
     @classmethod
     def mutate(cls, root, info: ResolveInfo, donation_id):
         user = get_user_or_app_from_context(info.context)
@@ -54,13 +37,13 @@ class CertificateRender(graphene.Mutation):
         try:
             donation = (
                 Donation.objects.get(pk=db_id)
-                if user.has_perm("donation.manage_donations")
+                if user.has_perm(DonationPermissions.MANAGE_DONATIONS)
                 else Donation.objects.get(pk=db_id, donator=user.code)  # type: ignore
             )
         except Donation.DoesNotExist:
             raise PermissionDenied("Donation not found.")
         if not donation.certificate:
-            return CertificateRender(certificate=None)
+            return CertificateRender(certificate_pdf=None, certificate_png=None)
         certificate_template = os.path.join(
             settings.TEMPLATES_DIR,
             "certificates",
@@ -69,9 +52,9 @@ class CertificateRender(graphene.Mutation):
         data = {
             "name": User.objects.get(code=donation.donator).first_name,
             "quantity": str(donation.quantity),
-            "price": str(donation.price.amount).rstrip("0").rstrip("."),  # type: ignore
-            "year": cls._integer_to_chinese(donation.created_at.year),
-            "month": cls._integer_to_chinese(donation.created_at.month),
+            "price": str(donation.price.amount.quantize(Decimal("0.01"))),  # type: ignore
+            "year": cn2an.an2cn(donation.created_at.year, "direct"),
+            "month": cn2an.an2cn(donation.created_at.month, "low"),
         }
         doc = pymupdf.open(certificate_template)
         for page in doc:

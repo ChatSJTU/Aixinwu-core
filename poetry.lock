@@ -942,6 +942,21 @@ prompt-toolkit = ">=3.0.36"
 testing = ["pytest (>=7.2.1)", "pytest-cov (>=4.0.0)", "tox (>=4.4.3)"]
 
 [[package]]
+name = "cn2an"
+version = "0.5.23"
+description = "Convert Chinese numerals and Arabic numerals."
+optional = false
+python-versions = ">=3.6"
+groups = ["main"]
+files = [
+    {file = "cn2an-0.5.23-py3-none-any.whl", hash = "sha256:b19ab3c53676765c038ccdab51f69b7efa4f0b888139c34088935769241f1cbf"},
+    {file = "cn2an-0.5.23.tar.gz", hash = "sha256:eda06a63e5eff4a64488d9f22e5f2a4ceca6eaa63416e4f771e67edecb1a5bdb"},
+]
+
+[package.dependencies]
+proces = ">=0.1.7"
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -3462,6 +3477,18 @@ files = [
 babel = ">=2.5.0"
 
 [[package]]
+name = "proces"
+version = "0.1.7"
+description = "text preprocess."
+optional = false
+python-versions = ">=3.6"
+groups = ["main"]
+files = [
+    {file = "proces-0.1.7-py3-none-any.whl", hash = "sha256:308325bbc96877263f06e57e5e9c760c4b42cc722887ad60be6b18fc37d68762"},
+    {file = "proces-0.1.7.tar.gz", hash = "sha256:70a05d9e973dd685f7a9092c58be695a8181a411d63796c213232fd3fdc43775"},
+]
+
+[[package]]
 name = "promise"
 version = "2.3"
 description = "Promises/A+ implementation for Python"
@@ -5710,4 +5737,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.1"
 python-versions = "~3.9"
-content-hash = "e48b21178e51dd177df68d7b50282a5cab137b1b41d20da02bb0bf01ef9ab7dd"
+content-hash = "bd2492d73aa8919a448cc9beb43c0add45d8784479344b0807f34cbf2b9eb0ec"
