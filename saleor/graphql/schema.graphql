@@ -28469,6 +28469,9 @@ input DonationCreateInput @doc(category: "Donations") {
 
   """The barcode of the donation."""
   barcode: String!
+
+  """The ID of the certificate associated with the donation."""
+  certificate: ID
 }
 
 """

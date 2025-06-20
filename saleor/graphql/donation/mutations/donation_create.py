@@ -38,6 +38,10 @@ class DonationCreateInput(BaseInputObjectType):
         required=True,
     )
     barcode = graphene.String(required=True, description="The barcode of the donation.")
+    certificate = graphene.ID(
+        required=False,
+        description="The ID of the certificate associated with the donation.",
+    )
 
     class Meta:
         doc_category = DOC_CATEGORY_DONATIONS
