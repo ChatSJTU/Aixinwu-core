@@ -10,6 +10,7 @@ from .... import settings
 from ....account.models import User
 from ....core.exceptions import PermissionDenied
 from ....core.utils import build_absolute_uri
+from ....donation import DonationStatus
 from ....donation.models import Donation
 from ....permission.enums import DonationPermissions
 from ...core import ResolveInfo
@@ -36,9 +37,13 @@ class CertificateRender(graphene.Mutation):
         _, db_id = from_global_id_or_error(donation_id, "Donation")
         try:
             donation = (
-                Donation.objects.get(pk=db_id)
+                Donation.objects.get(pk=db_id, status=DonationStatus.COMPLETED)
                 if user.has_perm(DonationPermissions.MANAGE_DONATIONS)
-                else Donation.objects.get(pk=db_id, donator=user.code)  # type: ignore
+                else Donation.objects.get(
+                    pk=db_id,
+                    status=DonationStatus.COMPLETED,
+                    donator=user.code,  # type: ignore
+                )
             )
         except Donation.DoesNotExist:
             raise PermissionDenied("Donation not found.")
