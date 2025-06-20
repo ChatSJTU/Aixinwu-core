@@ -86,6 +86,7 @@ documentation = "https://docs.saleor.io/"
   text-unidecode = "^1.2"
   urllib3 = "^1.26.18"
   weasyprint = ">=53.0"
+  pymupdf = "^1.26.1"
 
     [tool.poetry.dependencies.django]
     version = "^3.2.22"

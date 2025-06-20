@@ -37,6 +37,10 @@ class Donation(ModelObjectType[models.Donation]):
     )
     quantity = graphene.Int(required=False, description="The quantity of the donation.")
     status = graphene.String(required=False, description="The status of the donation")
+    has_certificate = graphene.Boolean(
+        required=False,
+        description="Indicates if the donation has an associated certificate.",
+    )
 
     class Meta:
         description = "Represents donation."
@@ -94,8 +98,51 @@ class Donation(ModelObjectType[models.Donation]):
     def resolve_status(root: models.Donation, _info: ResolveInfo):
         return root.status
 
+    @staticmethod
+    def resolve_has_certificate(root: models.Donation, _info: ResolveInfo):
+        return root.certificate is not None
+
 
 class DonationCountableConnection(CountableConnection):
     class Meta:
         doc_category = DOC_CATEGORY_DONATIONS
         node = Donation
+
+
+class Certificate(ModelObjectType[models.Certificate]):
+    id = graphene.ID(required=True, description="The ID of the certificate.")
+    number = graphene.Int(required=False, description="The number of the certificate.")
+    created_at = graphene.DateTime(
+        required=False,
+        description="The date and time when the certificate was created.",
+    )
+    template_filename = graphene.String(
+        required=False, description="The filename of the certificate template."
+    )
+
+    class Meta:
+        description = "Represents certificate."
+        interfaces = [graphene.relay.Node]
+        model = models.Certificate
+
+    @staticmethod
+    def resolve_id(root: models.Certificate, _info: ResolveInfo):
+        return graphene.Node.to_global_id("Certificate", root.pk)
+
+    @staticmethod
+    def resolve_number(root: models.Certificate, _info: ResolveInfo):
+        return root.number
+
+    @staticmethod
+    def resolve_created_at(root: models.Certificate, _info: ResolveInfo):
+        return root.created_at
+
+    @staticmethod
+    def resolve_template_filename(root: models.Certificate, _info: ResolveInfo):
+        return root.template_filename
+
+
+class CertificateCountableConnection(CountableConnection):
+    class Meta:
+        doc_category = DOC_CATEGORY_DONATIONS
+        node = Certificate

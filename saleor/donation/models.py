@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 
 from django.conf import settings
-from django.db import models
+from django.db import connection, models
 from django.utils import timezone
 from django_prices.models import MoneyField
 
@@ -50,10 +50,42 @@ class Donation(models.Model):
     )
     price = MoneyField(amount_field="price_amount", currency_field="currency")
     quantity = models.PositiveIntegerField(default=1)
+    certificate = models.ForeignKey(
+        "Certificate",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="donations",
+    )
 
     class Meta:
         ordering = ("-created_at", "pk")
         permissions = (
             (DonationPermissions.MANAGE_DONATIONS.codename, "Manage donations"),
             (DonationPermissions.ADD_DONATIONS.codename, "Add donations"),
+        )
+
+
+def get_certificate_number():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT nextval('donation_certificate_number_seq')")
+        result = cursor.fetchone()
+        if result:
+            return result[0]
+        else:
+            raise ValueError("Could not retrieve the next certificate number")
+
+
+class Certificate(models.Model):
+    id = models.UUIDField(
+        primary_key=True, editable=False, unique=True, default=uuid.uuid4
+    )
+    number = models.IntegerField(default=get_certificate_number, editable=False)
+    created_at = models.DateTimeField(default=timezone.now, editable=False)
+    template_filename = models.CharField(max_length=256, null=True, blank=True)
+
+    class Meta:
+        ordering = ("-created_at", "pk")
+        permissions = (
+            (DonationPermissions.MANAGE_DONATIONS.codename, "Manage donations"),
         )

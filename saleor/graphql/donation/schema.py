@@ -4,14 +4,13 @@ from ..core import ResolveInfo
 from ..core.connection import create_connection_slice, filter_connection_queryset
 from ..core.doc_category import DOC_CATEGORY_ORDERS
 from ..core.fields import BaseField, FilterConnectionField
-from ..donation.bulk_mutations.donation_bulk_complete import (
-    DonationBulkComplete,
-)
+from ..donation.bulk_mutations.donation_bulk_complete import DonationBulkComplete
 from .filters import DonationFilterInput
 from .mutations import DonationComplete, DonationCreate, DonationDelete, DonationUpdate
-from .resolvers import resolve_donation_by_id, resolve_donations
+from .mutations.certificate_render import CertificateRender
+from .resolvers import resolve_certificates, resolve_donation_by_id, resolve_donations
 from .sorters import DonationSortingInput
-from .types import Donation, DonationCountableConnection
+from .types import CertificateCountableConnection, Donation, DonationCountableConnection
 
 
 class DonationQueries(graphene.ObjectType):
@@ -32,6 +31,12 @@ class DonationQueries(graphene.ObjectType):
         doc_category=DOC_CATEGORY_ORDERS,
     )
 
+    certificates = FilterConnectionField(
+        CertificateCountableConnection,
+        description="Certificates created by staff.",
+        doc_category=DOC_CATEGORY_ORDERS,
+    )
+
     @staticmethod
     def resolve_donations(_root, info: ResolveInfo, **kwargs):
         qs = resolve_donations(info)
@@ -42,6 +47,12 @@ class DonationQueries(graphene.ObjectType):
     def resolve_donation(_root, info: ResolveInfo, *, id):
         return resolve_donation_by_id(info, id=id)
 
+    @staticmethod
+    def resolve_certificates(_root, info: ResolveInfo, **kwargs):
+        qs = resolve_certificates(info)
+        qs = filter_connection_queryset(qs, kwargs, info.context)
+        return create_connection_slice(qs, info, kwargs, CertificateCountableConnection)
+
 
 class DonationMutations(graphene.ObjectType):
     donation_create = DonationCreate.Field()
@@ -49,3 +60,4 @@ class DonationMutations(graphene.ObjectType):
     donation_delete = DonationDelete.Field()
     donation_complete = DonationComplete.Field()
     donation_bulk_complete = DonationBulkComplete.Field()
+    certificate_render = CertificateRender.Field()
