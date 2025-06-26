@@ -50,7 +50,8 @@ class CertificateRender(graphene.Mutation):
         if not donation.certificate:
             return CertificateRender(certificate_pdf=None, certificate_png=None)
         certificate_template = os.path.join(
-            settings.TEMPLATES_DIR,
+            settings.MEDIA_ROOT,
+            "templates",
             "certificates",
             donation.certificate.template_filename,
         )
