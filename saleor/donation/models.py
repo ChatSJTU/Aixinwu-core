@@ -80,6 +80,7 @@ class Certificate(models.Model):
     id = models.UUIDField(
         primary_key=True, editable=False, unique=True, default=uuid.uuid4
     )
+    name = models.CharField(max_length=128, null=True, blank=True)
     number = models.IntegerField(default=get_certificate_number, editable=False)
     created_at = models.DateTimeField(default=timezone.now, editable=False)
     template_filename = models.CharField(max_length=256, null=True, blank=True)
