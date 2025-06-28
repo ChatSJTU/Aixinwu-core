@@ -84,7 +84,9 @@ def validate_create_permission(info: ResolveInfo, instance: models.Donation):
         )
 
 
-def validate_update_permission(info: ResolveInfo, instance: models.Donation):
+def validate_update_permission(
+    info: ResolveInfo, instance: models.Donation, allow_modify_complete: bool = False
+):
     requestor = get_user_or_app_from_context(info.context)
 
     if not requestor:
@@ -96,7 +98,7 @@ def validate_update_permission(info: ResolveInfo, instance: models.Donation):
                 )
             }
         )
-    if instance.status == DonationStatus.COMPLETED:
+    if instance.status == DonationStatus.COMPLETED and not allow_modify_complete:
         raise ValidationError(
             {
                 "donation": ValidationError(

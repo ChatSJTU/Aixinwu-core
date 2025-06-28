@@ -17,7 +17,7 @@ from ...donation.mutations.utils import (
     validate_update_permission,
 )
 from ...payment.mutations.payment.payment_check_balance import MoneyInput
-from ..types import Donation
+from ..types import Certificate, Donation
 
 
 class DonationUpdateInput(BaseInputObjectType):
@@ -32,6 +32,9 @@ class DonationUpdateInput(BaseInputObjectType):
     )
     donator = graphene.String(
         required=False, description="The Student ID of the donation"
+    )
+    template_id = graphene.ID(
+        required=False, description="The template of the donation"
     )
 
     class Meta:
@@ -81,14 +84,20 @@ class DonationUpdate(ModelMutation):
             validate_donator(info, input)
 
         validate_update_permission(info, instance)
+        # if "donator" in input or "price" in input:
+        #     validate_update_permission(info, instance)
+        # else:
+        #     validate_update_permission(info, instance, True)
 
     @classmethod
     def clean_input(cls, info: ResolveInfo, instance: models.Donation, input):
         cls.validate_donation_input(info, instance, input)
+        cert = cls.get_node_or_error(info, input["template_id"], only_type=Certificate)
         input = super().clean_input(info, instance, input)
         if input.get("price", None):
             input["currency"] = input["price"].currency
             input["price_amount"] = input["price"].amount
         input["status"] = DonationStatus.UNREVIEWED
         input["updated_at"] = timezone.now()
+        input["certificate"] = cert
         return input

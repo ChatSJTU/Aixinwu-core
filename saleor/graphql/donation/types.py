@@ -41,6 +41,10 @@ class Donation(ModelObjectType[models.Donation]):
         required=False,
         description="Indicates if the donation has an associated certificate.",
     )
+    certificate = graphene.Field(
+        "saleor.graphql.donation.types.Certificate",
+        description="The associated certificate of the donation.",
+    )
 
     class Meta:
         description = "Represents donation."
@@ -102,6 +106,17 @@ class Donation(ModelObjectType[models.Donation]):
     def resolve_has_certificate(root: models.Donation, _info: ResolveInfo):
         return root.certificate is not None
 
+    @staticmethod
+    def resolve_certificate(root: models.Donation, _info: ResolveInfo):
+        user_or_app = get_user_or_app_from_context(_info.context)
+        if not user_or_app:
+            return None
+        requester = user_or_app
+
+        if requester.has_perm(DonationPermissions.ADD_DONATIONS):
+            return root.certificate
+        return None
+
 
 class DonationCountableConnection(CountableConnection):
     class Meta:
@@ -112,6 +127,7 @@ class DonationCountableConnection(CountableConnection):
 class Certificate(ModelObjectType[models.Certificate]):
     id = graphene.ID(required=True, description="The ID of the certificate.")
     number = graphene.Int(required=False, description="The number of the certificate.")
+    name = graphene.String(required=True, description="The name of the certificate.")
     created_at = graphene.DateTime(
         required=False,
         description="The date and time when the certificate was created.",
@@ -128,6 +144,10 @@ class Certificate(ModelObjectType[models.Certificate]):
     @staticmethod
     def resolve_id(root: models.Certificate, _info: ResolveInfo):
         return graphene.Node.to_global_id("Certificate", root.pk)
+
+    @staticmethod
+    def resolve_name(root: models.Certificate, _info: ResolveInfo):
+        return root.name
 
     @staticmethod
     def resolve_number(root: models.Certificate, _info: ResolveInfo):

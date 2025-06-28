@@ -11,7 +11,7 @@ from ...core.types.base import BaseInputObjectType
 from ...core.types.common import DonationError
 from ...core.utils import WebhookEventInfo
 from ...payment.mutations.payment.payment_check_balance import MoneyInput
-from ..types import Donation
+from ..types import Certificate, Donation
 from .utils import (
     validate_create_permission,
     validate_donation_barcode,
@@ -41,6 +41,9 @@ class DonationCreateInput(BaseInputObjectType):
     certificate = graphene.ID(
         required=False,
         description="The ID of the certificate associated with the donation.",
+    )
+    template_id = graphene.ID(
+        required=False, description="The template of the donation"
     )
 
     class Meta:
@@ -82,7 +85,9 @@ class DonationCreate(ModelMutation):
     @classmethod
     def clean_input(cls, info: ResolveInfo, instance: models.Donation, input):
         cls.validate_creation_input(info, instance, input)
+        cert = cls.get_node_or_error(info, input["template_id"], only_type=Certificate)
         input = super().clean_input(info, instance, input)
         input["currency"] = input["price"].currency
         input["price_amount"] = input["price"].amount
+        input["certificate"] = cert
         return input
