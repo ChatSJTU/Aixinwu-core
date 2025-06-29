@@ -1,6 +1,6 @@
 import graphene
 
-from ...donation import models
+from ...donation import DonationStatus, models
 from ...graphql.account.dataloaders import UserByUserCodeLoader
 from ...graphql.account.utils import check_is_owner_or_has_one_of_perms
 from ...graphql.core.doc_category import DOC_CATEGORY_DONATIONS
@@ -104,7 +104,7 @@ class Donation(ModelObjectType[models.Donation]):
 
     @staticmethod
     def resolve_has_certificate(root: models.Donation, _info: ResolveInfo):
-        return root.certificate is not None
+        return root.certificate is not None and root.status == DonationStatus.COMPLETED
 
     @staticmethod
     def resolve_certificate(root: models.Donation, _info: ResolveInfo):
