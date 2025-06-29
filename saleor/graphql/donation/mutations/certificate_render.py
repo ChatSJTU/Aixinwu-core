@@ -55,6 +55,8 @@ class CertificateRender(graphene.Mutation):
             "certificates",
             donation.certificate.template_filename,
         )
+        if not os.path.exists(certificate_template):
+            raise Exception("Certificate not available")
         data = {
             "name": User.objects.get(code=donation.donator).first_name,
             "quantity": str(donation.quantity),
