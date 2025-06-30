@@ -44,6 +44,6 @@ def resolve_donation_by_id(info: ResolveInfo, id: str) -> Donation:
 def resolve_certificates(info: ResolveInfo):
     user = get_user_or_app_from_context(info.context)
     qs = Certificate.objects.using(get_database_connection_name(info.context))
-    if not user or not user.has_perm(DonationPermissions.MANAGE_DONATIONS):
+    if not user or not user.has_perm(DonationPermissions.ADD_DONATIONS):
         raise PermissionDenied(message="You do not have access to Certificates.")
     return qs
