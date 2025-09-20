@@ -91,7 +91,16 @@ class ProductsQueryset(models.QuerySet):
             return self.all()
         if not channel_slug:
             return self.none()
-        return self.published_with_variants(channel_slug)
+        if (
+            requestor
+            and requestor.private_metadata
+            and requestor.private_metadata.get("is_poor", "") == "true"
+        ):
+            return self.published_with_variants(channel_slug)
+        else:
+            return self.published_with_variants(channel_slug).exclude(
+                collections__slug="special-discount-area"
+            )
 
     def annotate_publication_info(self, channel_slug: str):
         return self.annotate_is_published(channel_slug).annotate_published_at(
