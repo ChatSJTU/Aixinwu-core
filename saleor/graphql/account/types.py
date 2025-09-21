@@ -391,6 +391,9 @@ class User(ModelObjectType[models.User]):
     is_active = graphene.Boolean(
         required=True, description="Determine if the user is active."
     )
+    is_poor = graphene.Boolean(
+        required=True, description="Determine if the user has poor sign."
+    )
     is_confirmed = graphene.Boolean(
         required=True,
         description="Determines if user has confirmed email." + ADDED_IN_315,
@@ -765,6 +768,10 @@ class User(ModelObjectType[models.User]):
     @staticmethod
     def resolve_language_code(root, _info: ResolveInfo):
         return LanguageCodeEnum[str_to_enum(root.language_code)]
+    
+    @staticmethod
+    def resolve_is_poor(root: models.User, _info: ResolveInfo):
+        return root.private_metadata and root.private_metadata.get("is_poor") == "true"
 
     @staticmethod
     def __resolve_references(roots: list["User"], info: ResolveInfo):

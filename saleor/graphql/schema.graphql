@@ -10599,6 +10599,9 @@ type User implements Node & ObjectWithMetadata @doc(category: "Users") {
   """Determine if the user is active."""
   isActive: Boolean!
 
+  """Determine if the user has poor sign."""
+  isPoor: Boolean!
+
   """
   Determines if user has confirmed email.
   
