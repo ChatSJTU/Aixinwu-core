@@ -1,8 +1,9 @@
-FROM mcr.microsoft.com/devcontainers/python:3.9
+FROM mcr.azure.cn/devcontainers/python:3.9
 
 ENV PYTHONUNBUFFERED 1
 RUN sed -i "s/http:\/\/deb.debian.org/https:\/\/mirrors.tuna.tsinghua.edu.cn/g" /etc/apt/sources.list.d/debian.sources
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarn-archive-keyring.gpg > /dev/null
 RUN apt-get update \
   && apt-get install -y \
   libcairo2 \
