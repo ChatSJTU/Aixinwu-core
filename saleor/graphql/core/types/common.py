@@ -4,7 +4,6 @@ from urllib.parse import unquote, urlparse
 import graphene
 from django.core.files.storage import default_storage
 
-
 from ....core.utils import build_absolute_uri
 from ...account.enums import AddressTypeEnum
 from ...core.doc_category import (
@@ -50,11 +49,13 @@ from ..enums import (
     CollectionErrorCode,
     CustomerBulkUpdateErrorCode,
     DiscountErrorCode,
+    DonationErrorCode,
     ExportErrorCode,
     ExternalNotificationTriggerErrorCode,
     GiftCardErrorCode,
     GiftCardSettingsErrorCode,
     IconThumbnailFormatEnum,
+    ImportErrorCode,
     InvoiceErrorCode,
     JobStatusEnum,
     LanguageCodeEnum,
@@ -101,7 +102,6 @@ from ..enums import (
     WebhookErrorCode,
     WebhookTriggerErrorCode,
     WeightUnitsEnum,
-    DonationErrorCode,
 )
 from ..scalars import Date, PositiveDecimal
 from ..tracing import traced_resolver
@@ -334,6 +334,10 @@ class VoucherCodeBulkDeleteError(BulkError):
 
 class ExportError(Error):
     code = ExportErrorCode(description="The error code.", required=True)
+
+
+class ImportError(Error):
+    code = ImportErrorCode(description="The error code.", required=True)
 
 
 class ExternalNotificationError(Error):

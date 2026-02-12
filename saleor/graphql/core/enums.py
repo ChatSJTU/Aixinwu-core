@@ -204,6 +204,7 @@ ExternalNotificationTriggerErrorCode = graphene.Enum.from_enum(
     external_notifications_error_codes.ExternalNotificationErrorCodes
 )
 ExportErrorCode = graphene.Enum.from_enum(csv_error_codes.ExportErrorCode)
+ImportErrorCode = graphene.Enum.from_enum(csv_error_codes.ImportErrorCode)
 
 DiscountErrorCode = graphene.Enum.from_enum(discount_error_codes.DiscountErrorCode)
 DiscountErrorCode.doc_category = DOC_CATEGORY_DISCOUNTS

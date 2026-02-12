@@ -6,7 +6,7 @@ from ..account.models import User
 from ..app.models import App
 from ..core.models import Job
 from ..core.utils.json_serializer import CustomJsonEncoder
-from . import ExportEvents
+from . import ExportEvents, ImportType, ImportStatus
 
 
 def get_export_number():
@@ -17,6 +17,16 @@ def get_export_number():
             return result[0]
         else:
             raise ValueError("Could not retrieve the next order number")
+
+
+def get_import_number():
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT nextval('csv_importfile_seq')")
+        result = cursor.fetchone()
+        if result:
+            return result[0]
+        else:
+            raise ValueError("Could not retrieve the next import number")
 
 
 class ExportFile(Job):
@@ -46,3 +56,22 @@ class ExportEvent(models.Model):
     app = models.ForeignKey(
         App, related_name="export_csv_events", on_delete=models.SET_NULL, null=True
     )
+
+
+class ImportFile(Job):
+    number = models.IntegerField(default=get_import_number, null=True, unique=True)
+    user = models.ForeignKey(
+        User, related_name="import_files", on_delete=models.CASCADE, null=True
+    )
+    data_file = models.FileField(upload_to="import_files", null=True)
+    type = models.CharField(
+        max_length=255, choices=ImportType.CHOICES, default=ImportType.ACCOUNT
+    )
+    status = models.CharField(
+        max_length=255, choices=ImportStatus.CHOICES, default=ImportStatus.PENDING
+    )
+    message = models.CharField(max_length=255, null=True)
+    metadata = models.JSONField(
+        blank=True, default=dict, encoder=CustomJsonEncoder, null=True
+    )
+    deleted_at = models.DateTimeField(null=True, blank=True)

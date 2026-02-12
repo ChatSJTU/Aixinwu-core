@@ -33,6 +33,7 @@ class FileTypes:
         (XLSX, "Excel XLSX file."),
     ]
 
+
 class ExportType:
     USER = "user"
     ORDER = "order"
@@ -40,5 +41,25 @@ class ExportType:
     CHOICES = [
         (USER, "Exported User"),
         (ORDER, "Exported Order"),
-        (PRODUCT, "Exported Product")
+        (PRODUCT, "Exported Product"),
+    ]
+
+
+class ImportStatus:
+    PENDING = "pending"
+    SUCCESS = "success"
+    FAILED = "failed"
+    INCOMPLETE = "incomplete"
+    CHOICES = [
+        (PENDING, "Pending"),
+        (SUCCESS, "Success"),
+        (FAILED, "Failed"),
+        (INCOMPLETE, "Incomplete"),
+    ]
+
+
+class ImportType:
+    ACCOUNT = "account"
+    CHOICES = [
+        (ACCOUNT, "Account"),
     ]

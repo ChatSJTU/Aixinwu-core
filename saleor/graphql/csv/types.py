@@ -13,7 +13,7 @@ from ..core.connection import CountableConnection
 from ..core.types import Job, ModelObjectType, NonNullList
 from ..utils import get_user_or_app_from_context
 from .dataloaders import EventsByExportFileIdLoader
-from .enums import ExportEventEnum
+from .enums import ExportEventEnum, ImportStatusEnum, ImportTypeEnum
 
 
 class ExportEvent(ModelObjectType[models.ExportEvent]):
@@ -122,3 +122,30 @@ class ExportFile(ModelObjectType[models.ExportFile]):
 class ExportFileCountableConnection(CountableConnection):
     class Meta:
         node = ExportFile
+
+
+class ImportFile(ModelObjectType[models.ImportFile]):
+    id = graphene.GlobalID(required=True, description="The ID of the import file.")
+    user = graphene.Field(User, description="The user who requests file import.")
+    type = ImportTypeEnum(description="The type of the file that is imported.")
+    number = graphene.Int(description="The number of the import file.")
+    status = ImportStatusEnum(description="The status of the import job.")
+    message = graphene.String(description="The message related to the import job.")
+
+    class Meta:
+        description = "Represents a job data of imported file."
+        interfaces = [graphene.relay.Node]
+        model = models.ImportFile
+
+    @staticmethod
+    def resolve_user(root: models.ImportFile, info: ResolveInfo):
+        requestor = get_user_or_app_from_context(info.context)
+        check_is_owner_or_has_one_of_perms(
+            requestor, root.user, AccountPermissions.MANAGE_STAFF
+        )
+        return root.user
+
+
+class ImportFileCountableConnection(CountableConnection):
+    class Meta:
+        node = ImportFile

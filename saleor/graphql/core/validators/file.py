@@ -1,6 +1,7 @@
 import mimetypes
 import os
 
+import pandas
 from django.core.exceptions import ValidationError
 from PIL import Image, UnidentifiedImageError
 
@@ -99,6 +100,32 @@ def clean_image_file(cleaned_input, img_field_name, error_class):
 
     add_hash_to_file_name(img_file)
     return img_file
+
+
+def clean_csv_file(cleaned_input, file_field_name, error_class):
+    csv_file = cleaned_input.get(file_field_name)
+    if not csv_file:
+        raise ValidationError(
+            {
+                file_field_name: ValidationError(
+                    "File is required.", code=error_class.REQUIRED
+                )
+            }
+        )
+    try:
+        csv_file.seek(0)
+        pandas.read_csv(csv_file)
+    except Exception:
+        raise ValidationError(
+            {
+                file_field_name: ValidationError(
+                    "Invalid file. Unable to read CSV file.",
+                    code=error_class.INVALID.value,
+                )
+            }
+        )
+    add_hash_to_file_name(csv_file)
+    return csv_file
 
 
 def _validate_image_format(file, field_name, error_class):

@@ -1,17 +1,19 @@
 from typing import Optional, Union
 
 import celery
+import django
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.db import transaction
 from django.db.models import Q
 from django.db.models.expressions import Exists, OuterRef
 from django.utils import timezone
 
 from ..celeryconf import app
 from ..core import JobStatus
-from . import events
-from .models import ExportEvent, ExportFile
+from . import ImportStatus, ImportType, events
+from .models import ExportEvent, ExportFile, ImportFile
 from .notifications import send_export_failed_info
 from .utils.export import (
     export_gift_cards,
@@ -19,8 +21,19 @@ from .utils.export import (
     export_products,
     export_voucher_codes,
 )
+from .utils.imports import import_file_csv
 
 task_logger = get_task_logger(__name__)
+
+
+class ImportTask(celery.Task):
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        import_file_id = args[0]
+        import_file = ImportFile.objects.get(pk=import_file_id)
+
+        import_file.status = ImportStatus.FAILED
+        import_file.message = str(exc)
+        import_file.save(update_fields=["status", "updated_at", "data_file", "message"])
 
 
 class ExportTask(celery.Task):
@@ -35,8 +48,6 @@ class ExportTask(celery.Task):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         export_file_id = args[0]
         export_file = ExportFile.objects.get(pk=export_file_id)
-
-        export_file.content_file = None
         export_file.status = JobStatus.FAILED
         export_file.save(update_fields=["status", "updated_at", "content_file"])
 
@@ -62,6 +73,13 @@ class ExportTask(celery.Task):
         events.export_success_event(
             export_file=export_file, user=export_file.user, app=export_file.app
         )
+
+
+@app.task(name="import-csv", base=ImportTask)
+def import_csv_task(import_file_id: int, import_type: ImportType):
+    import_file = ImportFile.objects.get(pk=import_file_id)
+    with transaction.atomic():
+        import_file_csv(import_file)
 
 
 @app.task(name="export-products", base=ExportTask)
