@@ -128,12 +128,21 @@ class SiteSettings(ModelWithMetadata):
         return value
 
 
+def get_default_poor_users():
+    from ..account.models import User
+
+    return User.objects.filter(
+        is_active=True, is_staff=False, private_metadata__is_poor="true"
+    ).count()
+
+
 class SiteStatistics(ModelWithMetadata):
     site = models.OneToOneField(Site, related_name="stat", on_delete=models.CASCADE)
     views = models.PositiveIntegerField(default=0, null=False)
     users = models.PositiveIntegerField(default=0, null=False)
     circulated_currency = models.PositiveBigIntegerField(default=0, null=False)
     circulated_items = models.PositiveIntegerField(default=0, null=False)
+    poor_users = models.PositiveIntegerField(default=get_default_poor_users, null=False)
 
 
 class SiteSettingsTranslation(Translation):

@@ -24,6 +24,7 @@ from .bulk_mutations import (
     CustomerBulkUpdate,
     StaffBulkDelete,
     UserBulkSetActive,
+    UserBulkSetPoor,
 )
 from .enums import CountryCodeEnum
 from .filters import CustomerFilter, PermissionGroupFilter, StaffUserFilter
@@ -316,6 +317,7 @@ class AccountMutations(graphene.ObjectType):
     user_avatar_update = UserAvatarUpdate.Field()
     user_avatar_delete = UserAvatarDelete.Field()
     user_bulk_set_active = UserBulkSetActive.Field()
+    user_bulk_set_poor = UserBulkSetPoor.Field()
 
     # Permission group mutations
     permission_group_create = PermissionGroupCreate.Field()
