@@ -19303,6 +19303,21 @@ type Mutation {
     input: ExportOrdersInput!
   ): ExportOrders @doc(category: "Orders") @webhookEventsInfo(asyncEvents: [NOTIFY_USER, ORDER_EXPORT_COMPLETED], syncEvents: [])
 
+  """Import data from a CSV file."""
+  importCsvCreate(
+    """Fields required to import CSV data."""
+    input: ImportCsvInput!
+  ): ImportCSVCreate @doc(category: "CSV")
+
+  """Update an import file."""
+  importCsvUpdate(
+    """The ID of the import file."""
+    id: ID!
+
+    """Fields required to update an import file."""
+    input: ImportCSVUpdateInput!
+  ): ImportCSVUpdate @doc(category: "CSV")
+
   """
   Upload a file. This mutation must be sent as a `multipart` request. More detailed specs of the upload format can be found here: https://github.com/jaydenseric/graphql-multipart-request-spec 
   
@@ -21051,6 +21066,19 @@ type Mutation {
     """Determine if users will be set active or not."""
     isActive: Boolean!
   ): UserBulkSetActive @doc(category: "Users")
+
+  """
+  Set users as poor or not. 
+  
+  Requires one of the following permissions: MANAGE_USERS.
+  """
+  userBulkSetPoor(
+    """List of user IDs to set as poor or not."""
+    ids: [ID!]!
+
+    """Determine if users will be set as poor or not."""
+    isPoor: Boolean!
+  ): UserBulkSetPoor @doc(category: "Users")
 
   """
   Create new permission group. Apps are not allowed to perform this mutation. 
@@ -29713,6 +29741,90 @@ enum OrderFieldEnum {
   ADDRESS_STREET_ADDRESS_1
 }
 
+"""Import data from a CSV file."""
+type ImportCSVCreate @doc(category: "CSV") {
+  """
+  The newly created import file job which is responsible for importing data.
+  """
+  importFile: ImportFile
+  importErrors: [ImportError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
+  errors: [ImportError!]!
+}
+
+"""Represents a job data of imported file."""
+type ImportFile implements Node {
+  """The ID of the import file."""
+  id: ID!
+
+  """The user who requests file import."""
+  user: User
+
+  """The type of the file that is imported."""
+  type: ImportTypeEnum
+
+  """The number of the import file."""
+  number: Int
+
+  """The status of the import job."""
+  status: ImportStatusEnum
+
+  """The message related to the import job."""
+  message: String
+}
+
+"""An enumeration."""
+enum ImportTypeEnum {
+  ACCOUNT
+}
+
+"""An enumeration."""
+enum ImportStatusEnum {
+  PENDING
+  SUCCESS
+  FAILED
+  INCOMPLETE
+}
+
+type ImportError {
+  """
+  Name of a field that caused the error. A value of `null` indicates that the error isn't associated with a particular field.
+  """
+  field: String
+
+  """The error message."""
+  message: String
+
+  """The error code."""
+  code: ImportErrorCode!
+}
+
+"""An enumeration."""
+enum ImportErrorCode {
+  GRAPHQL_ERROR
+  INVALID
+  NOT_FOUND
+  REQUIRED
+}
+
+input ImportCsvInput @doc(category: "CSV") {
+  """Uploaded CSV file content or file path."""
+  file: Upload!
+
+  """Type of import (e.g., 'accounts')."""
+  type: ImportTypeEnum!
+}
+
+"""Update an import file."""
+type ImportCSVUpdate @doc(category: "CSV") {
+  importFile: ImportFile
+  errors: [ImportError!]!
+}
+
+input ImportCSVUpdateInput {
+  """Uploaded CSV file content or file path."""
+  file: Upload!
+}
+
 """
 Upload a file. This mutation must be sent as a `multipart` request. More detailed specs of the upload format can be found here: https://github.com/jaydenseric/graphql-multipart-request-spec 
 
@@ -32843,6 +32955,18 @@ Activate or deactivate users.
 Requires one of the following permissions: MANAGE_USERS.
 """
 type UserBulkSetActive @doc(category: "Users") {
+  """Returns how many objects were affected."""
+  count: Int!
+  accountErrors: [AccountError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
+  errors: [AccountError!]!
+}
+
+"""
+Set users as poor or not. 
+
+Requires one of the following permissions: MANAGE_USERS.
+"""
+type UserBulkSetPoor @doc(category: "Users") {
   """Returns how many objects were affected."""
   count: Int!
   accountErrors: [AccountError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
