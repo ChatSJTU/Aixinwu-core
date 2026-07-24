@@ -20,6 +20,7 @@ from ....checkout.utils import (
 )
 from ....core.tracing import traced_atomic_transaction
 from ....graphql.account.mixins import AddressMetadataMixin
+from ....permission.auth_filters import AuthorizationFilters
 from ....warehouse.reservations import is_reservation_enabled
 from ....webhook.event_types import WebhookEventAsyncType
 from ...account.i18n import I18nMixin
@@ -80,6 +81,7 @@ class CheckoutShippingAddressUpdate(AddressMetadataMixin, BaseMutation, I18nMixi
         doc_category = DOC_CATEGORY_CHECKOUT
         error_type_class = CheckoutError
         error_type_field = "checkout_errors"
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         webhook_events_info = [
             WebhookEventInfo(
                 type=WebhookEventAsyncType.CHECKOUT_UPDATED,

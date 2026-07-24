@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from .....channel.models import Channel
 from .....payment import PaymentError
 from .....payment.error_codes import PaymentErrorCode
+from .....permission.auth_filters import AuthorizationFilters
 from ....core import ResolveInfo
 from ....core.doc_category import DOC_CATEGORY_PAYMENTS
 from ....core.fields import JSONString
@@ -36,6 +37,7 @@ class PaymentInitialize(BaseMutation):
     class Meta:
         description = "Initializes payment process when it is required by gateway."
         doc_category = DOC_CATEGORY_PAYMENTS
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         error_type_class = common_types.PaymentError
         error_type_field = "payment_errors"
 

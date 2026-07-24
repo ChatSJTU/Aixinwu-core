@@ -4,12 +4,12 @@ import graphene
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from saleor.account import events as account_events
 from saleor.core.prices import quantize_price
 from saleor.core.tracing import traced_atomic_transaction
 from saleor.graphql.core.enums import PaymentErrorCode
 from saleor.graphql.core.types.common import PaymentError
 from saleor.order import events as order_events
-from saleor.account import events as account_events
 from saleor.payment import ChargeStatus
 from saleor.payment.utils import create_payment
 
@@ -18,6 +18,7 @@ from ....order import OrderStatus, models
 from ....order.error_codes import OrderErrorCode
 from ....order.fetch import fetch_order_info
 from ....order.utils import update_order_display_gross_prices
+from ....permission.auth_filters import AuthorizationFilters
 from ....permission.enums import OrderPermissions
 from ...core import ResolveInfo
 from ...core.mutations import ModelMutation
@@ -36,6 +37,7 @@ class OrderConfirm(ModelMutation):
         description = "Confirms an unconfirmed order by changing status to unfulfilled."
         model = models.Order
         object_type = Order
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         error_type_class = OrderError
         error_type_field = "order_errors"
 

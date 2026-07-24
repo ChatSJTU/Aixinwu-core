@@ -16,6 +16,7 @@ from .....core.utils.url import validate_storefront_url
 from .....payment import StorePaymentMethod
 from .....payment.error_codes import PaymentErrorCode
 from .....payment.utils import create_payment, is_currency_supported
+from .....permission.auth_filters import AuthorizationFilters
 from ....account.i18n import I18nMixin
 from ....checkout.mutations.utils import get_checkout
 from ....checkout.types import Checkout
@@ -103,6 +104,7 @@ class CheckoutPaymentCreate(BaseMutation, I18nMixin):
     class Meta:
         description = "Create a new payment for given checkout."
         doc_category = DOC_CATEGORY_CHECKOUT
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         error_type_class = common_types.PaymentError
         error_type_field = "payment_errors"
 

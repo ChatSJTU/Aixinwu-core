@@ -12,6 +12,7 @@ from ....checkout.utils import (
     remove_promo_code_from_checkout,
     remove_voucher_from_checkout,
 )
+from ....permission.auth_filters import AuthorizationFilters
 from ....webhook.event_types import WebhookEventAsyncType
 from ...core import ResolveInfo
 from ...core.descriptions import ADDED_IN_34, DEPRECATED_IN_3X_INPUT
@@ -61,6 +62,7 @@ class CheckoutRemovePromoCode(BaseMutation):
         doc_category = DOC_CATEGORY_CHECKOUT
         error_type_class = CheckoutError
         error_type_field = "checkout_errors"
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         webhook_events_info = [
             WebhookEventInfo(
                 type=WebhookEventAsyncType.CHECKOUT_UPDATED,

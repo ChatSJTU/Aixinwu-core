@@ -7,6 +7,7 @@ from ....checkout.utils import (
     invalidate_checkout_prices,
 )
 from ....core.tracing import traced_atomic_transaction
+from ....permission.auth_filters import AuthorizationFilters
 from ....webhook.event_types import WebhookEventAsyncType
 from ...account.types import AddressInput
 from ...core import ResolveInfo
@@ -56,6 +57,7 @@ class CheckoutBillingAddressUpdate(CheckoutShippingAddressUpdate):
         doc_category = DOC_CATEGORY_CHECKOUT
         error_type_class = CheckoutError
         error_type_field = "checkout_errors"
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         webhook_events_info = [
             WebhookEventInfo(
                 type=WebhookEventAsyncType.CHECKOUT_UPDATED,

@@ -2,6 +2,7 @@ import graphene
 
 from saleor.webhook.event_types import WebhookEventAsyncType
 
+from ....permission.auth_filters import AuthorizationFilters
 from ...core import ResolveInfo
 from ...core.descriptions import ADDED_IN_34, DEPRECATED_IN_3X_INPUT
 from ...core.doc_category import DOC_CATEGORY_CHECKOUT
@@ -42,6 +43,7 @@ class CheckoutLanguageCodeUpdate(BaseMutation):
         doc_category = DOC_CATEGORY_CHECKOUT
         error_type_class = CheckoutError
         error_type_field = "checkout_errors"
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         webhook_events_info = [
             WebhookEventInfo(
                 type=WebhookEventAsyncType.CHECKOUT_UPDATED,

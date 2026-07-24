@@ -9,6 +9,7 @@ from ....checkout.fetch import (
     update_delivery_method_lists_for_checkout_info,
 )
 from ....checkout.utils import add_variants_to_checkout, invalidate_checkout_prices
+from ....permission.auth_filters import AuthorizationFilters
 from ....warehouse.reservations import get_reservation_length, is_reservation_enabled
 from ....webhook.event_types import WebhookEventAsyncType
 from ...app.dataloaders import get_app_promise
@@ -27,10 +28,10 @@ from ..types import Checkout
 from .checkout_create import CheckoutLineInput
 from .utils import (
     check_admission_date_requirement,
+    check_code_requirement,
     check_lines_quantity,
     check_permissions_for_custom_prices,
     check_poor_requirement,
-    check_code_requirement,
     check_position_requirement,
     get_checkout,
     get_variants_and_total_quantities,
@@ -76,6 +77,7 @@ class CheckoutLinesAdd(BaseMutation):
         doc_category = DOC_CATEGORY_CHECKOUT
         error_type_class = CheckoutError
         error_type_field = "checkout_errors"
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         webhook_events_info = [
             WebhookEventInfo(
                 type=WebhookEventAsyncType.CHECKOUT_UPDATED,

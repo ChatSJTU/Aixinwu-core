@@ -20,6 +20,7 @@ from ....checkout.fetch import (
 )
 from ....checkout.utils import is_shipping_required
 from ....order import models as order_models
+from ....permission.auth_filters import AuthorizationFilters
 from ....permission.enums import AccountPermissions
 from ....webhook.event_types import WebhookEventAsyncType, WebhookEventSyncType
 from ...account.i18n import I18nMixin
@@ -116,6 +117,7 @@ class CheckoutComplete(BaseMutation, I18nMixin):
             "confirmed with second call of this mutation."
         )
         doc_category = DOC_CATEGORY_CHECKOUT
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         error_type_class = CheckoutError
         error_type_field = "checkout_errors"
         webhook_events_info = [

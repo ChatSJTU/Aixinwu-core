@@ -12,6 +12,7 @@ from ....checkout.utils import (
     is_shipping_required,
     set_external_shipping_id,
 )
+from ....permission.auth_filters import AuthorizationFilters
 from ....shipping import interface as shipping_interface
 from ....shipping import models as shipping_models
 from ....shipping.utils import convert_to_shipping_method_data
@@ -57,6 +58,7 @@ class CheckoutShippingMethodUpdate(BaseMutation):
         doc_category = DOC_CATEGORY_CHECKOUT
         error_type_class = CheckoutError
         error_type_field = "checkout_errors"
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         webhook_events_info = [
             WebhookEventInfo(
                 type=WebhookEventSyncType.SHIPPING_LIST_METHODS_FOR_CHECKOUT,

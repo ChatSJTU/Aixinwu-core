@@ -17,6 +17,7 @@ from .....payment.utils import (
     get_final_session_statuses,
     handle_transaction_process_session,
 )
+from .....permission.auth_filters import AuthorizationFilters
 from ....core.descriptions import (
     ADDED_IN_313,
     ADDED_IN_314,
@@ -86,6 +87,7 @@ class TransactionProcess(BaseMutation):
             + ADDED_IN_313
             + PREVIEW_FEATURE
         )
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         error_type_class = common_types.TransactionProcessError
 
     @classmethod

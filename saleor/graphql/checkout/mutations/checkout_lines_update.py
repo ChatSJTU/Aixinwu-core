@@ -6,6 +6,7 @@ from django.forms import ValidationError
 from saleor.graphql.utils import get_user_or_app_from_context
 
 from ....checkout.error_codes import CheckoutErrorCode
+from ....permission.auth_filters import AuthorizationFilters
 from ....warehouse.reservations import is_reservation_enabled
 from ....webhook.event_types import WebhookEventAsyncType
 from ...app.dataloaders import get_app_promise
@@ -28,9 +29,9 @@ from ..types import Checkout
 from .checkout_lines_add import CheckoutLinesAdd
 from .utils import (
     check_admission_date_requirement,
+    check_code_requirement,
     check_lines_quantity,
     check_poor_requirement,
-    check_code_requirement,
     check_position_requirement,
     get_variants_and_total_quantities,
     group_lines_input_data_on_update,
@@ -101,6 +102,7 @@ class CheckoutLinesUpdate(CheckoutLinesAdd):
         doc_category = DOC_CATEGORY_CHECKOUT
         error_type_class = CheckoutError
         error_type_field = "checkout_errors"
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         webhook_events_info = [
             WebhookEventInfo(
                 type=WebhookEventAsyncType.CHECKOUT_UPDATED,

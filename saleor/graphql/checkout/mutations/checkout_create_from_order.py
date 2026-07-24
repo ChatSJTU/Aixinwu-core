@@ -8,6 +8,7 @@ from ....checkout.utils import add_variants_to_checkout
 from ....core.exceptions import InsufficientStock
 from ....core.utils.country import get_active_country
 from ....order import models as order_models
+from ....permission.auth_filters import AuthorizationFilters
 from ....product import models as product_models
 from ....product.models import ProductVariant
 from ....warehouse.availability import check_stock_and_preorder_quantity_bulk
@@ -76,6 +77,7 @@ class CheckoutCreateFromOrder(BaseMutation):
             "Create new checkout from existing order." + ADDED_IN_314 + PREVIEW_FEATURE
         )
         doc_category = DOC_CATEGORY_CHECKOUT
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         error_type_class = CheckoutCreateFromOrderError
 
     @classmethod

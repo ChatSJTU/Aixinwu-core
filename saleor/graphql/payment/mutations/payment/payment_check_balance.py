@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from .....payment import PaymentError
 from .....payment.error_codes import PaymentErrorCode
 from .....payment.utils import is_currency_supported
+from .....permission.auth_filters import AuthorizationFilters
 from ....channel.utils import validate_channel
 from ....core import ResolveInfo
 from ....core.doc_category import DOC_CATEGORY_PAYMENTS
@@ -60,6 +61,7 @@ class PaymentCheckBalance(BaseMutation):
     class Meta:
         description = "Check payment balance."
         doc_category = DOC_CATEGORY_PAYMENTS
+        permissions = (AuthorizationFilters.AUTHENTICATED_USER,)
         error_type_class = common_types.PaymentError
         error_type_field = "payment_errors"
 
