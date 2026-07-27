@@ -24,6 +24,7 @@ class DonationDelete(ModelMutation):
         model = models.Donation
         object_type = graphene.Boolean
         return_field_name = "success"
+        permissions = (DonationPermissions.MANAGE_DONATIONS,)
         error_type_class = DonationError
         error_type_fields = "donation_errors"
         webhook_events_info = [

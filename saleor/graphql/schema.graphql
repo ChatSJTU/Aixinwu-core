@@ -17273,7 +17273,11 @@ type Mutation {
     paymentId: ID!
   ): PaymentVoid @doc(category: "Payments")
 
-  """Initializes payment process when it is required by gateway."""
+  """
+  Initializes payment process when it is required by gateway. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
+  """
   paymentInitialize(
     """Slug of a channel for which the data should be returned."""
     channel: String
@@ -17285,7 +17289,11 @@ type Mutation {
     paymentData: JSONString
   ): PaymentInitialize @doc(category: "Payments")
 
-  """Check payment balance."""
+  """
+  Check payment balance. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
+  """
   paymentCheckBalance(
     """Fields required to check payment balance."""
     input: PaymentCheckBalanceInput!
@@ -17501,7 +17509,9 @@ type Mutation {
   
   Added in Saleor 3.13.
   
-  Note: this API is currently in Feature Preview and can be subject to changes at later point.
+  Note: this API is currently in Feature Preview and can be subject to changes at later point. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   """
   transactionProcess(
     """
@@ -17904,7 +17914,11 @@ type Mutation {
     id: ID!
   ): OrderCapture @doc(category: "Orders")
 
-  """Confirms an unconfirmed order by changing status to unfulfilled."""
+  """
+  Confirms an unconfirmed order by changing status to unfulfilled. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
+  """
   orderConfirm(
     """ID of an order to confirm."""
     id: ID!
@@ -18776,7 +18790,9 @@ type Mutation {
   ): DonationUpdate @doc(category: "Donations") @webhookEventsInfo(asyncEvents: [], syncEvents: [])
 
   """
-  Delete an old donation.
+  Delete an old donation. 
+  
+  Requires one of the following permissions: MANAGE_DONATIONS.
   
   Triggers the following webhook events:
   - DONATION_DELETED (sync): A donation has been deleted.
@@ -19314,7 +19330,9 @@ type Mutation {
   ): FileUpload
 
   """
-  Adds a gift card or a voucher to a checkout.
+  Adds a gift card or a voucher to a checkout. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -19346,7 +19364,9 @@ type Mutation {
   ): CheckoutAddPromoCode @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [])
 
   """
-  Update billing address in the existing checkout.
+  Update billing address in the existing checkout. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -19385,7 +19405,9 @@ type Mutation {
   ): CheckoutBillingAddressUpdate @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [])
 
   """
-  Completes the checkout. As a result a new order is created. The mutation allows to create the unpaid order when setting `orderSettings.allowUnpaidOrders` for given `Channel` is set to `true`. When `orderSettings.allowUnpaidOrders` is set to `false`, checkout can be completed only when attached `Payment`/`TransactionItem`s fully cover the checkout's total. When processing the checkout with `Payment`, in case of required additional confirmation step like 3D secure, the `confirmationNeeded` flag will be set to True and no order will be created until payment is confirmed with second call of this mutation.
+  Completes the checkout. As a result a new order is created. The mutation allows to create the unpaid order when setting `orderSettings.allowUnpaidOrders` for given `Channel` is set to `true`. When `orderSettings.allowUnpaidOrders` is set to `false`, checkout can be completed only when attached `Payment`/`TransactionItem`s fully cover the checkout's total. When processing the checkout with `Payment`, in case of required additional confirmation step like 3D secure, the `confirmationNeeded` flag will be set to True and no order will be created until payment is confirmed with second call of this mutation. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - SHIPPING_LIST_METHODS_FOR_CHECKOUT (sync): Optionally triggered when cached external shipping methods are invalid.
@@ -19445,7 +19467,9 @@ type Mutation {
   ): CheckoutComplete @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [ORDER_CREATED, NOTIFY_USER, NOTIFY_USER, ORDER_UPDATED, ORDER_PAID, ORDER_FULLY_PAID, ORDER_CONFIRMED], syncEvents: [SHIPPING_LIST_METHODS_FOR_CHECKOUT, CHECKOUT_FILTER_SHIPPING_METHODS, CHECKOUT_CALCULATE_TAXES])
 
   """
-  Create a new checkout.
+  Create a new checkout. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - CHECKOUT_CREATED (async): A checkout was created.
@@ -19460,7 +19484,9 @@ type Mutation {
   
   Added in Saleor 3.14.
   
-  Note: this API is currently in Feature Preview and can be subject to changes at later point.
+  Note: this API is currently in Feature Preview and can be subject to changes at later point. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   """
   checkoutCreateFromOrder(
     """ID of a order that will be used to create the checkout."""
@@ -19537,7 +19563,9 @@ type Mutation {
   """
   Updates customer note in the existing checkout object.
   
-  Added in Saleor 3.21.
+  Added in Saleor 3.21. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -19551,7 +19579,9 @@ type Mutation {
   ): CheckoutCustomerNoteUpdate @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [])
 
   """
-  Updates email address in the existing checkout object.
+  Updates email address in the existing checkout object. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -19583,7 +19613,9 @@ type Mutation {
   ): CheckoutEmailUpdate @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [])
 
   """
-  Deletes a CheckoutLine.
+  Deletes a CheckoutLine. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -19615,7 +19647,9 @@ type Mutation {
   ): CheckoutLineDelete @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: []) @deprecated(reason: "This field will be removed in Saleor 4.0. Use `checkoutLinesDelete` instead.")
 
   """
-  Deletes checkout lines.
+  Deletes checkout lines. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -19640,7 +19674,9 @@ type Mutation {
   ): CheckoutLinesDelete @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [])
 
   """
-  Adds a checkout line to the existing checkout.If line was already in checkout, its quantity will be increased.
+  Adds a checkout line to the existing checkout.If line was already in checkout, its quantity will be increased. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -19674,7 +19710,9 @@ type Mutation {
   ): CheckoutLinesAdd @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [])
 
   """
-  Updates checkout line in the existing checkout.
+  Updates checkout line in the existing checkout. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -19708,7 +19746,9 @@ type Mutation {
   ): CheckoutLinesUpdate @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [])
 
   """
-  Remove a gift card or a voucher from a checkout.
+  Remove a gift card or a voucher from a checkout. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -19742,7 +19782,11 @@ type Mutation {
     token: UUID
   ): CheckoutRemovePromoCode @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [])
 
-  """Create a new payment for given checkout."""
+  """
+  Create a new payment for given checkout. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
+  """
   checkoutPaymentCreate(
     """
     The ID of the checkout. 
@@ -19770,7 +19814,9 @@ type Mutation {
   ): CheckoutPaymentCreate @doc(category: "Checkout")
 
   """
-  Update shipping address in the existing checkout.
+  Update shipping address in the existing checkout. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -19809,7 +19855,9 @@ type Mutation {
   ): CheckoutShippingAddressUpdate @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [])
 
   """
-  Updates the shipping method of the checkout.
+  Updates the shipping method of the checkout. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - SHIPPING_LIST_METHODS_FOR_CHECKOUT (sync): Triggered when updating the checkout shipping method with the external one.
@@ -19844,7 +19892,9 @@ type Mutation {
   """
   Updates the delivery method (shipping method or pick up point) of the checkout.
   
-  Added in Saleor 3.1.
+  Added in Saleor 3.1. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - SHIPPING_LIST_METHODS_FOR_CHECKOUT (sync): Triggered when updating the checkout delivery method with the external one.
@@ -19870,7 +19920,9 @@ type Mutation {
   ): CheckoutDeliveryMethodUpdate @doc(category: "Checkout") @webhookEventsInfo(asyncEvents: [CHECKOUT_UPDATED], syncEvents: [SHIPPING_LIST_METHODS_FOR_CHECKOUT])
 
   """
-  Update language code in the existing checkout.
+  Update language code in the existing checkout. 
+  
+  Requires one of the following permissions: AUTHENTICATED_USER.
   
   Triggers the following webhook events:
   - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -20537,29 +20589,6 @@ type Mutation {
   ): ExternalVerify @doc(category: "Authentication")
 
   """
-  Sends an email with the account password modification link.
-  
-  Triggers the following webhook events:
-  - NOTIFY_USER (async): A notification for password reset.
-  - ACCOUNT_SET_PASSWORD_REQUESTED (async): Setting a new password for the account is requested.
-  - STAFF_SET_PASSWORD_REQUESTED (async): Setting a new password for the staff account is requested.
-  """
-  requestPasswordReset(
-    """
-    Slug of a channel which will be used for notify user. Optional when only one channel exists.
-    """
-    channel: String
-
-    """Email of the user that will be used for password recovery."""
-    email: String!
-
-    """
-    URL of a view where users should be redirected to reset the password. URL in RFC 1808 format.
-    """
-    redirectUrl: String!
-  ): RequestPasswordReset @doc(category: "Users") @webhookEventsInfo(asyncEvents: [NOTIFY_USER, ACCOUNT_SET_PASSWORD_REQUESTED, STAFF_SET_PASSWORD_REQUESTED], syncEvents: [])
-
-  """
   Sends a notification confirmation.
   
   Added in Saleor 3.15.
@@ -20579,20 +20608,6 @@ type Mutation {
     """Base of frontend URL that will be needed to create confirmation URL."""
     redirectUrl: String!
   ): SendConfirmationEmail @doc(category: "Users") @webhookEventsInfo(asyncEvents: [NOTIFY_USER, ACCOUNT_CONFIRMATION_REQUESTED], syncEvents: [])
-
-  """
-  Confirm user account with token sent by email during registration.
-  
-  Triggers the following webhook events:
-  - ACCOUNT_CONFIRMED (async): Account was confirmed.
-  """
-  confirmAccount(
-    """E-mail of the user performing account confirmation."""
-    email: String!
-
-    """A one-time token required to confirm the account."""
-    token: String!
-  ): ConfirmAccount @doc(category: "Users") @webhookEventsInfo(asyncEvents: [ACCOUNT_CONFIRMED], syncEvents: [])
 
   """
   Sets the user's password from the token sent by email using the RequestPasswordReset mutation.
@@ -20727,19 +20742,6 @@ type Mutation {
     """The type of address."""
     type: AddressTypeEnum!
   ): AccountSetDefaultAddress @doc(category: "Users") @webhookEventsInfo(asyncEvents: [CUSTOMER_UPDATED], syncEvents: [])
-
-  """
-  Register a new user.
-  
-  Triggers the following webhook events:
-  - CUSTOMER_CREATED (async): A new customer account was created.
-  - NOTIFY_USER (async): A notification for account confirmation.
-  - ACCOUNT_CONFIRMATION_REQUESTED (async): An user confirmation was requested. This event is always sent regardless of settings.
-  """
-  accountRegister(
-    """Fields required to create a user."""
-    input: AccountRegisterInput!
-  ): AccountRegister @doc(category: "Users") @webhookEventsInfo(asyncEvents: [CUSTOMER_CREATED, NOTIFY_USER, ACCOUNT_CONFIRMATION_REQUESTED], syncEvents: [])
 
   """
   Updates the account of the logged-in user. 
@@ -25077,7 +25079,11 @@ type PaymentVoid @doc(category: "Payments") {
   errors: [PaymentError!]!
 }
 
-"""Initializes payment process when it is required by gateway."""
+"""
+Initializes payment process when it is required by gateway. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
+"""
 type PaymentInitialize @doc(category: "Payments") {
   """Payment that was initialized."""
   initializedPayment: PaymentInitialized
@@ -25099,7 +25105,11 @@ type PaymentInitialized @doc(category: "Payments") {
   data: JSONString
 }
 
-"""Check payment balance."""
+"""
+Check payment balance. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
+"""
 type PaymentCheckBalance @doc(category: "Payments") {
   """Response from the gateway."""
   data: JSONString
@@ -25572,7 +25582,9 @@ Processes a transaction session. It triggers the webhook `TRANSACTION_PROCESS_SE
 
 Added in Saleor 3.13.
 
-Note: this API is currently in Feature Preview and can be subject to changes at later point.
+Note: this API is currently in Feature Preview and can be subject to changes at later point. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 """
 type TransactionProcess @doc(category: "Payments") {
   """The processed transaction."""
@@ -26386,7 +26398,11 @@ type OrderCapture @doc(category: "Orders") {
   errors: [OrderError!]!
 }
 
-"""Confirms an unconfirmed order by changing status to unfulfilled."""
+"""
+Confirms an unconfirmed order by changing status to unfulfilled. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
+"""
 type OrderConfirm @doc(category: "Orders") {
   order: Order
   orderErrors: [OrderError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
@@ -28521,7 +28537,9 @@ input DonationUpdateInput @doc(category: "Donations") {
 }
 
 """
-Delete an old donation.
+Delete an old donation. 
+
+Requires one of the following permissions: MANAGE_DONATIONS.
 
 Triggers the following webhook events:
 - DONATION_DELETED (sync): A donation has been deleted.
@@ -29743,7 +29761,9 @@ enum UploadErrorCode {
 }
 
 """
-Adds a gift card or a voucher to a checkout.
+Adds a gift card or a voucher to a checkout. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -29811,7 +29831,9 @@ enum CheckoutErrorCode @doc(category: "Checkout") {
 }
 
 """
-Update billing address in the existing checkout.
+Update billing address in the existing checkout. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -29841,7 +29863,9 @@ input CheckoutAddressValidationRules @doc(category: "Checkout") {
 }
 
 """
-Completes the checkout. As a result a new order is created. The mutation allows to create the unpaid order when setting `orderSettings.allowUnpaidOrders` for given `Channel` is set to `true`. When `orderSettings.allowUnpaidOrders` is set to `false`, checkout can be completed only when attached `Payment`/`TransactionItem`s fully cover the checkout's total. When processing the checkout with `Payment`, in case of required additional confirmation step like 3D secure, the `confirmationNeeded` flag will be set to True and no order will be created until payment is confirmed with second call of this mutation.
+Completes the checkout. As a result a new order is created. The mutation allows to create the unpaid order when setting `orderSettings.allowUnpaidOrders` for given `Channel` is set to `true`. When `orderSettings.allowUnpaidOrders` is set to `false`, checkout can be completed only when attached `Payment`/`TransactionItem`s fully cover the checkout's total. When processing the checkout with `Payment`, in case of required additional confirmation step like 3D secure, the `confirmationNeeded` flag will be set to True and no order will be created until payment is confirmed with second call of this mutation. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - SHIPPING_LIST_METHODS_FOR_CHECKOUT (sync): Optionally triggered when cached external shipping methods are invalid.
@@ -29871,7 +29895,9 @@ type CheckoutComplete @doc(category: "Checkout") @webhookEventsInfo(asyncEvents:
 }
 
 """
-Create a new checkout.
+Create a new checkout. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - CHECKOUT_CREATED (async): A checkout was created.
@@ -29963,7 +29989,9 @@ Create new checkout from existing order.
 
 Added in Saleor 3.14.
 
-Note: this API is currently in Feature Preview and can be subject to changes at later point.
+Note: this API is currently in Feature Preview and can be subject to changes at later point. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 """
 type CheckoutCreateFromOrder @doc(category: "Checkout") {
   """Variants that were not attached to the checkout."""
@@ -30053,7 +30081,9 @@ type CheckoutCustomerDetach @doc(category: "Checkout") @webhookEventsInfo(asyncE
 """
 Updates customer note in the existing checkout object.
 
-Added in Saleor 3.21.
+Added in Saleor 3.21. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -30066,7 +30096,9 @@ type CheckoutCustomerNoteUpdate @doc(category: "Checkout") @webhookEventsInfo(as
 }
 
 """
-Updates email address in the existing checkout object.
+Updates email address in the existing checkout object. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -30079,7 +30111,9 @@ type CheckoutEmailUpdate @doc(category: "Checkout") @webhookEventsInfo(asyncEven
 }
 
 """
-Deletes a CheckoutLine.
+Deletes a CheckoutLine. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -30092,7 +30126,9 @@ type CheckoutLineDelete @doc(category: "Checkout") @webhookEventsInfo(asyncEvent
 }
 
 """
-Deletes checkout lines.
+Deletes checkout lines. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -30104,7 +30140,9 @@ type CheckoutLinesDelete @doc(category: "Checkout") @webhookEventsInfo(asyncEven
 }
 
 """
-Adds a checkout line to the existing checkout.If line was already in checkout, its quantity will be increased.
+Adds a checkout line to the existing checkout.If line was already in checkout, its quantity will be increased. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -30117,7 +30155,9 @@ type CheckoutLinesAdd @doc(category: "Checkout") @webhookEventsInfo(asyncEvents:
 }
 
 """
-Updates checkout line in the existing checkout.
+Updates checkout line in the existing checkout. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -30158,7 +30198,9 @@ input CheckoutLineUpdateInput @doc(category: "Checkout") {
 }
 
 """
-Remove a gift card or a voucher from a checkout.
+Remove a gift card or a voucher from a checkout. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -30170,7 +30212,11 @@ type CheckoutRemovePromoCode @doc(category: "Checkout") @webhookEventsInfo(async
   errors: [CheckoutError!]!
 }
 
-"""Create a new payment for given checkout."""
+"""
+Create a new payment for given checkout. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
+"""
 type CheckoutPaymentCreate @doc(category: "Checkout") {
   """Related checkout object."""
   checkout: Checkout
@@ -30232,7 +30278,9 @@ enum StorePaymentMethodEnum @doc(category: "Payments") {
 }
 
 """
-Update shipping address in the existing checkout.
+Update shipping address in the existing checkout. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -30245,7 +30293,9 @@ type CheckoutShippingAddressUpdate @doc(category: "Checkout") @webhookEventsInfo
 }
 
 """
-Updates the shipping method of the checkout.
+Updates the shipping method of the checkout. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - SHIPPING_LIST_METHODS_FOR_CHECKOUT (sync): Triggered when updating the checkout shipping method with the external one.
@@ -30261,7 +30311,9 @@ type CheckoutShippingMethodUpdate @doc(category: "Checkout") @webhookEventsInfo(
 """
 Updates the delivery method (shipping method or pick up point) of the checkout.
 
-Added in Saleor 3.1.
+Added in Saleor 3.1. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - SHIPPING_LIST_METHODS_FOR_CHECKOUT (sync): Triggered when updating the checkout delivery method with the external one.
@@ -30274,7 +30326,9 @@ type CheckoutDeliveryMethodUpdate @doc(category: "Checkout") @webhookEventsInfo(
 }
 
 """
-Update language code in the existing checkout.
+Update language code in the existing checkout. 
+
+Requires one of the following permissions: AUTHENTICATED_USER.
 
 Triggers the following webhook events:
 - CHECKOUT_UPDATED (async): A checkout was updated.
@@ -32002,19 +32056,6 @@ type ExternalVerify @doc(category: "Authentication") {
 }
 
 """
-Sends an email with the account password modification link.
-
-Triggers the following webhook events:
-- NOTIFY_USER (async): A notification for password reset.
-- ACCOUNT_SET_PASSWORD_REQUESTED (async): Setting a new password for the account is requested.
-- STAFF_SET_PASSWORD_REQUESTED (async): Setting a new password for the staff account is requested.
-"""
-type RequestPasswordReset @doc(category: "Users") @webhookEventsInfo(asyncEvents: [NOTIFY_USER, ACCOUNT_SET_PASSWORD_REQUESTED, STAFF_SET_PASSWORD_REQUESTED], syncEvents: []) {
-  accountErrors: [AccountError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
-  errors: [AccountError!]!
-}
-
-"""
 Sends a notification confirmation.
 
 Added in Saleor 3.15.
@@ -32050,19 +32091,6 @@ enum SendConfirmationEmailErrorCode @doc(category: "Users") {
   ACCOUNT_CONFIRMED
   CONFIRMATION_ALREADY_REQUESTED
   MISSING_CHANNEL_SLUG
-}
-
-"""
-Confirm user account with token sent by email during registration.
-
-Triggers the following webhook events:
-- ACCOUNT_CONFIRMED (async): Account was confirmed.
-"""
-type ConfirmAccount @doc(category: "Users") @webhookEventsInfo(asyncEvents: [ACCOUNT_CONFIRMED], syncEvents: []) {
-  """An activated user account."""
-  user: User
-  accountErrors: [AccountError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
-  errors: [AccountError!]!
 }
 
 """
@@ -32187,51 +32215,6 @@ type AccountSetDefaultAddress @doc(category: "Users") @webhookEventsInfo(asyncEv
   user: User
   accountErrors: [AccountError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
   errors: [AccountError!]!
-}
-
-"""
-Register a new user.
-
-Triggers the following webhook events:
-- CUSTOMER_CREATED (async): A new customer account was created.
-- NOTIFY_USER (async): A notification for account confirmation.
-- ACCOUNT_CONFIRMATION_REQUESTED (async): An user confirmation was requested. This event is always sent regardless of settings.
-"""
-type AccountRegister @doc(category: "Users") @webhookEventsInfo(asyncEvents: [CUSTOMER_CREATED, NOTIFY_USER, ACCOUNT_CONFIRMATION_REQUESTED], syncEvents: []) {
-  """Informs whether users need to confirm their email address."""
-  requiresConfirmation: Boolean
-  accountErrors: [AccountError!]! @deprecated(reason: "This field will be removed in Saleor 4.0. Use `errors` field instead.")
-  errors: [AccountError!]!
-  user: User
-}
-
-"""Fields required to create a user."""
-input AccountRegisterInput @doc(category: "Users") {
-  """Given name."""
-  firstName: String
-
-  """Family name."""
-  lastName: String
-
-  """User language code."""
-  languageCode: LanguageCodeEnum
-
-  """The email address of the user."""
-  email: String!
-
-  """Password."""
-  password: String!
-
-  """Base of frontend URL that will be needed to create confirmation URL."""
-  redirectUrl: String
-
-  """User public metadata."""
-  metadata: [MetadataInput!]
-
-  """
-  Slug of a channel which will be used to notify users. Optional when only one channel exists.
-  """
-  channel: String
 }
 
 """

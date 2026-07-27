@@ -32,12 +32,10 @@ from .mutations.account import (
     AccountAddressDelete,
     AccountAddressUpdate,
     AccountDelete,
-    AccountRegister,
     AccountRequestDeletion,
     AccountSetDefaultAddress,
     AccountUpdate,
     BalanceUpdate,
-    ConfirmAccount,
     ConfirmEmailChange,
     RequestEmailChange,
     SendConfirmationEmail,
@@ -52,7 +50,6 @@ from .mutations.authentication import (
     ExternalVerify,
     PasswordChange,
     RefreshToken,
-    RequestPasswordReset,
     SetPassword,
     VerifyToken,
 )
@@ -276,9 +273,7 @@ class AccountMutations(graphene.ObjectType):
     external_logout = ExternalLogout.Field()
     external_verify = ExternalVerify.Field()
 
-    request_password_reset = RequestPasswordReset.Field()
     send_confirmation_email = SendConfirmationEmail.Field()
-    confirm_account = ConfirmAccount.Field()
     set_password = SetPassword.Field()
     password_change = PasswordChange.Field()
     request_email_change = RequestEmailChange.Field()
@@ -290,7 +285,6 @@ class AccountMutations(graphene.ObjectType):
     account_address_delete = AccountAddressDelete.Field()
     account_set_default_address = AccountSetDefaultAddress.Field()
 
-    account_register = AccountRegister.Field()
     account_update = AccountUpdate.Field()
     account_request_deletion = AccountRequestDeletion.Field()
     account_delete = AccountDelete.Field()
